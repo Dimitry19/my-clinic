@@ -24,88 +24,106 @@
   </div>
 
   <!-- Loader -->
-  <div *ngIf="loading" class="loader-overlay">
-    <div class="spinner"></div>
-    <p>Chargement en cours...</p>
-  </div>
+  @if (loading) {
+    <div class="loader-overlay">
+      <div class="spinner"></div>
+      <p>Chargement en cours...</p>
+    </div>
+  }
 
   <!-- Recherche patient existant (mode création uniquement) -->
-  <div *ngIf="mode === 'creation'" class="search-section">
-    <div class="search-label">Vérifier si le patient existe déjà</div>
-    <div class="search-wrapper">
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Rechercher par nom ou téléphone..."
-        [value]="searchQuery"
-        (input)="onSearchInput($event)"
-        (focus)="showSearchResults = searchResults.length > 0"
-        autocomplete="off"
-      />
-      <span class="search-icon">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.35-4.35" />
-        </svg>
-      </span>
-      <div *ngIf="searchLoading" class="search-spinner"></div>
-    </div>
+  @if (mode === "creation") {
+    <div class="search-section">
+      <div class="search-label">Vérifier si le patient existe déjà</div>
+      <div class="search-wrapper">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Rechercher par nom ou téléphone..."
+          [value]="searchQuery"
+          (input)="onSearchInput($event)"
+          (focus)="showSearchResults = searchResults.length > 0"
+          autocomplete="off"
+        />
+        <span class="search-icon">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+        </span>
+        @if (searchLoading) {
+          <div class="search-spinner"></div>
+        }
+      </div>
 
-    <!-- Résultats de recherche -->
-    <div *ngIf="showSearchResults" class="search-results">
-      <div
-        *ngFor="let patient of searchResults"
-        class="search-result-item"
-        (click)="selectionnerPatient(patient)"
-      >
-        <div class="result-name">{{ patient.prenom }} {{ patient.nom }}</div>
-        <div class="result-info">
-          {{ patient.age }} ans
-          <span *ngIf="patient.telephone"> · {{ patient.telephone }}</span>
+      <!-- Résultats de recherche -->
+      @if (showSearchResults) {
+        <div class="search-results">
+          @for (patient of searchResults; track patient) {
+            <div
+              class="search-result-item"
+              (click)="selectionnerPatient(patient)"
+            >
+              <div class="result-name">
+                {{ patient.prenom }} {{ patient.nom }}
+              </div>
+              <div class="result-info">
+                {{ patient.age }} ans
+                @if (patient.telephone) {
+                  <span> · {{ patient.telephone }}</span>
+                }
+              </div>
+            </div>
+          }
+          <div class="search-result-close" (click)="showSearchResults = false">
+            Fermer
+          </div>
         </div>
-      </div>
-      <div class="search-result-close" (click)="showSearchResults = false">
-        Fermer
-      </div>
+      }
     </div>
-  </div>
+  }
 
   <!-- Messages -->
-  <div *ngIf="successMessage" class="alert alert-success">
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-    >
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-    {{ successMessage }}
-  </div>
-  <div *ngIf="errorMessage" class="alert alert-error">
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <line x1="15" y1="9" x2="9" y2="15" />
-      <line x1="9" y1="9" x2="15" y2="15" />
-    </svg>
-    {{ errorMessage }}
-  </div>
+  @if (successMessage) {
+    <div   class="alert alert-success">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+      {{ successMessage }}
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div  class="alert alert-error">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <line x1="15" y1="9" x2="9" y2="15" />
+        <line x1="9" y1="9" x2="15" y2="15" />
+      </svg>
+      {{ errorMessage }}
+    </div>
+  }
 
   <!-- Indicateur d'étapes -->
   <div class="steps-indicator">
@@ -116,245 +134,268 @@
       [class.completed]="currentStep > step"
     >
       <div class="step-circle">
-        <svg
-          *ngIf="currentStep > step"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-        >
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-        <span *ngIf="currentStep <= step">{{ step }}</span>
+        @if (currentStep > step) {
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        }
+
+        @if (currentStep <= step) {
+          <span>{{ step }}</span>
+        }
       </div>
       <span class="step-label">
         {{ step === 1 ? "Identité" : step === 2 ? "Médical" : "Administratif" }}
       </span>
-      <div
-        *ngIf="i < 2"
-        class="step-connector"
-        [class.completed]="currentStep > step"
-      ></div>
+      @if (i < 2) {
+        <div
+          class="step-connector"
+          [class.completed]="currentStep > step"
+        ></div>
+      }
     </div>
   </div>
 
   <!-- Formulaire -->
   <form [formGroup]="form" (ngSubmit)="soumettre()" novalidate>
     <!-- ── ETAPE 1 : Identité ────────────────────────────────── -->
-    <div *ngIf="currentStep === 1" class="form-step">
-      <h3 class="step-title">Informations d'identité</h3>
+    @if (currentStep === 1) {
+      <div class="form-step">
+        <h3 class="step-title">Informations d'identité</h3>
+        <div class="form-row">
+          <div class="form-group" [class.has-error]="nomInvalid">
+            <label class="form-label required">Nom</label>
+            <input
+              type="text"
+              class="form-control"
+              formControlName="nom"
+              placeholder="Nom de famille"
+              autocomplete="family-name"
+            />
+            @if (nomInvalid) {
+              <div class="error-msg">
+                @if (form.get("nom")?.errors?.["required"]) {
+                  <span>Le nom est obligatoire.</span>
+                }
+                @if (form.get("nom")?.errors?.["minlength"]) {
+                  <span>Minimum 2 caractères.</span>
+                }
+              </div>
+            }
+          </div>
 
-      <div class="form-row">
-        <div class="form-group" [class.has-error]="nomInvalid">
-          <label class="form-label required">Nom</label>
-          <input
-            type="text"
-            class="form-control"
-            formControlName="nom"
-            placeholder="Nom de famille"
-            autocomplete="family-name"
-          />
-          <div *ngIf="nomInvalid" class="error-msg">
-            <span *ngIf="form.get('nom')?.errors?.['required']"
-              >Le nom est obligatoire.</span
-            >
-            <span *ngIf="form.get('nom')?.errors?.['minlength']"
-              >Minimum 2 caractères.</span
-            >
+          <div class="form-group" [class.has-error]="prenomInvalid">
+            <label class="form-label required">Prénom</label>
+            <input
+              type="text"
+              class="form-control"
+              formControlName="prenom"
+              placeholder="Prénom"
+              autocomplete="given-name"
+            />
+
+            @if (prenomInvalid) {
+              <div class="error-msg">
+                @if (form.get("prenom")?.errors?.["required"]) {
+                  <span>Le prénom est obligatoire.</span>
+                }
+              </div>
+            }
           </div>
         </div>
 
-        <div class="form-group" [class.has-error]="prenomInvalid">
-          <label class="form-label required">Prénom</label>
-          <input
-            type="text"
-            class="form-control"
-            formControlName="prenom"
-            placeholder="Prénom"
-            autocomplete="given-name"
-          />
-          <div *ngIf="prenomInvalid" class="error-msg">
-            <span *ngIf="form.get('prenom')?.errors?.['required']"
-              >Le prénom est obligatoire.</span
-            >
+        <div class="form-row">
+          <div class="form-group" [class.has-error]="dateInvalid">
+            <label class="form-label required">Date de naissance</label>
+            <input
+              type="date"
+              class="form-control"
+              formControlName="dateNaissance"
+              [max]="today"
+            />
+            @if (dateInvalid) {
+              <div class="error-msg">
+                @if (form.get("dateNaissance")?.errors?.["required"]) {
+                  <span>La date est obligatoire.</span>
+                }
+
+                @if (form.get("dateNaissance")?.errors?.["dateInvalide"]) {
+                  <span>Date invalide.</span>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="form-group" [class.has-error]="sexeInvalid">
+            <label class="form-label required">Sexe</label>
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" formControlName="sexe" value="M" />
+                <span class="radio-btn"></span> Masculin
+              </label>
+              <label class="radio-option">
+                <input type="radio" formControlName="sexe" value="F" />
+                <span class="radio-btn"></span> Féminin
+              </label>
+              <label class="radio-option">
+                <input type="radio" formControlName="sexe" value="AUTRE" />
+                <span class="radio-btn"></span> Autre
+              </label>
+            </div>
+            @if (sexeInvalid) {
+              <div class="error-msg">Le sexe est obligatoire.</div>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" [class.has-error]="telInvalid">
+            <label class="form-label">Téléphone</label>
+            <input
+              type="tel"
+              class="form-control"
+              formControlName="telephone"
+              placeholder="+509 XXXX XXXX"
+              autocomplete="tel"
+            />
+
+            @if (telInvalid) {
+              <div class="error-msg">Numéro invalide.</div>
+            }
+          </div>
+
+          <div class="form-group" [class.has-error]="emailInvalid">
+            <label class="form-label">Email</label>
+            <input
+              type="email"
+              class="form-control"
+              formControlName="email"
+              placeholder="patient@example.com"
+              autocomplete="email"
+            />
+            @if (emailInvalid) {
+              <div class="error-msg">Email invalide.</div>
+            }
           </div>
         </div>
       </div>
-
-      <div class="form-row">
-        <div class="form-group" [class.has-error]="dateInvalid">
-          <label class="form-label required">Date de naissance</label>
-          <input
-            type="date"
-            class="form-control"
-            formControlName="dateNaissance"
-            [max]="today"
-          />
-          <div *ngIf="dateInvalid" class="error-msg">
-            <span *ngIf="form.get('dateNaissance')?.errors?.['required']"
-              >La date est obligatoire.</span
-            >
-            <span *ngIf="form.get('dateNaissance')?.errors?.['dateInvalide']"
-              >Date invalide.</span
-            >
-          </div>
-        </div>
-
-        <div class="form-group" [class.has-error]="sexeInvalid">
-          <label class="form-label required">Sexe</label>
-          <div class="radio-group">
-            <label class="radio-option">
-              <input type="radio" formControlName="sexe" value="M" />
-              <span class="radio-btn"></span> Masculin
-            </label>
-            <label class="radio-option">
-              <input type="radio" formControlName="sexe" value="F" />
-              <span class="radio-btn"></span> Féminin
-            </label>
-            <label class="radio-option">
-              <input type="radio" formControlName="sexe" value="AUTRE" />
-              <span class="radio-btn"></span> Autre
-            </label>
-          </div>
-          <div *ngIf="sexeInvalid" class="error-msg">
-            Le sexe est obligatoire.
-          </div>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group" [class.has-error]="telInvalid">
-          <label class="form-label">Téléphone</label>
-          <input
-            type="tel"
-            class="form-control"
-            formControlName="telephone"
-            placeholder="+509 XXXX XXXX"
-            autocomplete="tel"
-          />
-          <div *ngIf="telInvalid" class="error-msg">Numéro invalide.</div>
-        </div>
-
-        <div class="form-group" [class.has-error]="emailInvalid">
-          <label class="form-label">Email</label>
-          <input
-            type="email"
-            class="form-control"
-            formControlName="email"
-            placeholder="patient@example.com"
-            autocomplete="email"
-          />
-          <div *ngIf="emailInvalid" class="error-msg">Email invalide.</div>
-        </div>
-      </div>
-    </div>
+    }
 
     <!-- ── ETAPE 2 : Informations médicales ──────────────────── -->
-    <div *ngIf="currentStep === 2" class="form-step">
-      <h3 class="step-title">Informations médicales</h3>
+    @if (currentStep === 2) {
+      <div class="form-step">
+        <h3 class="step-title">Informations médicales</h3>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Groupe sanguin</label>
-          <select class="form-control" formControlName="groupeSanguin">
-            <option value="">— Sélectionner —</option>
-            <option *ngFor="let g of groupesSanguins" [value]="g">
-              {{ g }}
-            </option>
-          </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Groupe sanguin</label>
+            <select class="form-control" formControlName="groupeSanguin">
+              <option value="">— Sélectionner —</option>
+              <option *ngFor="let g of groupesSanguins" [value]="g">
+                {{ g }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+            <!-- Champ vide pour aligner la grille -->
+          </div>
         </div>
-        <div class="form-group">
-          <!-- Champ vide pour aligner la grille -->
+
+        <div class="form-group full-width">
+          <label class="form-label">Allergies connues</label>
+          <textarea
+            class="form-control"
+            formControlName="allergies"
+            rows="3"
+            placeholder="Pénicilline, arachides, latex..."
+          ></textarea>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">Antécédents médicaux</label>
+          <textarea
+            class="form-control"
+            formControlName="antecedents"
+            rows="4"
+            placeholder="Diabète, hypertension, chirurgies passées..."
+          ></textarea>
         </div>
       </div>
-
-      <div class="form-group full-width">
-        <label class="form-label">Allergies connues</label>
-        <textarea
-          class="form-control"
-          formControlName="allergies"
-          rows="3"
-          placeholder="Pénicilline, arachides, latex..."
-        ></textarea>
-      </div>
-
-      <div class="form-group full-width">
-        <label class="form-label">Antécédents médicaux</label>
-        <textarea
-          class="form-control"
-          formControlName="antecedents"
-          rows="4"
-          placeholder="Diabète, hypertension, chirurgies passées..."
-        ></textarea>
-      </div>
-    </div>
+    }
 
     <!-- ── ETAPE 3 : Administratif ───────────────────────────── -->
-    <div *ngIf="currentStep === 3" class="form-step">
-      <h3 class="step-title">Informations administratives</h3>
+    @if (currentStep === 3) {
+      <div class="form-step">
+        <h3 class="step-title">Informations administratives</h3>
 
-      <div class="form-group full-width">
-        <label class="form-label">Adresse</label>
-        <input
-          type="text"
-          class="form-control"
-          formControlName="adresse"
-          placeholder="Rue, ville, quartier..."
-        />
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Mutuelle / Assurance</label>
-          <select class="form-control" formControlName="mutuelle">
-            <option value="">— Sélectionner —</option>
-            <option *ngFor="let m of mutuelles" [value]="m">{{ m }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Numéro de mutuelle</label>
+        <div class="form-group full-width">
+          <label class="form-label">Adresse</label>
           <input
             type="text"
             class="form-control"
-            formControlName="numeroMutuelle"
-            placeholder="N° adhérent"
+            formControlName="adresse"
+            placeholder="Rue, ville, quartier..."
           />
         </div>
-      </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Contact d'urgence — Nom</label>
-          <input
-            type="text"
-            class="form-control"
-            formControlName="contactUrgenceNom"
-            placeholder="Nom du contact"
-          />
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Mutuelle / Assurance</label>
+            <select class="form-control" formControlName="mutuelle">
+              <option value="">— Sélectionner —</option>
+              <option *ngFor="let m of mutuelles" [value]="m">{{ m }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Numéro de mutuelle</label>
+            <input
+              type="text"
+              class="form-control"
+              formControlName="numeroMutuelle"
+              placeholder="N° adhérent"
+            />
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Contact d'urgence — Téléphone</label>
-          <input
-            type="tel"
-            class="form-control"
-            formControlName="contactUrgenceTel"
-            placeholder="+509 XXXX XXXX"
-          />
-        </div>
-      </div>
 
-      <div class="form-group full-width">
-        <label class="form-label">Notes générales</label>
-        <textarea
-          class="form-control"
-          formControlName="notesGenerales"
-          rows="3"
-          placeholder="Informations complémentaires..."
-        ></textarea>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Contact d'urgence — Nom</label>
+            <input
+              type="text"
+              class="form-control"
+              formControlName="contactUrgenceNom"
+              placeholder="Nom du contact"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact d'urgence — Téléphone</label>
+            <input
+              type="tel"
+              class="form-control"
+              formControlName="contactUrgenceTel"
+              placeholder="+509 XXXX XXXX"
+            />
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">Notes générales</label>
+          <textarea
+            class="form-control"
+            formControlName="notesGenerales"
+            rows="3"
+            placeholder="Informations complémentaires..."
+          ></textarea>
+        </div>
       </div>
-    </div>
+    }
 
     <!-- Navigation entre étapes -->
     <div class="form-actions">

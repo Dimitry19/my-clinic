@@ -1,10 +1,13 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './components/pages/home/home.component';
 import { patientRoutes } from './core/routes/patient/patient.routes';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
+  {
+    path: '',
+    redirectTo: 'login',
+    pathMatch: 'full',
+  },
   {
     path: 'login',
     loadComponent: () =>

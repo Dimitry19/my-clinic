@@ -1,13 +1,10 @@
 ﻿import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import {
-  FormBuilder,
-  Validators,
-  ReactiveFormsModule,
-  FormsModule,
-  FormControl,
-  FormGroup,
-} from '@angular/forms';
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
+import { ButtonModule } from 'primeng/button';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { Authenticate, User } from '../../../core/models/auth/auth.model';
@@ -17,7 +14,14 @@ import { ApiResponse } from '../../../core/models/response/api-response.model';
 @Component({
   selector: 'clnt-login',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    InputTextModule,
+    PasswordModule,
+    ButtonModule,
+    FloatLabelModule,
+  ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })

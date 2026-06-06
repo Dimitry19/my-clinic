@@ -1,37 +1,144 @@
-﻿.login-wrapper {
+﻿:host {
+  display: block;
   height: 100vh;
+}
+
+.login-page {
+  display: flex;
+  min-height: 100vh;
+  background: #f7fafc;
+}
+
+.branding-panel {
+  flex: 1;
+  background: linear-gradient(135deg, #185fa5 0%, #2d79c6 100%);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0f172a;
+  padding: 4rem;
+}
+
+.branding-content {
+  max-width: 550px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 5rem;
+}
+
+.logo-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.15);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  i {
+    font-size: 2rem;
+  }
+}
+
+.logo h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.logo span {
+  opacity: 0.85;
+}
+
+.hero-content h2 {
+  font-size: 3rem;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+}
+
+.hero-content p {
+  opacity: 0.9;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+
+.features {
+  display: grid;
+  gap: 1rem;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  padding: 1rem;
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.login-panel {
+  width: 520px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: white;
 }
 
 .login-card {
-  width: 360px;
-  padding: 2rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-h2 {
-  margin-bottom: 0.5rem;
-}
-
-input {
   width: 100%;
-  padding: 0.7rem;
-  margin: 0.5rem 0 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  max-width: 400px;
 }
 
-button {
+.login-header {
+  margin-bottom: 2rem;
+}
+
+.login-header h2 {
+  margin: 0;
+  color: #185fa5;
+  font-size: 2rem;
+}
+
+.login-header p {
+  color: #64748b;
+}
+
+.field {
+  margin-bottom: 1.75rem;
+}
+
+.login-btn {
   width: 100%;
-  padding: 0.8rem;
-  background: #0f766e;
-  color: white;
-  border: none;
-  border-radius: 8px;
+}
+
+:host ::ng-deep .login-btn .p-button {
+  width: 100%;
+  background: #185fa5;
+  border-color: #185fa5;
+}
+
+.forgot-password {
+  display: block;
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #185fa5;
   cursor: pointer;
+}
+
+@media (max-width: 992px) {
+  .branding-panel {
+    display: none;
+  }
+
+  .login-panel {
+    width: 100%;
+  }
 }
