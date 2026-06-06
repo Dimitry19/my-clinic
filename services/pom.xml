@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>it.solutions.services</groupId>
+        <artifactId>clinique-trinite</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>services</artifactId>
+    <packaging>jar</packaging>
+    <name>Module services</name>
+    <description>Point d'entrée de l'application — controllers, migrations, configuration</description>
+
+    <!--
+        Ce module est le seul exécutable (spring-boot-maven-plugin).
+        Il dépend de core et de tous les modules domaine.
+        Il est le seul à avoir : flyway, driver PostgreSQL, spring-boot-maven-plugin.
+        Les dépendances déjà dans core arrivent ici via la dépendance sur core — pas besoin de les redéclarer.
+    -->
+
+    <dependencies>
+
+        <!-- ─── Module core (sécurité, JPA, Redis, Swagger...) ── -->
+        <dependency>
+            <groupId>it.solutions.services</groupId>
+            <artifactId>core</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>it.solutions.services</groupId>
+            <artifactId>patient</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <!--
+            Modules domaine — décommente au fur et à mesure que tu les crées
+
+            <dependency>
+                <groupId>it.solutions.services</groupId>
+                <artifactId>rh</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>it.solutions.services</groupId>
+                <artifactId>labo</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>it.solutions.services</groupId>
+                <artifactId>paiements</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>it.solutions.services</groupId>
+                <artifactId>agenda</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>it.solutions.services</groupId>
+                <artifactId>pharmacie</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+        -->
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- ─── Driver PostgreSQL ────────────────────────────── -->
+        <!-- Uniquement ici — c'est services qui démarre l'app -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ─── Flyway ───────────────────────────────────────── -->
+        <!-- Uniquement ici — les migrations SQL vivent dans services/src/main/resources/db/migration/ -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-flyway -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
+            <version>4.0.6</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- ─── Tests ────────────────────────────────────────── -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <!-- spring-boot-maven-plugin UNIQUEMENT ici -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
