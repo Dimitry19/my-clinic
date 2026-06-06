@@ -1,0 +1,20 @@
+﻿<section class="hero">
+  <div class="hero-content">
+    <h1>{{ title }}</h1>
+    <p>{{ subtitle }}</p>
+
+    <div class="actions">
+      <a routerLink="/login" class="btn primary">Se connecter</a>
+      <a href="#features" class="btn secondary">Découvrir</a>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="features">
+  @for (f of features; track f) {
+    <div class="card">
+      <h3>{{ f.icon }} {{ f.title }}</h3>
+      <p>{{ f.description }}</p>
+    </div>
+  }
+</section>

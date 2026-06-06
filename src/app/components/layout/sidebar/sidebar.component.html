@@ -1,0 +1,84 @@
+﻿<aside class="sidebar" [class.collapsed]="collapsed()">
+  <!-- Logo -->
+  <div class="sidebar-logo">
+    <div class="logo-icon">
+      <i class="pi pi-heart"></i>
+    </div>
+
+    @if (!collapsed()) {
+      <span class="logo-text">Trinité</span>
+      <button class="collapse-btn" (click)="toggleCollapse.emit()">
+        <i class="pi pi-bars"></i>
+      </button>
+    }
+  </div>
+
+  <!-- Navigation principale -->
+  <nav class="sidebar-nav">
+    @if (!collapsed()) {
+      <div class="nav-section-label">CLINIQUE</div>
+    }
+
+    @for (item of navItems; track item.route) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        class="nav-item"
+        [pTooltip]="collapsed() ? item.label : ''"
+        tooltipPosition="right"
+      >
+        <i class="pi" [ngClass]="item.icon"></i>
+        @if (!collapsed()) {
+          <span>{{ item.label }}</span>
+        }
+      </a>
+    }
+
+    <div class="nav-divider"></div>
+    @if (!collapsed()) {
+      <div class="nav-section-label">ADMINISTRATION</div>
+    }
+    @for (item of adminItems; track item) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        class="nav-item"
+        [pTooltip]="collapsed() ? item.label : ''"
+        tooltipPosition="right"
+      >
+        <i class="pi" [ngClass]="item.icon"></i>
+        @if (!collapsed()) {
+          <span>{{ item.label }}</span>
+        }
+      </a>
+    }
+  </nav>
+
+  <!-- User + Logout -->
+  <div class="sidebar-footer">
+    @if (!collapsed()) {
+      <div class="user-info">
+        <div class="user-avatar">{{ initiales }}</div>
+        <div class="user-details">
+          <span class="user-name"
+            >{{ auth.currentUser()?.prenom }}
+            {{ auth.currentUser()?.nom }}</span
+          >
+          <span class="user-role">{{ auth.currentUser()?.role }}</span>
+        </div>
+      </div>
+    }
+
+    <button
+      class="logout-btn"
+      (click)="auth.logout()"
+      [pTooltip]="collapsed() ? 'Déconnexion' : ''"
+      tooltipPosition="right"
+    >
+      <i class="pi pi-sign-out"></i>
+      @if (!collapsed()) {
+        <span *ngIf="!collapsed()">Déconnexion</span>
+      }
+    </button>
+  </div>
+</aside>

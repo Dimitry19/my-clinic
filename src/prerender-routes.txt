@@ -1,0 +1,4 @@
+﻿/
+/delivery
+/tracking
+/pickup

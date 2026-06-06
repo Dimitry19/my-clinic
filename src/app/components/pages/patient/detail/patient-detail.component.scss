@@ -1,0 +1,475 @@
+﻿$primary: #185fa5;
+$success: #0f6e56;
+$danger: #a32d2d;
+$warning: #ba7517;
+$border: #d3d1c7;
+$text: #2c2c2a;
+$text-muted: #5f5e5a;
+$bg: #ffffff;
+$bg-light: #f1efe8;
+$radius: 8px;
+$radius-lg: 12px;
+
+// ── Skeleton ───────────────────────────────────────────────
+.detail-skeleton {
+  .skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+// ── Page ───────────────────────────────────────────────────
+.patient-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+// ── Breadcrumb ─────────────────────────────────────────────
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.bc-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: $primary;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+  i {
+    font-size: 16px;
+  }
+}
+.bc-sep {
+  color: $text-muted;
+}
+.bc-current {
+  color: $text-muted;
+}
+
+// ── Hero ───────────────────────────────────────────────────
+.patient-hero {
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  padding: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.hero-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+.patient-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 500;
+  flex-shrink: 0;
+  background: #e6f1fb;
+  color: #0c447c;
+  &.avatar-f {
+    background: #faeeda;
+    color: #633806;
+  }
+}
+.patient-fullname {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: $text;
+  margin-bottom: 6px;
+}
+.patient-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: $text-muted;
+  margin-bottom: 8px;
+  i {
+    font-size: 15px;
+  }
+}
+.meta-sep {
+  color: $border;
+}
+.blood-badge {
+  background: #fcebeb;
+  color: #791f1f;
+  border: 0.5px solid #f09595;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.patient-contacts {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: $text-muted;
+  margin-bottom: 8px;
+  i {
+    font-size: 14px;
+    margin-right: 4px;
+  }
+}
+.allergies-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff8e6;
+  border: 0.5px solid #f0c860;
+  border-radius: $radius;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #7a4f00;
+  i {
+    font-size: 16px;
+    color: $warning;
+    flex-shrink: 0;
+  }
+}
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+// ── Summary cards ──────────────────────────────────────────
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+.summary-card {
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: border-color 0.15s;
+
+  &.sc-danger {
+    border-color: #f09595;
+    background: #fcebeb;
+  }
+}
+.sc-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  i {
+    font-size: 22px;
+  }
+
+  &.sc-blue {
+    background: #e6f1fb;
+    i {
+      color: $primary;
+    }
+  }
+  &.sc-green {
+    background: #e1f5ee;
+    i {
+      color: $success;
+    }
+  }
+  &.sc-amber {
+    background: #faeeda;
+    i {
+      color: $warning;
+    }
+  }
+  &.sc-red {
+    background: #fcebeb;
+    i {
+      color: $danger;
+    }
+  }
+}
+.sc-body {
+  display: flex;
+  flex-direction: column;
+}
+.sc-val {
+  font-size: 22px;
+  font-weight: 500;
+  color: $text;
+}
+.sc-label {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+// ── Tabs ───────────────────────────────────────────────────
+:host ::ng-deep {
+  .p-tabs .p-tablist {
+    border-bottom: 1px solid $border;
+  }
+  .p-tabs .p-tab {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    i {
+      font-size: 16px;
+    }
+  }
+  .p-tabpanels {
+    padding: 1.25rem 0 0;
+  }
+}
+
+// ── Dossier grid ───────────────────────────────────────────
+.dossier-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1rem;
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+.info-card {
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+.info-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: $text-muted;
+  background: $bg-light;
+  border-bottom: 0.5px solid $border;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  i {
+    font-size: 16px;
+  }
+}
+.info-rows {
+  padding: 4px 0;
+}
+.info-row {
+  display: flex;
+  padding: 9px 16px;
+  border-bottom: 0.5px solid $bg-light;
+  font-size: 14px;
+  &:last-child {
+    border-bottom: none;
+  }
+}
+.info-label {
+  width: 140px;
+  color: $text-muted;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+.info-val {
+  color: $text;
+  font-weight: 500;
+  flex: 1;
+  &.allergies-text {
+    color: #7a4f00;
+    font-weight: 400;
+  }
+}
+
+// ── Notes ─────────────────────────────────────────────────
+.notes-card {
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  margin: 1rem;
+}
+.notes-text {
+  padding: 1rem 1.25rem;
+  font-size: 14px;
+  color: $text;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+// ── Tab panel header ───────────────────────────────────────
+.tab-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 0.2rem;
+  font-size: 14px;
+  color: $text-muted;
+  strong {
+    color: $text;
+  }
+}
+.solde-danger {
+  color: $danger;
+}
+.reste-danger {
+  color: $danger;
+  font-weight: 500;
+}
+
+// ── Ordonnances ────────────────────────────────────────────
+.ordonnances-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 1rem;
+}
+.ordonnance-card {
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+.ord-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: $bg-light;
+  border-bottom: 0.5px solid $border;
+}
+.ord-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  i {
+    font-size: 18px;
+    color: $primary;
+  }
+}
+.ord-date {
+  font-weight: 500;
+  color: $text;
+}
+.ord-medecin {
+  color: $text-muted;
+  font-size: 13px;
+}
+.ord-meds {
+  list-style: none;
+  padding: 8px 16px;
+  margin: 0;
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 14px;
+    color: $text;
+    border-bottom: 0.5px solid $bg-light;
+    &:last-child {
+      border-bottom: none;
+    }
+    i {
+      font-size: 15px;
+      color: $success;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+  }
+}
+
+// ── Timeline ───────────────────────────────────────────────
+.timeline-wrap {
+  padding: 0.5rem 0;
+}
+.tl-marker {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  i {
+    font-size: 16px;
+    color: #fff;
+  }
+}
+.tl-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 1rem;
+}
+.tl-date {
+  font-size: 12px;
+  color: $text-muted;
+}
+.tl-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: $text;
+}
+.tl-sub {
+  font-size: 13px;
+  color: $text-muted;
+}
+
+// ── Not found ─────────────────────────────────────────────
+.not-found {
+  text-align: center;
+  padding: 4rem;
+  color: $text-muted;
+  i {
+    font-size: 64px;
+    display: block;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+  }
+  h3 {
+    font-size: 1.25rem;
+    margin-bottom: 8px;
+    color: $text;
+  }
+  p {
+    margin-bottom: 1.5rem;
+  }
+}
+
+// ── Print ─────────────────────────────────────────────────
+@media print {
+  .hero-actions,
+  .breadcrumb,
+  .summary-cards {
+    display: none;
+  }
+  .patient-hero {
+    border: none;
+    padding: 0;
+  }
+  :host ::ng-deep .p-tabs .p-tablist {
+    display: none;
+  }
+}
