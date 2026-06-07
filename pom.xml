@@ -21,6 +21,7 @@
     <modules>
         <module>core</module>
         <module>patient</module>
+        <module>employe</module>
         <module>services</module> <!-- toujours en dernier -->
     </modules>
 

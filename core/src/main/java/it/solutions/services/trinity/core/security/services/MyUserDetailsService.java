@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.MessageFormat;
 import java.util.Optional;
 
 @Service
@@ -20,7 +21,7 @@ public class MyUserDetailsService implements UserDetailsService {
 
     protected final UserDao dao;
 
-
+    private static final String utilisateurIntrouvable="Aucun utilisateur trouvé avec cet email [{0}]";
 
     public void exists(String email) throws Exception {
         Optional<User> optional = dao.findByEmail(email);
@@ -30,13 +31,13 @@ public class MyUserDetailsService implements UserDetailsService {
     }
 
     public User findByEmail(String email) {
-        return dao.findByEmail(email).orElseThrow();
+        return dao.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(MessageFormat.format(utilisateurIntrouvable,email)));
 
     }
 
     @Override
-    public @NonNull UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        return dao.findByEmail(s).orElseThrow(() -> new UsernameNotFoundException("User not found with email " + s));
+    public @NonNull UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return dao.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(MessageFormat.format(utilisateurIntrouvable,email)));
     }
 
     public void save(User user) {
