@@ -31,8 +31,8 @@ public class PatientService {
 
     public Page<PatientDto.Response> search(String query, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("nom").ascending());
-        return dao.findByNomContainingIgnoreCaseOrPrenomContainingIgnoreCase(
-                query, query, pageable).map(this::toResponse);
+        return dao.findByNomContainingIgnoreCaseOrPrenomContainingIgnoreCaseOrTelephoneContainingIgnoreCase(
+                query, query,query, pageable).map(this::toResponse);
     }
 
     public Page<PatientDto.Response> findAll(int page, int size) {
