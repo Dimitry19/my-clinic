@@ -1,0 +1,352 @@
+﻿@use "sass:color";
+
+// ── Variables ──────────────────────────────────────────────
+
+@import "../../../../variables.scss";
+
+/* $primary: #185fa5;
+$primary-dk: #0c447c;
+$primary-lt: #e6f1fb;
+$success: #0f6e56;
+$success-lt: #e1f5ee;
+$danger: #a32d2d;
+$danger-lt: #fcebeb;
+$warning: #ba7517;
+$warning-lt: #faeeda;
+$border: #d3d1c7;
+$text: #2c2c2a;
+$text-muted: #5f5e5a;
+$bg: #ffffff;
+$bg-light: #f1efe8;
+$radius: 8px;
+$radius-lg: 12px; */
+
+.employes-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+// ── En-tête ────────────────────────────────────────────────
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.header-left {
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: $text;
+    margin: 0 0 6px;
+    .pi {
+      font-size: 20px;
+      color: $primary;
+    }
+  }
+  p {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: $text-muted;
+    margin: 0;
+  }
+}
+
+.actifs-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: $success-lt;
+  color: $success;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  .pi {
+    font-size: 13px;
+  }
+}
+
+// ── Bouton ajouter ─────────────────────────────────────────
+.btn-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: $radius;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+  .pi {
+    font-size: 16px;
+  }
+  &:hover {
+    background: $primary-dk;
+  }
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: $bg;
+  color: $text-muted;
+  border: 0.5px solid $border;
+  border-radius: $radius;
+  font-size: 13px;
+  cursor: pointer;
+  &:hover {
+    background: $bg-light;
+  }
+  .pi {
+    font-size: 15px;
+  }
+}
+
+// ── Toolbar ────────────────────────────────────────────────
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+:host ::ng-deep .dept-select {
+  .p-select {
+    border-radius: $radius;
+    font-size: 14px;
+    min-width: 200px;
+  }
+}
+
+// ── Erreur liste ───────────────────────────────────────────
+.list-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: $danger-lt;
+  border: 0.5px solid #f09595;
+  border-radius: $radius-lg;
+  color: #791f1f;
+}
+
+.error-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(#a32d2d, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  .pi {
+    font-size: 18px;
+    color: $danger;
+  }
+}
+
+.error-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  strong {
+    font-weight: 500;
+    font-size: 14px;
+  }
+  span {
+    font-size: 13px;
+    opacity: 0.85;
+  }
+}
+
+.error-retry {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: $danger;
+  color: #fff;
+  border: none;
+  border-radius: $radius;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  align-self: flex-start;
+  &:hover {
+    background: color.adjust($danger, $lightness: -8%);
+  }
+  .pi {
+    font-size: 14px;
+  }
+}
+
+// ── Table card ─────────────────────────────────────────────
+
+// Lignes inactives / suspendues
+.row-inactif td {
+  opacity: 0.55;
+}
+.row-suspendu td {
+  background: rgba(#faeeda, 0.3);
+}
+
+// Cellule employé
+.emp-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.emp-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.emp-name {
+  font-weight: 500;
+  font-size: 14px;
+  color: $text;
+}
+.emp-email {
+  font-size: 12px;
+  color: $text-muted;
+}
+.emp-poste {
+  display: block;
+  font-size: 14px;
+  color: $text;
+}
+.emp-tel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: $text-muted;
+  margin-top: 2px;
+  .pi {
+    font-size: 12px;
+  }
+}
+
+// Département badge
+.dept-badge {
+  display: inline-block;
+  background: $bg-light;
+  color: $text-muted;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+// Salaire
+.salaire {
+  font-weight: 500;
+  font-size: 14px;
+  color: $text;
+}
+
+.action-btn {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: $radius;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: $bg-light;
+  color: $text-muted;
+  .pi {
+    font-size: 15px;
+  }
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &.action-view {
+    &:hover {
+      background: $primary-lt;
+      color: $primary;
+    }
+  }
+  &.action-edit {
+    &:hover {
+      background: $warning-lt;
+      color: $warning;
+    }
+  }
+  &.action-toggle-off {
+    color: $warning;
+    background: $warning-lt;
+  }
+  &.action-toggle-on {
+    color: $success;
+    background: $success-lt;
+  }
+  &.action-delete {
+    &:hover {
+      background: $danger-lt;
+      color: $danger;
+    }
+  }
+}
+
+// ── Empty state ────────────────────────────────────────────
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: $text-muted;
+  .pi {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 1rem;
+    opacity: 0.25;
+  }
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: $text;
+    margin-bottom: 8px;
+  }
+  p {
+    font-size: 14px;
+    margin-bottom: 1.25rem;
+  }
+}
+
+// Skeleton cell
+.skel-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+// ── Dialog ─────────────────────────────────────────────────
+:host ::ng-deep .employe-dialog {
+  .p-dialog-header {
+    border-bottom: 0.5px solid $border;
+    padding: 1rem 1.25rem;
+  }
+  .p-dialog-content {
+    padding: 0;
+  }
+}

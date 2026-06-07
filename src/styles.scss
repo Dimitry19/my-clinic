@@ -1,6 +1,111 @@
 @import "primeicons/primeicons.css";
 
+$primary: #185fa5;
+$primary-dk: #0c447c;
+$primary-lt: #e6f1fb;
+$success: #0f6e56;
+$success-lt: #e1f5ee;
+$danger: #a32d2d;
+$danger-lt: #fcebeb;
+$warning: #ba7517;
+$warning-lt: #faeeda;
+$border: #d3d1c7;
+$text: #2c2c2a;
+$text-muted: #5f5e5a;
+$bg: #ffffff;
+$bg-light: #f1efe8;
+$radius: 8px;
+$radius-lg: 12px;
+
 //Harmonisation de fontawesome avec PrimeNG
 .fa-solid {
   font-size: 1rem !important;
+}
+
+// Bar de recherche
+.search-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius;
+  padding: 0.6rem 1rem;
+  transition: border-color 0.15s;
+  &.search-active {
+    border-color: $primary;
+  }
+  &:focus-within {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba(#185fa5, 0.1);
+  }
+}
+
+.search-icon {
+  font-size: 17px;
+  color: $text-muted;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: $text;
+  &::placeholder {
+    color: #b4b2a9;
+  }
+}
+
+.search-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  color: $text-muted;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  &:hover {
+    color: $text;
+  }
+  .pi {
+    font-size: 14px;
+  }
+}
+
+// ── Table card ─────────────────────────────────────────────
+.table-card {
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  background: $bg-light;
+  font-size: 12px;
+  font-weight: 500;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 0.5px solid $border;
+  padding: 10px 14px;
+}
+.p-datatable .p-datatable-tbody > tr > td {
+  padding: 10px 14px;
+  border-bottom: 0.5px solid $bg-light;
+  vertical-align: middle;
+}
+.p-datatable .p-datatable-tbody > tr:hover > td {
+  background: rgba(#e6f1fb, 0.4);
+}
+
+// Boutons actions
+.action-btns {
+  display: flex;
+  gap: 4px;
 }

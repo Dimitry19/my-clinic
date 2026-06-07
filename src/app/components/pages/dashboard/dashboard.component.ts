@@ -11,6 +11,7 @@ import { AvatarModule } from 'primeng/avatar';
 import { StatDashboard, RendezVous } from '../../../core/models/all/all.model';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { DashboardService } from '../../../core/services/dashboard/dashboard.service';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'clnt-dashboard',
@@ -25,6 +26,7 @@ import { DashboardService } from '../../../core/services/dashboard/dashboard.ser
     SkeletonModule,
     ChartModule,
     AvatarModule,
+    TooltipModule,
   ],
   template: `
     <div class="dashboard">
@@ -48,7 +50,7 @@ import { DashboardService } from '../../../core/services/dashboard/dashboard.ser
       <div class="stats-grid" *ngIf="stats(); else statsSkeleton">
         <div class="stat-card" *ngFor="let s of statCards()">
           <div class="stat-icon" [style.background]="s.bg">
-            <i class="ti" [ngClass]="s.icon" [style.color]="s.color"></i>
+            <i class="pi" [ngClass]="s.icon" [style.color]="s.color"></i>
           </div>
           <div class="stat-body">
             <span class="stat-label">{{ s.label }}</span>
@@ -115,7 +117,14 @@ import { DashboardService } from '../../../core/services/dashboard/dashboard.ser
                   />
                 </td>
                 <td>
-                  <p-button icon="ti ti-eye" [text]="true" size="small" />
+                  <p-button
+                    icon="pi pi-eye"
+                    [text]="true"
+                    size="small"
+                    pTooltip="Voir le dossier"
+                    tooltipPosition="top"
+                    [routerLink]="['/patients', rdv.id]"
+                  />
                 </td>
               </tr>
             </ng-template>
@@ -254,6 +263,7 @@ import { DashboardService } from '../../../core/services/dashboard/dashboard.ser
 })
 export class DashboardComponent implements OnInit {
   private dashService = inject(DashboardService);
+
   auth = inject(AuthService);
 
   stats = signal<StatDashboard | null>(null);
@@ -262,31 +272,47 @@ export class DashboardComponent implements OnInit {
 
   statCards = signal<any[]>([]);
 
-  chartData = {
-    labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
-    datasets: [
-      {
-        label: 'Consultations',
-        data: [8, 12, 9, 15, 11, 6, 3],
-        backgroundColor: '#185FA5',
-        borderRadius: 6,
-      },
-    ],
-  };
-
   chartOptions = {
     plugins: { legend: { display: false } },
     scales: { y: { beginAtZero: true, ticks: { stepSize: 5 } } },
   };
+  chartData: any;
 
   ngOnInit() {
+    this.allStats();
+    this.allRendezVous();
+    this.allCharts();
+  }
+  allRendezVous() {
+    this.dashService
+      .getRendezVousDuJour()
+      .subscribe((r) => this.rendezVous.set(r));
+  }
+
+  allCharts() {
+    this.dashService.getWeeklyConsultations().subscribe((data: number[]) => {
+      this.chartData = {
+        labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+        datasets: [
+          {
+            label: 'Consultations',
+            data: data,
+            backgroundColor: '#185FA5',
+            borderRadius: 6,
+          },
+        ],
+      };
+    });
+  }
+
+  allStats() {
     this.dashService.getStats().subscribe((s) => {
       this.stats.set(s);
       this.statCards.set([
         {
           label: "Patients aujourd'hui",
           value: s.patientsAujourdhui,
-          icon: 'ti-users',
+          icon: 'pi-users',
           bg: '#E6F1FB',
           color: '#185FA5',
           delta: '↑ +3 vs hier',
@@ -295,7 +321,7 @@ export class DashboardComponent implements OnInit {
         {
           label: 'En attente',
           value: s.enAttente,
-          icon: 'ti-clock',
+          icon: 'pi-clock',
           bg: '#FAEEDA',
           color: '#BA7517',
           delta: '● Salle B',
@@ -304,7 +330,7 @@ export class DashboardComponent implements OnInit {
         {
           label: 'RDV restants',
           value: s.rdvRestants,
-          icon: 'ti-calendar',
+          icon: 'pi-calendar',
           bg: '#E1F5EE',
           color: '#0F6E56',
           delta: "Jusqu'à 17h",
@@ -313,7 +339,7 @@ export class DashboardComponent implements OnInit {
         {
           label: 'Terminées',
           value: s.consultationsTerminees,
-          icon: 'ti-check',
+          icon: 'pi-check',
           bg: '#EEEDFE',
           color: '#534AB7',
           delta: 'Ce matin',
@@ -321,15 +347,12 @@ export class DashboardComponent implements OnInit {
         },
       ]);
     });
-    this.dashService
-      .getRendezVousDuJour()
-      .subscribe((r) => this.rendezVous.set(r));
   }
 
   getSeverity(statut: string): string {
     const map: Record<string, string> = {
-      EN_COURS: 'info',
-      EN_ATTENTE: 'warn',
+      PLANIFIE: 'info',
+      CONFIRME: 'warn',
       TERMINE: 'success',
       ANNULE: 'danger',
       ABSENT: 'secondary',

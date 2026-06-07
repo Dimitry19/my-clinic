@@ -1,0 +1,561 @@
+﻿<div class="employe-form">
+  <!-- ── Erreur globale ── -->
+  @if (globalError()) {
+    <div class="global-error" role="alert" aria-live="assertive">
+      <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+      <div class="error-body">
+        <strong>Une erreur est survenue</strong>
+        <span>{{ globalError() }}</span>
+      </div>
+      <button
+        class="error-close"
+        (click)="globalError.set(null)"
+        aria-label="Fermer l'erreur"
+      >
+        <i class="pi pi-times" aria-hidden="true"></i>
+      </button>
+    </div>
+  }
+
+  <!-- ── Indicateur d'étapes ── -->
+  <div class="steps-nav" role="tablist">
+    @for (
+      step of [
+        { label: "Identité", icon: "pi-user" },
+        { label: "Poste & Contrat", icon: "pi-briefcase" },
+        { label: "Administratif", icon: "pi-file" },
+      ];
+      track $index
+    ) {
+      <button
+        class="step-btn"
+        [class.step-active]="activeStep() === $index"
+        [class.step-done]="activeStep() > $index"
+        (click)="allerEtape($index)"
+        role="tab"
+        [attr.aria-selected]="activeStep() === $index"
+        [attr.aria-label]="step.label"
+      >
+        <div class="step-circle">
+          @if (activeStep() > $index) {
+            <i class="pi pi-check" aria-hidden="true"></i>
+          } @else {
+            {{ $index + 1 }}
+          }
+        </div>
+        <span class="step-label">{{ step.label }}</span>
+      </button>
+      @if ($index < 2) {
+        <div
+          class="step-line"
+          [class.step-line-done]="activeStep() > $index"
+          aria-hidden="true"
+        ></div>
+      }
+    }
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="soumettre()" novalidate>
+    <!-- ════════════════════════════════
+         ÉTAPE 0 — Identité
+    ════════════════════════════════ -->
+    @if (activeStep() === 0) {
+      <div class="form-step" role="tabpanel" aria-label="Identité">
+        <h4 class="step-title">
+          <i class="pi pi-user" aria-hidden="true"></i>
+          Informations personnelles
+        </h4>
+
+        <div class="form-row">
+          <!-- Nom -->
+          <div
+            class="field"
+            [class.field-error]="hasError('nom')"
+            [class.field-ok]="hasSuccess('nom')"
+          >
+            <label for="nom" class="field-label">
+              Nom <span class="req" aria-hidden="true">*</span>
+            </label>
+            <div class="input-wrap">
+              <input
+                pInputText
+                id="nom"
+                formControlName="nom"
+                placeholder="Nom de famille"
+                autocomplete="family-name"
+                class="field-input"
+                [attr.aria-invalid]="hasError('nom')"
+                [attr.aria-describedby]="hasError('nom') ? 'nom-err' : null"
+              />
+              @if (hasSuccess("nom")) {
+                <i
+                  class="pi pi-check icon-right icon-ok"
+                  aria-hidden="true"
+                ></i>
+              }
+              @if (hasError("nom")) {
+                <i
+                  class="pi pi-times-circle icon-right icon-err"
+                  aria-hidden="true"
+                ></i>
+              }
+            </div>
+            @if (fieldError("nom")) {
+              <span id="nom-err" class="err-msg" role="alert">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                {{ fieldError("nom") }}
+              </span>
+            }
+          </div>
+
+          <!-- Prénom -->
+          <div
+            class="field"
+            [class.field-error]="hasError('prenom')"
+            [class.field-ok]="hasSuccess('prenom')"
+          >
+            <label for="prenom" class="field-label">
+              Prénom <span class="req" aria-hidden="true">*</span>
+            </label>
+            <div class="input-wrap">
+              <input
+                pInputText
+                id="prenom"
+                formControlName="prenom"
+                placeholder="Prénom"
+                autocomplete="given-name"
+                class="field-input"
+                [attr.aria-invalid]="hasError('prenom')"
+              />
+              @if (hasSuccess("prenom")) {
+                <i
+                  class="pi pi-check icon-right icon-ok"
+                  aria-hidden="true"
+                ></i>
+              }
+              @if (hasError("prenom")) {
+                <i
+                  class="pi pi-times-circle icon-right icon-err"
+                  aria-hidden="true"
+                ></i>
+              }
+            </div>
+            @if (fieldError("prenom")) {
+              <span class="err-msg" role="alert">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                {{ fieldError("prenom") }}
+              </span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <!-- Email -->
+          <div
+            class="field"
+            [class.field-error]="hasError('email')"
+            [class.field-ok]="hasSuccess('email')"
+          >
+            <label for="email" class="field-label">
+              <i class="pi pi-envelope" aria-hidden="true"></i>
+              Email professionnel <span class="req" aria-hidden="true">*</span>
+            </label>
+            <div class="input-wrap">
+              <input
+                pInputText
+                id="email"
+                type="email"
+                formControlName="email"
+                placeholder="employe@clinique.com"
+                autocomplete="email"
+                class="field-input"
+                [attr.aria-invalid]="hasError('email')"
+                [attr.aria-describedby]="hasError('email') ? 'email-err' : null"
+              />
+              @if (hasSuccess("email")) {
+                <i
+                  class="pi pi-check icon-right icon-ok"
+                  aria-hidden="true"
+                ></i>
+              }
+              @if (hasError("email")) {
+                <i
+                  class="pi pi-times-circle icon-right icon-err"
+                  aria-hidden="true"
+                ></i>
+              }
+            </div>
+            @if (fieldError("email")) {
+              <span id="email-err" class="err-msg" role="alert">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                {{ fieldError("email") }}
+              </span>
+            }
+          </div>
+
+          <!-- Téléphone -->
+          <div class="field" [class.field-error]="hasError('telephone')">
+            <label for="telephone" class="field-label">
+              <i class="pi pi-phone" aria-hidden="true"></i>
+              Téléphone
+            </label>
+            <div class="input-wrap">
+              <input
+                pInputText
+                id="telephone"
+                type="tel"
+                formControlName="telephone"
+                placeholder="+509 XXXX XXXX"
+                autocomplete="tel"
+                class="field-input"
+              />
+            </div>
+            @if (fieldError("telephone")) {
+              <span class="err-msg" role="alert">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                {{ fieldError("telephone") }}
+              </span>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ════════════════════════════════
+         ÉTAPE 1 — Poste & Contrat
+    ════════════════════════════════ -->
+    @if (activeStep() === 1) {
+      <div class="form-step" role="tabpanel" aria-label="Poste et contrat">
+        <h4 class="step-title">
+          <i class="pi pi-briefcase" aria-hidden="true"></i>
+          Poste & Contrat
+        </h4>
+
+        <div class="form-row">
+          <!-- Poste -->
+          <div
+            class="field"
+            [class.field-error]="hasError('poste')"
+            [class.field-ok]="hasSuccess('poste')"
+          >
+            <label for="poste" class="field-label">
+              Intitulé du poste <span class="req" aria-hidden="true">*</span>
+            </label>
+            <div class="input-wrap">
+              <input
+                pInputText
+                id="poste"
+                formControlName="poste"
+                placeholder="Ex: Médecin généraliste"
+                class="field-input"
+              />
+              @if (hasSuccess("poste")) {
+                <i
+                  class="pi pi-check icon-right icon-ok"
+                  aria-hidden="true"
+                ></i>
+              }
+              @if (hasError("poste")) {
+                <i
+                  class="pi pi-times-circle icon-right icon-err"
+                  aria-hidden="true"
+                ></i>
+              }
+            </div>
+            @if (fieldError("poste")) {
+              <span class="err-msg" role="alert">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                {{ fieldError("poste") }}
+              </span>
+            }
+          </div>
+
+          <!-- Département -->
+          <div class="field" [class.field-error]="hasError('departement')">
+            <label for="departement" class="field-label">
+              Département <span class="req" aria-hidden="true">*</span>
+            </label>
+            <p-select
+              id="departement"
+              formControlName="departement"
+              [options]="departements"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Sélectionner..."
+              styleClass="w-full"
+              [attr.aria-invalid]="hasError('departement')"
+            />
+            @if (fieldError("departement")) {
+              <span class="err-msg" role="alert">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                {{ fieldError("departement") }}
+              </span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <!-- Type contrat -->
+          <div class="field" [class.field-error]="hasError('typeContrat')">
+            <label for="typeContrat" class="field-label">
+              Type de contrat <span class="req" aria-hidden="true">*</span>
+            </label>
+            <div
+              class="contrat-options"
+              role="radiogroup"
+              aria-label="Type de contrat"
+            >
+              @for (c of contrats; track c.value) {
+                <label
+                  class="contrat-option"
+                  [class.contrat-selected]="
+                    form.get('typeContrat')?.value === c.value
+                  "
+                >
+                  <input
+                    type="radio"
+                    formControlName="typeContrat"
+                    [value]="c.value"
+                    class="sr-only"
+                  />
+                  {{ c.label }}
+                </label>
+              }
+            </div>
+            @if (fieldError("typeContrat")) {
+              <span class="err-msg" role="alert">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                {{ fieldError("typeContrat") }}
+              </span>
+            }
+          </div>
+
+          <!-- Statut -->
+          <div class="field">
+            <label class="field-label">Statut</label>
+            <p-select
+              formControlName="statut"
+              [options]="statutOptions"
+              optionLabel="label"
+              optionValue="value"
+              styleClass="w-full"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <!-- Date d'embauche -->
+          <div class="field" [class.field-error]="hasError('dateEmbauche')">
+            <label for="dateEmbauche" class="field-label">
+              <i class="pi pi-calendar" aria-hidden="true"></i>
+              Date d'embauche <span class="req" aria-hidden="true">*</span>
+            </label>
+            <div class="input-wrap">
+              <input
+                type="date"
+                id="dateEmbauche"
+                formControlName="dateEmbauche"
+                class="field-input"
+                [max]="today"
+              />
+            </div>
+            @if (fieldError("dateEmbauche")) {
+              <span class="err-msg" role="alert">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                {{ fieldError("dateEmbauche") }}
+              </span>
+            }
+          </div>
+
+          <!-- Salaire de base -->
+          <div class="field" [class.field-error]="hasError('salaireBase')">
+            <label for="salaireBase" class="field-label">
+              <i class="pi pi-wallet" aria-hidden="true"></i>
+              Salaire de base (HTG)
+              <span class="req" aria-hidden="true">*</span>
+            </label>
+            <p-inputNumber
+              id="salaireBase"
+              formControlName="salaireBase"
+              [min]="0"
+              [useGrouping]="true"
+              locale="fr-HT"
+              placeholder="Ex: 25000"
+              styleClass="w-full"
+              [attr.aria-invalid]="hasError('salaireBase')"
+            />
+            @if (fieldError("salaireBase")) {
+              <span class="err-msg" role="alert">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                {{ fieldError("salaireBase") }}
+              </span>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ════════════════════════════════
+         ÉTAPE 2 — Administratif
+    ════════════════════════════════ -->
+    @if (activeStep() === 2) {
+      <div
+        class="form-step"
+        role="tabpanel"
+        aria-label="Informations administratives"
+      >
+        <h4 class="step-title">
+          <i class="pi pi-file" aria-hidden="true"></i>
+          Informations administratives
+        </h4>
+
+        <div class="form-row">
+          <!-- N° CNSS -->
+          <div class="field">
+            <label for="numeroCnss" class="field-label">
+              <i class="pi pi-id-card" aria-hidden="true"></i>
+              Numéro CNSS
+            </label>
+            <input
+              pInputText
+              id="numeroCnss"
+              formControlName="numeroCnss"
+              placeholder="Ex: 123456789"
+              class="field-input field-full"
+            />
+          </div>
+
+          <!-- RIB -->
+          <div class="field">
+            <label for="rib" class="field-label">
+              <i class="pi pi-credit-card" aria-hidden="true"></i>
+              RIB / Compte bancaire
+            </label>
+            <input
+              pInputText
+              id="rib"
+              formControlName="rib"
+              placeholder="IBAN ou numéro de compte"
+              class="field-input field-full"
+            />
+          </div>
+        </div>
+
+        <!-- Adresse -->
+        <div class="field field-full-row">
+          <label for="adresse" class="field-label">
+            <i class="pi pi-map-marker" aria-hidden="true"></i>
+            Adresse domicile
+          </label>
+          <input
+            pInputText
+            id="adresse"
+            formControlName="adresse"
+            placeholder="Rue, ville, quartier..."
+            class="field-input field-full"
+          />
+        </div>
+
+        <!-- Résumé avant soumission -->
+        <div class="resume-card">
+          <div class="resume-title">
+            <i class="pi pi-list-check" aria-hidden="true"></i>
+            Résumé avant enregistrement
+          </div>
+          <div class="resume-grid">
+            <div class="resume-item">
+              <span class="resume-label">Nom complet</span>
+              <span class="resume-val"
+                >{{ form.get("prenom")?.value }}
+                {{ form.get("nom")?.value }}</span
+              >
+            </div>
+            <div class="resume-item">
+              <span class="resume-label">Email</span>
+              <span class="resume-val">{{ form.get("email")?.value }}</span>
+            </div>
+            <div class="resume-item">
+              <span class="resume-label">Poste</span>
+              <span class="resume-val">{{ form.get("poste")?.value }}</span>
+            </div>
+            <div class="resume-item">
+              <span class="resume-label">Contrat</span>
+              <span class="resume-val">{{
+                form.get("typeContrat")?.value
+              }}</span>
+            </div>
+            <div class="resume-item">
+              <span class="resume-label">Salaire</span>
+              <span class="resume-val"
+                >{{
+                  form.get("salaireBase")?.value | number: "1.0-0"
+                }}
+                HTG</span
+              >
+            </div>
+            <div class="resume-item">
+              <span class="resume-label">Statut</span>
+              <span class="resume-val">{{ form.get("statut")?.value }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Navigation ── -->
+    <div class="form-footer">
+      <button
+        type="button"
+        class="btn-cancel"
+        (click)="annuler()"
+        [disabled]="saving()"
+      >
+        <i class="pi pi-times" aria-hidden="true"></i>
+        Annuler
+      </button>
+
+      <div class="footer-right">
+        @if (activeStep() > 0) {
+          <button
+            type="button"
+            class="btn-prev"
+            (click)="activeStep.set(activeStep() - 1)"
+            [disabled]="saving()"
+          >
+            <i class="pi pi-chevron-left" aria-hidden="true"></i>
+            Précédent
+          </button>
+        }
+
+        @if (activeStep() < 2) {
+          <button
+            type="button"
+            class="btn-next"
+            (click)="allerEtape(activeStep() + 1)"
+          >
+            Suivant
+            <i class="pi pi-chevron-right" aria-hidden="true"></i>
+          </button>
+        }
+
+        @if (activeStep() === 2) {
+          <button
+            type="submit"
+            class="btn-submit"
+            [class.btn-saving]="saving()"
+            [disabled]="saving()"
+            [attr.aria-busy]="saving()"
+          >
+            @if (saving()) {
+              <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+              Enregistrement...
+            } @else {
+              <i class="pi pi-check" aria-hidden="true"></i>
+              {{ editMode() ? "Mettre à jour" : "Enregistrer" }}
+            }
+          </button>
+        }
+      </div>
+    </div>
+  </form>
+</div>

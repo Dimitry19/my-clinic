@@ -1,5 +1,9 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
+import {
+  ApplicationConfig,
+  provideZoneChangeDetection,
+  LOCALE_ID,
+} from '@angular/core';
+import { provideRouter } from '@angular/router';
 import {
   provideHttpClient,
   withInterceptors,
@@ -10,17 +14,25 @@ import {
   withEventReplay,
 } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideAnimations } from '@angular/platform-browser/animations';
 import { providePrimeNG } from 'primeng/config';
 import { routes } from './app.routes';
 import { TrinityPrimeTheme } from './core/themes/trinity-prime.theme';
 import { authInterceptor } from './core/interceptors/http/auth.interceptor';
+import { errorInterceptor } from './core/interceptors/http/error.interceptor';
+
+import { registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
+
+registerLocaleData(localeFr);
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor]), withFetch()),
+    provideHttpClient(
+      withInterceptors([authInterceptor, errorInterceptor]),
+      withFetch(),
+    ),
     provideClientHydration(withEventReplay()),
     provideAnimationsAsync(),
     //provideAnimations(),
@@ -37,5 +49,9 @@ export const appConfig: ApplicationConfig = {
       },
       ripple: true,
     }),
+    {
+      provide: LOCALE_ID,
+      useValue: 'fr',
+    },
   ],
 };

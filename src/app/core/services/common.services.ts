@@ -2,7 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subject, throwError } from 'rxjs';
 
 import { ApiResponseService } from '../models/response/api.service';
 import { ApiResponse } from '../models/response/api-response.model';
@@ -23,6 +23,10 @@ export class CommonService {
 
     public apiService: ApiResponseService,
   ) {}
+
+  public getInitiales(prenom: string, nom: string) {
+    return `${prenom[0]}${nom[0]}`.toUpperCase();
+  }
 
   getMenuRoles() {
     //return this.httpClient.get(this.menuRoles).pipe(map((res: any) => res));
@@ -59,7 +63,7 @@ export class CommonService {
 
   public globalErrorHandler(error: any): Observable<any> {
     if (error instanceof HttpErrorResponse) {
-      return of(error.error.message);
+      return this.globalStatusErrorHandler(error);
     }
     if (typeof error === 'object') {
       return of(error);
@@ -75,5 +79,14 @@ export class CommonService {
       return of(error.error.message);
     }
     return of(error);
+  }
+
+  public globalStatusErrorHandler(error: HttpErrorResponse) {
+    return throwError(() => ({
+      status: error.status,
+      message:
+        error.error?.message ?? error.message ?? 'Une erreur est survenue',
+      error: error.error,
+    }));
   }
 }

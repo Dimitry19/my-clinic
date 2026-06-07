@@ -5,11 +5,13 @@ import { BadgeModule } from 'primeng/badge';
 import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { AuthService } from '../../../core/services/auth/auth.service';
+import { TooltipModule } from 'primeng/tooltip';
+import { CommonService } from '../../../core/services/common.services';
 
 @Component({
   selector: 'clnt-topbar',
   standalone: true,
-  imports: [CommonModule, ButtonModule, BadgeModule, MenuModule],
+  imports: [CommonModule, ButtonModule, BadgeModule, MenuModule, TooltipModule],
   template: `
     <header class="topbar">
       <div class="topbar-left">
@@ -31,6 +33,7 @@ import { AuthService } from '../../../core/services/auth/auth.service';
           severity="secondary"
           (onClick)="toggleTheme()"
           pTooltip="Changer le thème"
+          tooltipPosition="bottom"
         />
         <!-- Notifications -->
         <div class="notif-wrap">
@@ -131,11 +134,13 @@ import { AuthService } from '../../../core/services/auth/auth.service';
 export class TopbarComponent {
   toggleSidebar = output();
   auth = inject(AuthService);
+  commonService = inject(CommonService);
+
   darkMode = false;
 
   get initiales() {
     const u = this.auth.currentUser();
-    return u ? `${u.prenom[0]}${u.nom[0]}`.toUpperCase() : 'DR';
+    return u ? this.commonService.getInitiales(u.prenom, u.nom) : 'DR';
   }
 
   toggleTheme() {

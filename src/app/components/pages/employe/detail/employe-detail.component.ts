@@ -14,9 +14,8 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { Patient } from '../../../../core/models/all/all.model';
 import { PatientService } from '../../../../core/services/patient/patient.service';
-
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TooltipModule } from 'primeng/tooltip';
-import { CommonService } from '../../../../core/services/common.services';
 
 interface Consultation {
   id: string;
@@ -48,7 +47,7 @@ interface Ordonnance {
 }
 
 @Component({
-  selector: 'clnt-patient-detail',
+  selector: 'clnt-employe-detail',
   standalone: true,
   imports: [
     CommonModule,
@@ -66,13 +65,12 @@ interface Ordonnance {
     TooltipModule,
   ],
   providers: [MessageService],
-  templateUrl: './patient-detail.component.html',
-  styleUrls: ['./patient-detail.component.scss'],
+  templateUrl: './employe-detail.component.html',
+  styleUrls: ['./employe-detail.component.scss'],
 })
-export class PatientDetailComponent implements OnInit {
+export class EmployeDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private patientSvc = inject(PatientService);
-  private commonService = inject(CommonService);
   private msgSvc = inject(MessageService);
 
   patient = signal<Patient | null>(null);
@@ -227,7 +225,7 @@ export class PatientDetailComponent implements OnInit {
 
   get initiales(): string {
     const p = this.patient();
-    return p ? this.commonService.getInitiales(p.prenom, p.nom) : '??';
+    return p ? `${p.prenom[0]}${p.nom[0]}`.toUpperCase() : '??';
   }
 
   get soldeDu(): number {

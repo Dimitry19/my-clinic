@@ -1,0 +1,300 @@
+﻿<p-toast position="top-right" />
+<p-confirmDialog />
+
+<div class="employes-page">
+  <!-- ── En-tête ── -->
+  <div class="page-header">
+    <div class="header-left">
+      <h2>
+        <i class="pi pi-users" aria-hidden="true"></i>
+        Ressources humaines
+      </h2>
+      <p>
+        {{ totalEmployes() }} employé(s) enregistré(s)
+        <span class="actifs-badge">
+          <i class="pi pi-check-circle" aria-hidden="true"></i>
+          {{ actifs() }} actif(s)
+        </span>
+      </p>
+    </div>
+    <button
+      class="btn-add"
+      (click)="openCreate()"
+      aria-label="Ajouter un employé"
+    >
+      <i class="pi pi-plus" aria-hidden="true"></i>
+      Nouvel employé
+    </button>
+  </div>
+
+  <!-- ── Barre de recherche + filtres ── -->
+  <div class="toolbar">
+    <div class="search-bar" [class.search-active]="searchQuery.length > 0">
+      <i class="pi pi-search search-icon" aria-hidden="true"></i>
+      <input
+        type="text"
+        class="search-input"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearch($event)"
+        placeholder="Rechercher par nom, prénom, email..."
+        aria-label="Rechercher un employé"
+      />
+      @if (searchQuery.length > 0) {
+        <button
+          class="search-clear"
+          (click)="searchQuery = ''; onSearch('')"
+          aria-label="Effacer la recherche"
+        >
+          <i class="pi pi-times" aria-hidden="true"></i>
+        </button>
+      }
+    </div>
+
+    <p-select
+      [options]="departementOptions"
+      [(ngModel)]="filterDept"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Département"
+      (onChange)="onFilterDept($event.value)"
+      styleClass="dept-select"
+      aria-label="Filtrer par département"
+    />
+  </div>
+
+  <!-- ── Erreur chargement ── -->
+  @if (listError()) {
+    <div class="list-error" role="alert" aria-live="assertive">
+      <div class="error-icon">
+        <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+      </div>
+      <div class="error-body">
+        <strong>Impossible de charger les employés</strong>
+        <span>{{ listError() }}</span>
+      </div>
+      <button class="error-retry" (click)="retryLoad()">
+        <i class="pi pi-refresh" aria-hidden="true"></i>
+        Réessayer
+      </button>
+    </div>
+  }
+
+  <!-- ── Tableau ── -->
+  @if (!listError()) {
+    <div class="table-card">
+      <p-table
+        [value]="employes()"
+        [loading]="loading()"
+        [paginator]="true"
+        [rows]="pageSize"
+        [totalRecords]="totalEmployes()"
+        [lazy]="true"
+        (onLazyLoad)="onLazyLoad($event)"
+        [rowHover]="true"
+        styleClass="p-datatable-sm"
+        dataKey="id"
+        aria-label="Liste des employés"
+      >
+        <!-- Header -->
+        <ng-template pTemplate="header">
+          <tr>
+            <th scope="col" style="width: 220px">Employé</th>
+            <th scope="col">Poste</th>
+            <th scope="col">Département</th>
+            <th scope="col">Contrat</th>
+            <th scope="col">Salaire</th>
+            <th scope="col">Statut</th>
+            <th scope="col" style="width: 140px">Actions</th>
+          </tr>
+        </ng-template>
+
+        <!-- Skeleton rows pendant le chargement -->
+        <ng-template pTemplate="loadingbody">
+          @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+            <tr>
+              <td>
+                <div class="skel-cell">
+                  <p-skeleton shape="circle" size="36px" /><p-skeleton
+                    width="120px"
+                    height="14px"
+                  />
+                </div>
+              </td>
+              <td><p-skeleton width="100px" height="14px" /></td>
+              <td><p-skeleton width="90px" height="14px" /></td>
+              <td>
+                <p-skeleton width="60px" height="20px" borderRadius="20px" />
+              </td>
+              <td><p-skeleton width="80px" height="14px" /></td>
+              <td>
+                <p-skeleton width="60px" height="20px" borderRadius="20px" />
+              </td>
+              <td>
+                <p-skeleton width="100px" height="30px" borderRadius="6px" />
+              </td>
+            </tr>
+          }
+        </ng-template>
+
+        <!-- Body -->
+        <ng-template pTemplate="body" let-emp>
+          <tr
+            [class.row-inactif]="emp.statut === 'INACTIF'"
+            [class.row-suspendu]="emp.statut === 'SUSPENDU'"
+          >
+            <!-- Employé -->
+            <td>
+              <div class="emp-cell">
+                <p-avatar
+                  [label]="getInitiales(emp)"
+                  shape="circle"
+                  size="normal"
+                  [style]="getAvatarStyle(emp)"
+                />
+                <div class="emp-info">
+                  <span class="emp-name">{{ emp.prenom }} {{ emp.nom }}</span>
+                  <span class="emp-email">{{ emp.email }}</span>
+                </div>
+              </div>
+            </td>
+            <!-- Poste -->
+            <td>
+              <span class="emp-poste">{{ emp.poste }}</span>
+              @if (emp.telephone) {
+                <span class="emp-tel">
+                  <i class="pi pi-phone" aria-hidden="true"></i>
+                  {{ emp.telephone }}
+                </span>
+              }
+            </td>
+            <!-- Département -->
+            <td>
+              <span class="dept-badge">{{
+                getDeptLabel(emp.departement)
+              }}</span>
+            </td>
+            <!-- Contrat -->
+            <td>
+              <p-tag
+                [value]="emp.typeContrat"
+                [severity]="getContratSeverity(emp.typeContrat)"
+              />
+            </td>
+            <!-- Salaire -->
+            <td>
+              <span class="salaire"
+                >{{ emp.salaireBase | number: "1.0-0" }} HTG</span
+              >
+            </td>
+            <!-- Statut -->
+            <td>
+              <p-tag
+                [value]="emp.statut"
+                [severity]="getStatutSeverity(emp.statut)"
+              />
+            </td>
+            <!-- Actions -->
+            <td>
+              <div class="action-btns">
+                <p-button
+                  icon="pi pi-eye"
+                  [text]="true"
+                  size="small"
+                  pTooltip="Voir le dossier"
+                  aria-label="Voir le dossier"
+                  tooltipPosition="top"
+                  [routerLink]="['/employes', emp.id]"
+                />
+
+                <p-button
+                  icon="pi pi-user-edit"
+                  [text]="true"
+                  size="small"
+                  severity="secondary"
+                  pTooltip="Modifier l'employé"
+                  aria-label="Modifier l'employé"
+                  tooltipPosition="top"
+                  (onClick)="openEdit(emp)"
+                />
+                <p-button
+                  [class.action-toggle-off]="emp.statut === 'ACTIF'"
+                  [class.action-toggle-on]="emp.statut !== 'ACTIF'"
+                  [pTooltip]="getStatutLabel(emp.statut)"
+                  [icon]="getStatutIcon(emp.statut)"
+                  [text]="true"
+                  size="small"
+                  severity="danger"
+                  pTooltip="Supprimer"
+                  [attr.aria-label]="getStatutLabel(emp.statut)"
+                  tooltipPosition="top"
+                  (onClick)="toggleStatut(emp)"
+                />
+                <p-button
+                  icon="pi pi-trash"
+                  [text]="true"
+                  size="small"
+                  severity="danger"
+                  pTooltip="Supprimer l'employé"
+                  aria-label="Supprimer l'employé"
+                  tooltipPosition="top"
+                  (onClick)="confirmerSuppression(emp)"
+                />
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <!-- Empty state -->
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <i class="pi pi-users" aria-hidden="true"></i>
+                <h3>Aucun employé trouvé</h3>
+                @if (searchQuery || filterDept()) {
+                  <p>Aucun résultat pour les critères sélectionnés.</p>
+                  <button
+                    class="btn-secondary"
+                    (click)="searchQuery = ''; filterDept.set(''); load()"
+                  >
+                    <i class="pi pi-filter-slash" aria-hidden="true"></i>
+                    Réinitialiser les filtres
+                  </button>
+                } @else {
+                  <p>Commencez par ajouter votre premier employé.</p>
+                  <button class="btn-add" (click)="openCreate()">
+                    <i class="pi pi-plus" aria-hidden="true"></i>
+                    Ajouter un employé
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  }
+</div>
+
+<!-- ── Dialog formulaire ── -->
+<p-dialog
+  [header]="editMode() ? 'Modifier l\'employé' : 'Nouvel employé'"
+  [(visible)]="showDialog"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '680px' }"
+  styleClass="employe-dialog"
+  [closeOnEscape]="true"
+  aria-live="polite"
+>
+  @if (showDialog()) {
+    <clnt-employe-form
+      [employe]="selectedEmploye()"
+      [editMode]="editMode()"
+      (saved)="onFormSaved($event)"
+      (errorOccured)="onFormError($event)"
+      (cancelled)="showDialog.set(false)"
+    />
+  }
+</p-dialog>

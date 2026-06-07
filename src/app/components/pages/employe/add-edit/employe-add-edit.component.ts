@@ -14,22 +14,22 @@ import { Patient } from '../../../../core/models/all/all.model';
 import { PatientService } from '../../../../core/services/patient/patient.service';
 
 @Component({
-  selector: 'clnt-patient-add-edit',
+  selector: 'clnt-employe-add-edit',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './patient-add-edit.component.html',
-  styleUrls: ['./patient-add-edit.component.scss'],
+  templateUrl: './employe-add-edit.component.html',
+  styleUrls: ['./employe-add-edit.component.scss'],
 })
-export class PatientAddEditComponent implements OnInit, OnDestroy {
+export class EmployeAddEditComponent implements OnInit, OnDestroy {
   form!: FormGroup;
   mode: 'creation' | 'modification' = 'creation';
-  patientId?: string;
+  employeId?: string;
   loading = false;
   saving = false;
   successMessage = '';
   errorMessage = '';
 
-  // Recherche patient existant
+  // Recherche employe existant
   searchQuery = '';
 
   searchLoading = false;
@@ -64,7 +64,7 @@ export class PatientAddEditComponent implements OnInit, OnDestroy {
       console.log(id);
       if (id) {
         this.mode = 'modification';
-        this.patientId = id;
+        this.employeId = id;
         this.chargerPatient(id);
       }
     });
@@ -139,7 +139,7 @@ export class PatientAddEditComponent implements OnInit, OnDestroy {
       next: (p) => {
         this.remplirFormulaire(p);
         this.mode = 'modification';
-        this.patientId = p.id;
+        this.employeId = p.id;
         this.loading = false;
       },
       error: () => {
@@ -267,18 +267,18 @@ export class PatientAddEditComponent implements OnInit, OnDestroy {
     const data = this.form.value;
 
     const op =
-      this.mode === 'modification' && this.patientId
-        ? this.patientService.edit(this.patientId, data)
+      this.mode === 'modification' && this.employeId
+        ? this.patientService.edit(this.employeId, data)
         : this.patientService.create(data);
 
     op.subscribe({
-      next: (patient) => {
+      next: (employe) => {
         this.saving = false;
         this.successMessage =
           this.mode === 'creation'
-            ? `Patient ${patient.prenom} ${patient.nom} enregistré avec succès.`
-            : 'Fiche patient mise à jour.';
-        setTimeout(() => this.router.navigate(['/patients', patient.id]), 1500);
+            ? `Employé ${employe.prenom} ${employe.nom} enregistré avec succès.`
+            : 'Fiche employé mise à jour.';
+        setTimeout(() => this.router.navigate(['/employes', employe.id]), 1500);
       },
       error: (err) => {
         this.saving = false;
@@ -291,7 +291,7 @@ export class PatientAddEditComponent implements OnInit, OnDestroy {
     this.form.reset();
     this.currentStep = 1;
     this.mode = 'creation';
-    this.patientId = undefined;
+    this.employeId = undefined;
     this.searchQuery = '';
     this.successMessage = '';
     this.errorMessage = '';

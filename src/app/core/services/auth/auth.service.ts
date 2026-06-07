@@ -38,7 +38,7 @@ export class AuthService extends HeaderService {
   login(credentials: Authenticate): Observable<ApiResponse<User>> {
     return this.http
       .post<ApiResponse<User>>(`${this.authUrl}/authenticate`, credentials)
-      .pipe(catchError(this.commonService.globalErrorHandler));
+      .pipe(catchError(this.commonService.globalStatusErrorHandler));
   }
 
   logout(): Observable<ApiResponse> {

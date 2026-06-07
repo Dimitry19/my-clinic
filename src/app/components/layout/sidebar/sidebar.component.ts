@@ -1,4 +1,5 @@
-﻿import { Component, input, output, inject } from '@angular/core';
+﻿import { CommonService } from './../../../core/services/common.services';
+import { Component, input, output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -30,10 +31,11 @@ export class SidebarComponent {
   collapsed = input(false);
   toggleCollapse = output();
   auth = inject(AuthService);
+  commonService = inject(CommonService);
 
   get initiales() {
     const u = this.auth.currentUser();
-    return u ? `${u.prenom[0]}${u.nom[0]}`.toUpperCase() : 'DR';
+    return u ? this.commonService.getInitiales(u.prenom, u.nom) : 'DR';
   }
 
   navItems: NavItem[] = [
@@ -46,7 +48,7 @@ export class SidebarComponent {
 
   adminItems: NavItem[] = [
     { label: 'Facturation', icon: 'pi pi-receipt', route: '/facturation' },
-    { label: 'RH', icon: 'pi pi-users', route: '/rh' },
+    { label: 'RH', icon: 'pi pi-users', route: '/employes' },
     { label: 'Paramètres', icon: 'pi pi-cog', route: '/settings' },
   ];
 }

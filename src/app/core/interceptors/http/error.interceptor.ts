@@ -1,64 +1,33 @@
 import {
-  HttpInterceptor,
   HttpRequest,
-  HttpHandler,
+  HttpHandlerFn,
   HttpEvent,
+  HttpInterceptorFn,
+  HttpErrorResponse,
 } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { Observable, catchError, throwError } from 'rxjs';
 
-import { Router } from '@angular/router';
+export const errorInterceptor: HttpInterceptorFn = (
+  request: HttpRequest<unknown>,
+  next: HttpHandlerFn,
+): Observable<HttpEvent<unknown>> => {
+  const router = inject(Router);
 
-@Injectable({
-  providedIn: 'root',
-})
-export class ErrorInterceptor implements HttpInterceptor {
-  constructor(private route: Router) {}
+  return next(request).pipe(
+    catchError((err: HttpErrorResponse) => {
+      const normalizedError = new HttpErrorResponse({
+        error: err.error?.message ?? { message: 'Unknown error' },
+        status: err.status,
+        statusText: err.statusText,
+        url: err.url ?? undefined,
+      });
 
-  intercept(
-    request: HttpRequest<any>,
-    next: HttpHandler,
-  ): Observable<HttpEvent<any>> {
-    return next.handle(request).pipe(
-      catchError((err) => {
-        const errorPayload =
-          err?.error?.message ||
-          err?.error?.err?.message ||
-          err?.error ||
-          err?.message ||
-          err?.statusText ||
-          'Error';
+      // optionnel : logging global
+      console.error('HTTP Error:', normalizedError);
 
-        switch (err?.status) {
-          case 0:
-          case 400:
-          case 401:
-          // return this.refreshToken(request, next);
-          case 403:
-          case 405:
-          case 406:
-          case 408:
-          case 409:
-          case 412:
-            // erreurs fonctionnelles ou auth
-            return throwError(() => err?.error ?? errorPayload);
-
-          case 404:
-            // erreur de route
-            //this.route.navigate([HomeUIRouteUrl.notFound]);
-            // this.toastService.handleError(errorPayload);
-            return throwError(() => err?.error ?? errorPayload);
-
-          case 500:
-            // erreur serveur
-            return throwError(() => err ?? errorPayload);
-
-          default:
-            // erreur générique
-            // this.toastService.handleError(`Error status code: ${err?.status}`);
-            return throwError(() => errorPayload);
-        }
-      }),
-    );
-  }
-}
+      return throwError(() => normalizedError);
+    }),
+  );
+};

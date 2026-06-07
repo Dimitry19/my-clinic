@@ -13,7 +13,6 @@ export class PatientService {
   private API = environment.apiUrl + '/patients';
 
   findAll(page = 0, size = 20, search = '') {
-    console.log(this.API);
     let params = new HttpParams().set('page', page).set('size', size);
     if (search) params = params.set('q', search);
     const url = search ? `${this.API}/search` : this.API;
@@ -28,19 +27,19 @@ export class PatientService {
       .pipe(map((r) => r.data));
   }
 
-  creer(p: Partial<Patient>) {
+  create(p: Partial<Patient>) {
     return this.http
       .post<ApiResponse<Patient>>(this.API, p)
       .pipe(map((r) => r.data));
   }
 
-  modifier(id: string, p: Partial<Patient>) {
+  edit(id: string, p: Partial<Patient>) {
     return this.http
       .put<ApiResponse<Patient>>(`${this.API}/${id}`, p)
       .pipe(map((r) => r.data));
   }
 
-  supprimer(id: string) {
+  delete(id: string) {
     return this.http.delete<ApiResponse<void>>(`${this.API}/${id}`);
   }
 }

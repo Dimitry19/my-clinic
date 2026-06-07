@@ -41,12 +41,13 @@
       [loading]="loading()"
       [paginator]="true"
       [rows]="pageSize"
-      [totalRecords]="page()?.totalElements ?? 0"
+      [totalRecords]="totalPatients()"
       [lazy]="true"
       (onLazyLoad)="onLazyLoad($event)"
-      styleClass="p-datatable-sm p-datatable-striped"
+      styleClass="p-datatable-sm"
       [rowHover]="true"
       dataKey="id"
+      aria-label="Liste des patients"
     >
       <ng-template pTemplate="header">
         <tr>
@@ -114,6 +115,7 @@
                 [text]="true"
                 size="small"
                 pTooltip="Voir le dossier"
+                tooltipPosition="top"
                 [routerLink]="['/patients', patient.id]"
               />
               <p-button
@@ -122,6 +124,7 @@
                 size="small"
                 severity="secondary"
                 pTooltip="Modifier"
+                tooltipPosition="top"
                 [routerLink]="['/patients', patient.id, 'edit']"
               />
               <p-button
@@ -130,6 +133,7 @@
                 size="small"
                 severity="danger"
                 pTooltip="Supprimer"
+                tooltipPosition="top"
                 (onClick)="confirmerSuppression(patient)"
               />
             </div>

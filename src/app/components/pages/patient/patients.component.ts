@@ -1,4 +1,4 @@
-﻿import { Component, inject, OnInit, signal } from '@angular/core';
+﻿import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -15,6 +15,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 import { PatientService } from '../../../core/services/patient/patient.service';
 import { Patient, Page } from '../../../core/models/all/all.model';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'clnt-patients',
@@ -31,13 +32,14 @@ import { Patient, Page } from '../../../core/models/all/all.model';
     ToastModule,
     SkeletonModule,
     AvatarModule,
+    TooltipModule,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './patients.component.html',
   styleUrls: ['./patients.component.scss'],
 })
 export class PatientsComponent implements OnInit {
-  private patientService = inject(PatientService);
+  private service = inject(PatientService);
   private confirmService = inject(ConfirmationService);
   private messageService = inject(MessageService);
 
@@ -47,6 +49,8 @@ export class PatientsComponent implements OnInit {
   searchQuery = '';
   pageSize = 20;
 
+  totalPatients = computed(() => this.page()?.totalElements ?? 0);
+
   private search$ = new Subject<string>();
 
   ngOnInit() {
@@ -55,7 +59,7 @@ export class PatientsComponent implements OnInit {
       .pipe(
         debounceTime(300),
         distinctUntilChanged(),
-        switchMap((q) => this.patientService.findAll(0, this.pageSize, q)),
+        switchMap((q) => this.service.findAll(0, this.pageSize, q)),
       )
       .subscribe((p) => {
         this.page.set(p);
@@ -66,7 +70,7 @@ export class PatientsComponent implements OnInit {
 
   load(page: number, search = '') {
     this.loading.set(true);
-    this.patientService.findAll(page, this.pageSize, search).subscribe((p) => {
+    this.service.findAll(page, this.pageSize, search).subscribe((p) => {
       this.page.set(p);
       this.patients.set(p.content);
       this.loading.set(false);
@@ -90,7 +94,7 @@ export class PatientsComponent implements OnInit {
       header: 'Confirmation',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        this.patientService.supprimer(patient.id).subscribe(() => {
+        this.service.delete(patient.id).subscribe(() => {
           this.messageService.add({
             severity: 'success',
             summary: 'Supprimé',

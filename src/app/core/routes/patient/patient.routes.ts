@@ -1,4 +1,5 @@
 ﻿import { Routes } from '@angular/router';
+import { ServerRoute, RenderMode } from '@angular/ssr';
 
 export const patientRoutes: Routes = [
   {
@@ -43,5 +44,20 @@ export const patientRoutes: Routes = [
         title: 'Modifier patient',
       },
     ],
+  },
+];
+
+export const patientServerRoutes: ServerRoute[] = [
+  // Routes avec paramètres dynamiques → client uniquement
+  { path: 'patients/:id', renderMode: RenderMode.Client },
+  {
+    // Routes avec paramètres dynamiques → client uniquement
+    path: 'patients/:id/edit',
+    renderMode: RenderMode.Client,
+  },
+  {
+    // Routes avec paramètres dynamiques → client uniquement
+    path: 'patients/all',
+    renderMode: RenderMode.Client,
   },
 ];

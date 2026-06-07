@@ -1,0 +1,497 @@
+﻿<p-toast />
+
+<!-- Skeleton pendant le chargement -->
+<div *ngIf="loading()" class="detail-skeleton">
+  <p-skeleton height="120px" borderRadius="12px" styleClass="mb-3" />
+  <div class="skeleton-grid">
+    <p-skeleton height="200px" borderRadius="12px" />
+    <p-skeleton height="200px" borderRadius="12px" />
+    <p-skeleton height="200px" borderRadius="12px" />
+  </div>
+  <p-skeleton height="300px" borderRadius="12px" styleClass="mt-3" />
+</div>
+
+<div *ngIf="!loading() && patient()" class="patient-detail">
+  <!-- ── Breadcrumb ── -->
+  <nav class="breadcrumb">
+    <a routerLink="/patients" class="bc-link">
+      <i class="pi pi-arrow-left"></i> Patients
+    </a>
+    <span class="bc-sep">/</span>
+    <span class="bc-current">{{ patient()!.prenom }} {{ patient()!.nom }}</span>
+  </nav>
+
+  <!-- ── En-tête patient ── -->
+  <div class="patient-hero">
+    <div class="hero-left">
+      <!-- Avatar -->
+      <div
+        class="patient-avatar"
+        [class.avatar-m]="patient()!.sexe === 'M'"
+        [class.avatar-f]="patient()!.sexe === 'F'"
+      >
+        {{ initiales }}
+      </div>
+
+      <!-- Infos principales -->
+      <div class="patient-main-info">
+        <div class="patient-fullname">
+          {{ patient()!.prenom }} {{ patient()!.nom }}
+        </div>
+        <div class="patient-meta">
+          <span><i class="pi pi-calendar"></i> {{ age }} ans</span>
+          <span class="meta-sep">·</span>
+          <span>{{ getSexeLabel(patient()!.sexe) }}</span>
+          <span *ngIf="patient()!.groupeSanguin" class="meta-sep">·</span>
+          <span *ngIf="patient()!.groupeSanguin" class="blood-badge">
+            {{ patient()!.groupeSanguin }}
+          </span>
+        </div>
+        <div class="patient-contacts">
+          <span *ngIf="patient()!.telephone">
+            <i class="pi pi-phone"></i> {{ patient()!.telephone }}
+          </span>
+          <span *ngIf="patient()!.email">
+            <i class="fa-regular fa-envelope"></i> {{ patient()!.email }}
+          </span>
+        </div>
+        <!-- Allergies -->
+        <div *ngIf="patient()!.allergies" class="allergies-alert">
+          <i class="pi pi-exclamation-circle"></i>
+          <span><strong>Allergies :</strong> {{ patient()!.allergies }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="hero-actions">
+      <p-button label="Nouvelle consultation" styleClass="hero-btn-primary">
+        <ng-template pTemplate="icon">
+          <i class="fa-solid fa-stethoscope"></i>
+        </ng-template>
+      </p-button>
+      <p-button
+        label="Modifier"
+        icon="pi pi-user-edit"
+        severity="secondary"
+        [outlined]="true"
+        [routerLink]="['/patients', patient()!.id, 'edit']"
+      />
+      <p-button
+        icon="pi pi-print"
+        severity="secondary"
+        [outlined]="true"
+        pTooltip="Imprimer la fiche"
+        tooltipPosition="top"
+        (onClick)="imprimerFiche()"
+      />
+      <p-button
+        icon="pi pi-copy"
+        severity="secondary"
+        [outlined]="true"
+        pTooltip="Copier l'ID"
+        tooltipPosition="top"
+        (onClick)="copierId()"
+      />
+    </div>
+  </div>
+
+  <!-- ── Cartes résumé ── -->
+  <div class="summary-cards">
+    <div class="summary-card">
+      <div class="sc-icon sc-blue">
+        <i class="fa-solid fa-stethoscope"></i>
+      </div>
+      <div class="sc-body">
+        <span class="sc-val">{{ consultations().length }}</span>
+        <span class="sc-label">Consultations</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-icon sc-green"><i class="fa-solid fa-flask"></i></div>
+      <div class="sc-body">
+        <span class="sc-val">{{ examens().length }}</span>
+        <span class="sc-label">Examens</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-icon sc-amber"><i class="pi pi-receipt"></i></div>
+      <div class="sc-body">
+        <span class="sc-val">{{ factures().length }}</span>
+        <span class="sc-label">Factures</span>
+      </div>
+    </div>
+    <div class="summary-card" [class.sc-danger]="soldeDu > 0">
+      <div
+        class="sc-icon"
+        [class.sc-red]="soldeDu > 0"
+        [class.sc-green]="soldeDu === 0"
+      >
+        <i
+          class="pi"
+          [ngClass]="soldeDu > 0 ? 'pi-exclamation-circle' : 'pi-verified'"
+        ></i>
+      </div>
+      <div class="sc-body">
+        <span class="sc-val">{{ soldeDu | number }} HTG</span>
+        <span class="sc-label">Solde dû</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Onglets ── -->
+  <p-tabs [(value)]="activeTab">
+    <!-- ── Onglet Dossier médical ── -->
+    <p-tablist>
+      <p-tab [value]="0"><i class="pi pi-folder"></i> Dossier</p-tab>
+      <p-tab [value]="1"
+        ><i class="fa-solid fa-stethoscope"></i> Consultations</p-tab
+      >
+      <p-tab [value]="2"><i class="fa-solid fa-flask"></i> Labo</p-tab>
+      <p-tab [value]="3"><i class="fa-solid fa-pills"></i> Ordonnances</p-tab>
+      <p-tab [value]="4"><i class="pi pi-receipt"></i> Facturation</p-tab>
+      <p-tab [value]="5"><i class="pi pi-history"></i> Historique</p-tab>
+    </p-tablist>
+
+    <!-- PANNEAU 0 : Dossier médical -->
+    <p-tabpanels>
+      <p-tabpanel [value]="0">
+        <div class="dossier-grid">
+          <!-- Informations personnelles -->
+          <div class="info-card">
+            <div class="info-card-title">
+              <i class="pi pi-user"></i> Informations personnelles
+            </div>
+            <div class="info-rows">
+              <div class="info-row">
+                <span class="info-label">Nom complet</span>
+                <span class="info-val"
+                  >{{ patient()!.prenom }} {{ patient()!.nom }}</span
+                >
+              </div>
+              <div class="info-row">
+                <span class="info-label">Date de naissance</span>
+                <span class="info-val"
+                  >{{ patient()!.dateNaissance | date: "dd/MM/yyyy" }} ({{
+                    age
+                  }}
+                  ans)</span
+                >
+              </div>
+              <div class="info-row">
+                <span class="info-label">Sexe</span>
+                <span class="info-val">{{
+                  getSexeLabel(patient()!.sexe)
+                }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Téléphone</span>
+                <span class="info-val">{{ patient()!.telephone ?? "—" }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Email</span>
+                <span class="info-val">{{ patient()!.email ?? "—" }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Adresse</span>
+                <span class="info-val">{{ patient()!.adresse ?? "—" }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Informations médicales -->
+          <div class="info-card">
+            <div class="info-card-title">
+              <i class="fa-solid fa-heart-pulse"></i> Informations médicales
+            </div>
+            <div class="info-rows">
+              <div class="info-row">
+                <span class="info-label">Groupe sanguin</span>
+                <span class="info-val">
+                  <span *ngIf="patient()!.groupeSanguin" class="blood-badge">
+                    {{ patient()!.groupeSanguin }}
+                  </span>
+                  <span *ngIf="!patient()!.groupeSanguin">—</span>
+                </span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Allergies</span>
+                <span class="info-val allergies-text">
+                  {{ patient()!.allergies || "Aucune allergie connue" }}
+                </span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Antécédents</span>
+                <span class="info-val">{{
+                  patient()!.antecedents || "Aucun antécédent renseigné"
+                }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Assurance / Mutuelle -->
+          <div class="info-card">
+            <div class="info-card-title">
+              <i class="pi pi-shield"></i> Assurance & Mutuelle
+            </div>
+            <div class="info-rows">
+              <div class="info-row">
+                <span class="info-label">Mutuelle</span>
+                <span class="info-val">{{ patient()!.mutuelle ?? "—" }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">N° adhérent</span>
+                <span class="info-val">{{
+                  patient()!.numeroMutuelle ?? "—"
+                }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact d'urgence -->
+          <div class="info-card">
+            <div class="info-card-title">
+              <i class="pi pi-address-book"></i> Contact d'urgence
+            </div>
+            <div class="info-rows">
+              <div class="info-row">
+                <span class="info-label">Nom</span>
+                <span class="info-val">{{
+                  patient()!.contactUrgenceNom ?? "—"
+                }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Téléphone</span>
+                <span class="info-val">{{
+                  patient()!.contactUrgenceTel ?? "—"
+                }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes générales -->
+        <div *ngIf="patient()!.notesGenerales" class="notes-card">
+          <div class="info-card-title">
+            <i class="pi pi-clipboard"></i> Notes générales
+          </div>
+          <p class="notes-text">{{ patient()!.notesGenerales }}</p>
+        </div>
+      </p-tabpanel>
+
+      <!-- PANNEAU 1 : Consultations -->
+      <p-tabpanel [value]="1">
+        <div class="tab-panel-header">
+          <span>{{ consultations().length }} consultation(s)</span>
+          <p-button
+            label="Nouvelle consultation"
+            icon="pi pi-plus"
+            size="small"
+          />
+        </div>
+        <p-table
+          [value]="consultations()"
+          styleClass="p-datatable-sm"
+          [rowHover]="true"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Date</th>
+              <th>Médecin</th>
+              <th>Motif</th>
+              <th>Diagnostic</th>
+              <th>Statut</th>
+              <th></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-c>
+            <tr>
+              <td>{{ c.date | date: "dd/MM/yyyy" }}</td>
+              <td>{{ c.medecin }}</td>
+              <td>{{ c.motif }}</td>
+              <td>{{ c.diagnostic }}</td>
+              <td><p-tag value="Terminé" severity="success" /></td>
+              <td>
+                <p-button
+                  icon="pi pi-eye"
+                  [text]="true"
+                  size="small"
+                  pTooltip="Voir détails"
+                />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-tabpanel>
+
+      <!-- PANNEAU 2 : Labo -->
+      <p-tabpanel [value]="2">
+        <div class="tab-panel-header">
+          <span>{{ examens().length }} examen(s)</span>
+          <p-button
+            label="Prescrire un examen"
+            icon="pi pi-plus"
+            size="small"
+          />
+        </div>
+        <p-table
+          [value]="examens()"
+          styleClass="p-datatable-sm"
+          [rowHover]="true"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Date</th>
+              <th>Type d'examen</th>
+              <th>Résultat</th>
+              <th>Statut</th>
+              <th></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-e>
+            <tr>
+              <td>{{ e.date | date: "dd/MM/yyyy" }}</td>
+              <td>{{ e.type }}</td>
+              <td>{{ e.resultat ?? "—" }}</td>
+              <td>
+                <p-tag
+                  [value]="e.statut"
+                  [severity]="getExamenSeverity(e.statut)"
+                />
+              </td>
+              <td>
+                <p-button
+                  icon="pi pi-file"
+                  [text]="true"
+                  size="small"
+                  pTooltip="Voir rapport"
+                  [disabled]="e.statut !== 'TERMINE'"
+                />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-tabpanel>
+
+      <!-- PANNEAU 3 : Ordonnances -->
+      <p-tabpanel [value]="3">
+        <div class="tab-panel-header">
+          <span>{{ ordonnances().length }} ordonnance(s)</span>
+          <p-button
+            label="Nouvelle ordonnance"
+            icon="pi pi-plus"
+            size="small"
+          />
+        </div>
+        <div class="ordonnances-list">
+          <div *ngFor="let o of ordonnances()" class="ordonnance-card">
+            <div class="ord-header">
+              <div class="ord-meta">
+                <i class="fa-solid fa-prescription"></i>
+                <span class="ord-date">{{ o.date | date: "dd/MM/yyyy" }}</span>
+                <span class="ord-medecin">{{ o.medecin }}</span>
+              </div>
+              <p-button
+                icon="pi pi-download"
+                [text]="true"
+                size="small"
+                pTooltip="Télécharger PDF"
+              />
+            </div>
+            <ul class="ord-meds">
+              <li *ngFor="let m of o.medicaments">
+                <i class="fa-solid fa-pills"></i> {{ m }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </p-tabpanel>
+
+      <!-- PANNEAU 4 : Facturation -->
+      <p-tabpanel [value]="4">
+        <div class="tab-panel-header">
+          <span
+            >Solde dû :
+            <strong [class.solde-danger]="soldeDu > 0"
+              >{{ soldeDu | number }} HTG</strong
+            ></span
+          >
+          <p-button label="Nouvelle facture" icon="pi pi-plus" size="small" />
+        </div>
+        <p-table
+          [value]="factures()"
+          styleClass="p-datatable-sm"
+          [rowHover]="true"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Date</th>
+              <th>Montant total</th>
+              <th>Montant payé</th>
+              <th>Reste dû</th>
+              <th>Statut</th>
+              <th></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-f>
+            <tr>
+              <td>{{ f.date | date: "dd/MM/yyyy" }}</td>
+              <td>{{ f.montant | number }} HTG</td>
+              <td>{{ f.paye | number }} HTG</td>
+              <td [class.reste-danger]="f.montant - f.paye > 0">
+                {{ f.montant - f.paye | number }} HTG
+              </td>
+              <td>
+                <p-tag
+                  [value]="f.statut"
+                  [severity]="getFactureSeverity(f.statut)"
+                />
+              </td>
+              <td>
+                <p-button icon="pi pi-eye" [text]="true" size="small" />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-tabpanel>
+
+      <!-- PANNEAU 5 : Historique timeline -->
+      <p-tabpanel [value]="5">
+        <div class="timeline-wrap">
+          <p-timeline
+            [value]="timeline()"
+            align="left"
+            styleClass="patient-timeline"
+          >
+            <ng-template pTemplate="marker" let-event>
+              <div class="tl-marker" [style.background]="event.color">
+                <i class="pi" [ngClass]="event.icon"></i>
+              </div>
+            </ng-template>
+            <ng-template pTemplate="content" let-event>
+              <div class="tl-content">
+                <span class="tl-date">{{
+                  event.date | date: "dd/MM/yyyy"
+                }}</span>
+                <span class="tl-title">{{ event.title }}</span>
+                <span class="tl-sub">{{ event.subtitle }}</span>
+              </div>
+            </ng-template>
+          </p-timeline>
+        </div>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+</div>
+
+<!-- Patient introuvable -->
+<div *ngIf="!loading() && !patient()" class="not-found">
+  <i class="ti ti-user-off"></i>
+  <h3>Patient introuvable</h3>
+  <p>Le dossier demandé n'existe pas ou a été supprimé.</p>
+  <p-button
+    label="Retour à la liste"
+    icon="pi pi-arrow-left"
+    routerLink="/patients"
+  />
+</div>

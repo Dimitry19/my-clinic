@@ -1,6 +1,16 @@
 ﻿// ── Variables ──────────────────────────────────────────────
 
-@import "../../../../../variables.scss";
+$primary: #185fa5;
+$success: #0f6e56;
+$danger: #a32d2d;
+$warning: #ba7517;
+$border: #d3d1c7;
+$text: #2c2c2a;
+$text-muted: #5f5e5a;
+$bg: #ffffff;
+$bg-light: #f1efe8;
+$radius: 8px;
+$radius-lg: 12px;
 
 // ── Skeleton ───────────────────────────────────────────────
 .detail-skeleton {

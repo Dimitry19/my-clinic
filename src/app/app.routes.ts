@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { patientRoutes } from './core/routes/patient/patient.routes';
 import { authGuard } from './core/guards/auth.guard';
+import { employeRoutes } from './core/routes/employe/employe.routes';
 
 export const routes: Routes = [
   {
@@ -33,6 +34,7 @@ export const routes: Routes = [
         title: 'Dashboard — Clinique Trinité',
       },
       ...patientRoutes,
+      ...employeRoutes,
       /*{
         path: 'agenda',
         loadComponent: () =>

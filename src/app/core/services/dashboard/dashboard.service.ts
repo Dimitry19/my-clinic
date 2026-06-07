@@ -4,11 +4,13 @@ import { map } from 'rxjs/operators';
 import { StatDashboard, RendezVous } from '../../models/all/all.model';
 import { ApiResponse } from '../../models/response/api-response.model';
 import { isPlatformBrowser } from '@angular/common';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
+  private API = environment.apiUrl + '/dashboard';
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
@@ -16,15 +18,22 @@ export class DashboardService {
       this.getRendezVousDuJour();
     }
   }
+
   getStats() {
     return this.http
-      .get<ApiResponse<StatDashboard>>('/api/dashboard/stats')
+      .get<ApiResponse<StatDashboard>>(`${this.API}/stats`)
       .pipe(map((r) => r.data));
   }
 
   getRendezVousDuJour() {
     return this.http
-      .get<ApiResponse<RendezVous[]>>('/api/agenda/aujourdhui')
+      .get<ApiResponse<RendezVous[]>>(`${this.API}/agenda/today`)
+      .pipe(map((r) => r.data));
+  }
+
+  getWeeklyConsultations() {
+    return this.http
+      .get<ApiResponse<number[]>>(`${this.API}/chart`)
       .pipe(map((r) => r.data));
   }
 }

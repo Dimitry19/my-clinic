@@ -1,93 +1,367 @@
 ﻿<div class="login-page">
-  <section class="branding-panel">
-    <div class="branding-content">
-      <div class="logo">
-        <div class="logo-icon">
-          <i class="pi pi-heart-fill"></i>
-        </div>
-
-        <div>
-          <h1>Clinique Trinité</h1>
-          <span>Système de gestion médicale</span>
-        </div>
+  <!-- ── Panneau gauche ── -->
+  <aside class="login-left" aria-hidden="true">
+    <div class="brand">
+      <div class="brand-logo">
+        <i class="pi pi-heart-fill"></i>
       </div>
-
-      <div class="hero-content">
-        <h2>La santé de vos patients, au cœur de votre pratique.</h2>
-
-        <p>
-          Gérez vos patients, consultations, rendez-vous et dossiers médicaux
-          dans une plateforme sécurisée et moderne.
-        </p>
-
-        <div class="features">
-          <div class="feature">
-            <i class="pi pi-users"></i>
-            <span>Gestion des patients</span>
-          </div>
-
-          <div class="feature">
-            <i class="pi pi-calendar"></i>
-            <span>Rendez-vous</span>
-          </div>
-
-          <div class="feature">
-            <i class="pi pi-file"></i>
-            <span>Dossiers médicaux</span>
-          </div>
-
-          <div class="feature">
-            <i class="pi pi-shield"></i>
-            <span>Sécurité renforcée</span>
-          </div>
-        </div>
-      </div>
+      <h1 class="brand-name">Clinique Trinité</h1>
+      <p class="brand-tagline">Système de gestion médicale intégré</p>
     </div>
-  </section>
 
-  <section class="login-panel">
+    <ul class="features" role="list">
+      <li class="feature-item">
+        <div class="feature-icon">
+          <i class="pi pi-users" aria-hidden="true"></i>
+        </div>
+        <div>
+          <span class="feature-title">Gestion des patients</span>
+          <span class="feature-desc"
+            >Dossiers médicaux complets et sécurisés</span
+          >
+        </div>
+      </li>
+      <li class="feature-item">
+        <div class="feature-icon">
+          <i class="pi pi-calendar" aria-hidden="true"></i>
+        </div>
+        <div>
+          <span class="feature-title">Agenda & rendez-vous</span>
+          <span class="feature-desc">Planification en temps réel</span>
+        </div>
+      </li>
+      <li class="feature-item">
+        <div class="feature-icon">
+          <i class="pi pi-chart-bar" aria-hidden="true"></i>
+        </div>
+        <div>
+          <span class="feature-title">Laboratoire & résultats</span>
+          <span class="feature-desc">Examens et rapports PDF intégrés</span>
+        </div>
+      </li>
+      <li class="feature-item">
+        <div class="feature-icon">
+          <i class="pi pi-file-edit" aria-hidden="true"></i>
+        </div>
+        <div>
+          <span class="feature-title">Facturation simplifiée</span>
+          <span class="feature-desc">Paiements, reçus et mutuelles</span>
+        </div>
+      </li>
+      <li class="feature-item">
+        <div class="feature-icon">
+          <i class="pi pi-shield" aria-hidden="true"></i>
+        </div>
+        <div>
+          <span class="feature-title">Données 100% sécurisées</span>
+          <span class="feature-desc">Chiffrement SSL · Accès par rôle</span>
+        </div>
+      </li>
+    </ul>
+
+    <div class="left-footer">
+      <span>© {{ currentYear }} Clinique Trinité</span>
+      <span class="dot-sep" aria-hidden="true">·</span>
+      <span>v1.0.0</span>
+    </div>
+  </aside>
+
+  <!-- ── Panneau droit ── -->
+  <main class="login-right" role="main">
     <div class="login-card">
-      <div class="login-header">
-        <h2>Connexion</h2>
-        <p>Accédez à votre espace Clinique Trinité</p>
+      <!-- Logo mobile uniquement -->
+      <div class="mobile-logo" aria-hidden="true">
+        <div class="brand-logo small"><i class="pi pi-heart-fill"></i></div>
+        <span>Clinique Trinité</span>
       </div>
 
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <div class="field">
-          <p-floatlabel>
+      <!-- En-tête -->
+      <header class="card-header">
+        <h2>Connexion</h2>
+        <p>Accédez à votre espace médical sécurisé</p>
+      </header>
+
+      <!-- ── Alerte compte verrouillé ── -->
+      <div
+        *ngIf="isLocked"
+        class="alert alert-locked"
+        role="alert"
+        aria-live="assertive"
+      >
+        <i class="pi pi-lock" aria-hidden="true"></i>
+        <div class="alert-body">
+          <strong>Compte temporairement verrouillé</strong>
+          <span
+            >Trop de tentatives échouées. Contactez votre administrateur
+            système.</span
+          >
+        </div>
+      </div>
+
+      <!-- ── Alerte erreur réseau / serveur ── -->
+      <div
+        *ngIf="errorType() === 'network' || errorType() === 'server'"
+        class="alert"
+        [class.alert-network]="errorType() === 'network'"
+        [class.alert-server]="errorType() === 'server'"
+        role="alert"
+        aria-live="polite"
+      >
+        <i
+          class="pi"
+          [class.pi-wifi-off]="errorType() === 'network'"
+          [class.pi-exclamation-triangle]="errorType() === 'server'"
+          aria-hidden="true"
+        ></i>
+        <div class="alert-body">
+          <strong>{{
+            errorType() === "network"
+              ? "Connexion impossible"
+              : "Erreur serveur"
+          }}</strong>
+          <span>{{ errorMsg() }}</span>
+        </div>
+        <button
+          class="alert-close"
+          (click)="step.set('idle'); errorType.set(null)"
+          aria-label="Fermer l'alerte"
+        >
+          <i class="pi pi-times" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <!-- ── Succès ── -->
+      <div
+        *ngIf="step() === 'success'"
+        class="alert alert-success"
+        role="status"
+        aria-live="polite"
+      >
+        <i class="pi pi-check-circle" aria-hidden="true"></i>
+        <div class="alert-body">
+          <strong>Connexion réussie</strong>
+          <span>Redirection vers votre tableau de bord...</span>
+        </div>
+      </div>
+
+      <!-- ── Formulaire ── -->
+      <form
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+        novalidate
+        autocomplete="on"
+        aria-label="Formulaire de connexion"
+      >
+        <!-- Champ email -->
+        <div
+          class="field"
+          [class.field-error]="emailError"
+          [class.field-success]="emailCtrl.valid && emailCtrl.dirty"
+        >
+          <label for="email" class="field-label">
+            <i class="pi pi-envelope" aria-hidden="true"></i>
+            Adresse email
+            <span class="required" aria-hidden="true">*</span>
+          </label>
+          <div class="input-wrap">
             <input
               pInputText
               id="email"
+              type="email"
               formControlName="email"
-              class="w-full"
+              placeholder="docteur@clinique.com"
+              autocomplete="email"
+              [attr.aria-invalid]="emailError ? 'true' : 'false'"
+              [attr.aria-describedby]="emailError ? 'email-error' : null"
+              [disabled]="
+                isLocked || step() === 'loading' || step() === 'success'
+              "
+              class="field-input"
             />
-            <label for="email">Adresse courriel</label>
-          </p-floatlabel>
+            <i
+              *ngIf="emailCtrl.valid && emailCtrl.dirty"
+              class="pi pi-check input-icon-right input-icon-valid"
+              aria-hidden="true"
+            ></i>
+            <i
+              *ngIf="emailError"
+              class="pi pi-times-circle input-icon-right input-icon-error"
+              aria-hidden="true"
+            ></i>
+          </div>
+          <span
+            *ngIf="emailError"
+            id="email-error"
+            class="field-error-msg"
+            role="alert"
+          >
+            <i class="pi pi-info-circle" aria-hidden="true"></i>
+            {{ emailError }}
+          </span>
         </div>
 
-        <div class="field">
-          <p-floatlabel>
-            <p-password
-              inputId="password"
+        <!-- Champ mot de passe -->
+        <div
+          class="field"
+          [class.field-error]="passwordError"
+          [class.field-success]="passwordCtrl.valid && passwordCtrl.dirty"
+        >
+          <label for="password" class="field-label">
+            <i class="pi pi-lock" aria-hidden="true"></i>
+            Mot de passe
+            <span class="required" aria-hidden="true">*</span>
+          </label>
+          <div class="input-wrap">
+            <input
+              id="password"
+              [type]="showPwd() ? 'text' : 'password'"
               formControlName="password"
-              [feedback]="false"
-              [toggleMask]="true"
-              styleClass="w-full"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              (keyup)="onKeyEvent($event)"
+              (keydown)="onKeyEvent($event)"
+              [attr.aria-invalid]="passwordError ? 'true' : 'false'"
+              [attr.aria-describedby]="passwordError ? 'pwd-error' : 'pwd-hint'"
+              [disabled]="
+                isLocked || step() === 'loading' || step() === 'success'
+              "
+              class="field-input field-input-pwd"
+            />
+            <button
+              type="button"
+              class="pwd-toggle"
+              (click)="showPwd.set(!showPwd())"
+              [attr.aria-label]="
+                showPwd()
+                  ? 'Masquer le mot de passe'
+                  : 'Afficher le mot de passe'
+              "
             >
-            </p-password>
-            <label for="password">Mot de passe</label>
-          </p-floatlabel>
+              <i
+                class="pi"
+                [class.pi-eye]="!showPwd()"
+                [class.pi-eye-slash]="showPwd()"
+                aria-hidden="true"
+              ></i>
+            </button>
+          </div>
+
+          <!-- Alerte CapsLock -->
+          <span
+            *ngIf="capsLock() && !isLocked"
+            class="caps-warning"
+            role="status"
+          >
+            <i class="pi pi-arrow-up" aria-hidden="true"></i>
+            Verrouillez Majuscules est activé
+          </span>
+
+          <!-- Erreur mot de passe -->
+          <span
+            *ngIf="passwordError"
+            id="pwd-error"
+            class="field-error-msg"
+            role="alert"
+          >
+            <i class="pi pi-info-circle" aria-hidden="true"></i>
+            {{ passwordError }}
+          </span>
+
+          <!-- Erreur credentials -->
+          <span
+            *ngIf="errorType() === 'credentials' && !passwordError"
+            class="field-error-msg credentials-error"
+            role="alert"
+          >
+            <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+            {{ errorMsg() }}
+          </span>
+
+          <!-- Indicateur tentatives -->
+          <div
+            *ngIf="attempts() > 0 && !isLocked"
+            class="attempts-bar"
+            aria-label="Tentatives restantes"
+          >
+            <div class="attempts-dots">
+              <span
+                *ngFor="let i of [0, 1, 2, 3, 4]"
+                class="attempt-dot"
+                [class.attempt-used]="i < attempts()"
+                [attr.aria-hidden]="true"
+              ></span>
+            </div>
+            <span class="attempts-label"
+              >{{ attemptsLeft }} tentative(s) restante(s)</span
+            >
+          </div>
         </div>
+
+        <!-- Options -->
+        <div class="form-options">
+          <label class="remember-label">
+            <p-checkbox
+              formControlName="rememberMe"
+              [binary]="true"
+              inputId="rememberMe"
+            />
+            <span>Se souvenir de moi</span>
+          </label>
+          <a href="#" class="forgot-link" (click)="$event.preventDefault()">
+            Mot de passe oublié ?
+          </a>
+        </div>
+
+        <!-- Bouton submit -->
         <button
-          pButton
           type="submit"
-          label="Se connecter"
-          icon="pi pi-sign-in"
-          [loading]="isLoading"
-          class="login-btn"
-        ></button>
+          class="submit-btn"
+          [class.submit-loading]="step() === 'loading'"
+          [class.submit-success]="step() === 'success'"
+          [class.submit-error]="step() === 'error'"
+          [disabled]="isLocked || step() === 'loading' || step() === 'success'"
+          aria-label="Se connecter"
+        >
+          <span
+            *ngIf="step() === 'idle' || step() === 'error'"
+            class="btn-content"
+          >
+            <i class="pi pi-sign-in" aria-hidden="true"></i>
+            Se connecter
+          </span>
+          <span *ngIf="step() === 'loading'" class="btn-content">
+            <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+            Connexion en cours...
+          </span>
+          <span *ngIf="step() === 'success'" class="btn-content">
+            <i class="pi pi-check" aria-hidden="true"></i>
+            Connecté — redirection...
+          </span>
+        </button>
+
+        <!-- Bouton réinitialiser si verrouillé -->
+        <button
+          *ngIf="isLocked"
+          type="button"
+          class="reset-btn"
+          (click)="reinitialiser()"
+        >
+          <i class="pi pi-refresh" aria-hidden="true"></i>
+          Réinitialiser
+        </button>
       </form>
-      <a class="forgot-password"> Mot de passe oublié ? </a>
+
+      <!-- Footer sécurité -->
+      <footer class="card-footer">
+        <div class="security-badge">
+          <i class="pi pi-shield" aria-hidden="true"></i>
+          <span>Connexion chiffrée SSL</span>
+        </div>
+        <div class="security-badge">
+          <i class="pi pi-lock" aria-hidden="true"></i>
+          <span>Données médicales protégées</span>
+        </div>
+      </footer>
     </div>
-  </section>
+  </main>
 </div>
