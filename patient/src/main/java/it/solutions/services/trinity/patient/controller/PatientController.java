@@ -19,7 +19,7 @@ public class PatientController {
     private final PatientService patientService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE')")
     public ResponseEntity<ApiResponse<Page<PatientDto.Response>>> all(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -27,7 +27,7 @@ public class PatientController {
     }
 
     @GetMapping("/search")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE')")
     public ResponseEntity<ApiResponse<Page<PatientDto.Response>>> search(
             @RequestParam String q,
             @RequestParam(defaultValue = "0") int page,
@@ -36,26 +36,26 @@ public class PatientController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDECIN','INFIRMIER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER')")
     public ResponseEntity<ApiResponse<PatientDto.Response>> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(patientService.findById(id)));
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONNISTE')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','RECEPTIONNISTE')")
     public ResponseEntity<ApiResponse<PatientDto.Response>> create(@Valid @RequestBody PatientDto.Request req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Patient créé", patientService.create(req)));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDECIN','RECEPTIONNISTE')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','RECEPTIONNISTE')")
     public ResponseEntity<ApiResponse<PatientDto.Response>> edit(
             @PathVariable UUID id, @Valid @RequestBody PatientDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok("Patient modifié", patientService.edit(id, req)));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
         patientService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok("Patient supprimé", null));

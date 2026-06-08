@@ -8,7 +8,7 @@
     </envs>
     <module name="services" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="it.solutions.services.trinity.services.TrinityApplication" />
-    <option name="VM_PARAMETERS" value="-Djasypt.encryptor.password=p0s6r3@it50l" />
+    <option name="VM_PARAMETERS" value="-Djasypt.encryptor.password=cliqueSecretKeyMustBeAtLeast256BitsLongForHS256Algorithm" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

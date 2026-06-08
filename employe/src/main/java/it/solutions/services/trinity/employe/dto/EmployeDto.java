@@ -2,6 +2,7 @@ package it.solutions.services.trinity.employe.dto;
 
 
 import it.solutions.services.trinity.core.shared.enums.Departement;
+import it.solutions.services.trinity.core.shared.enums.Role;
 import it.solutions.services.trinity.core.shared.enums.Statut;
 import it.solutions.services.trinity.core.shared.enums.TypeContrat;
 import jakarta.persistence.EnumType;
@@ -44,6 +45,9 @@ public class EmployeDto {
         @Enumerated(EnumType.STRING)
         private Statut statut;
 
+        @Enumerated(EnumType.STRING)
+        private Role role;
+
     }
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
@@ -62,5 +66,6 @@ public class EmployeDto {
         private String numeroCnss;
         private String rib;
         private String statut;
+        private String role;
     }
 }

@@ -5,7 +5,6 @@ import it.solutions.services.trinity.core.security.PasswordUtils;
 import it.solutions.services.trinity.core.shared.dao.UserDao;
 import it.solutions.services.trinity.core.shared.entities.User;
 import it.solutions.services.trinity.core.shared.enums.Role;
-
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
@@ -23,37 +22,38 @@ import java.util.UUID;
 @Service
 @Transactional
 @AllArgsConstructor
-public class MyUserDetailsService implements UserDetailsService {
+public class UserService{
 
 
-    private final UserDao dao;
-
-
-    private static final String utilisateurIntrouvable="Aucun utilisateur trouvé  [{0}]";
-
+    private final PasswordEncoder passwordEncoder;
+    private final MyUserDetailsService detailsService;
 
 
 
-    public void exists(String email) throws ValidationException {
-        Optional<User> optional = dao.findByEmail(email);
-        if(optional.isPresent()){
-            throw new ValidationException("Utilisateur deja existant");
+    public User create(String email, String role, String name, String surname, String password) throws ValidationException {
+        detailsService.exists(email);
+        String passwrd=passwordEncoder.encode(password);
+        if(StringUtils.isEmpty(password)){
+            passwrd=passwordEncoder.encode(PasswordUtils.generatePasswordEmploye(name,surname));
         }
+
+        Role r= Role.valueOf(role);
+        User user= new User();
+        user.setEmail(email);
+        user.setNom(name);
+        user.setPrenom(surname);
+        user.setRole(r);
+        user.setMotDePasse(passwrd);
+        detailsService.save(user);
+        return user;
     }
 
-    public User findByEmail(String email) {
-        return dao.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(MessageFormat.format(utilisateurIntrouvable,email)));
-    }
-    public User findById(UUID id) {
-        return dao.findById(id).orElseThrow(() -> new UsernameNotFoundException(MessageFormat.format(utilisateurIntrouvable,id)));
-    }
 
-    @Override
     public @NonNull UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return dao.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(MessageFormat.format(utilisateurIntrouvable,email)));
+        return detailsService.loadUserByUsername(email);
     }
 
-    public void save(User user) {
-        dao.save(user);
+    public   User findById(UUID id) throws UsernameNotFoundException {
+        return detailsService.findById(id);
     }
 }

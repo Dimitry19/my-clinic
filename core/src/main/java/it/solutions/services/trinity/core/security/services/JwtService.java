@@ -3,6 +3,7 @@ package it.solutions.services.trinity.core.security.services;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 
+import it.solutions.services.trinity.core.security.JwtUtils;
 import it.solutions.services.trinity.core.shared.entities.User;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,8 +21,7 @@ import static it.solutions.services.trinity.core.security.JwtUtils.*;
 public class JwtService {
 
 
-    @Value("${app.jwt.secret}")
-    private String secret;
+
 
     @Value("${app.jwt.access.expiration}")
     private long expiration;
@@ -37,7 +37,7 @@ public class JwtService {
     }
 
     private SecretKey getKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        return Keys.hmacShaKeyFor(JwtUtils.getSecret().getBytes());
     }
 
     public String genererToken(UserDetails userDetails, boolean refresh) {

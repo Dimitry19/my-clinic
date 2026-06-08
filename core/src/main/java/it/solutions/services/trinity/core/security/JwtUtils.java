@@ -12,4 +12,8 @@ public class JwtUtils {
     public  static  final  String CLAIMS_ROLE = "role";
     public  static  final  String CLAIMS_NAME = "name";
     public  static  final  String CLAIMS_EMAIL = "email";
+
+    public static String getSecret() {
+        return System.getProperty("jasypt.encryptor.password");
+    }
 }
