@@ -11,7 +11,7 @@
   <p-skeleton height="300px" borderRadius="12px" styleClass="mt-3" />
 </div>
 
-<div *ngIf="!loading() && patient()" class="patient-detail">
+<div *ngIf="!loading() && patient()" class="clnt-detail">
   <!-- ── Breadcrumb ── -->
   <nav class="breadcrumb">
     <a routerLink="/patients" class="bc-link">
@@ -22,11 +22,11 @@
   </nav>
 
   <!-- ── En-tête patient ── -->
-  <div class="patient-hero">
+  <div class="clnt-hero">
     <div class="hero-left">
       <!-- Avatar -->
       <div
-        class="patient-avatar"
+        class="clnt-avatar"
         [class.avatar-m]="patient()!.sexe === 'M'"
         [class.avatar-f]="patient()!.sexe === 'F'"
       >
@@ -34,8 +34,8 @@
       </div>
 
       <!-- Infos principales -->
-      <div class="patient-main-info">
-        <div class="patient-fullname">
+      <div class="clnt-main-info">
+        <div class="clnt-fullname">
           {{ patient()!.prenom }} {{ patient()!.nom }}
         </div>
         <div class="patient-meta">
@@ -133,7 +133,7 @@
         ></i>
       </div>
       <div class="sc-body">
-        <span class="sc-val">{{ soldeDu | number }} HTG</span>
+        <span class="sc-val">{{ soldeDu | number }} FCFA</span>
         <span class="sc-label">Solde dû</span>
       </div>
     </div>
@@ -143,7 +143,9 @@
   <p-tabs [(value)]="activeTab">
     <!-- ── Onglet Dossier médical ── -->
     <p-tablist>
-      <p-tab [value]="0"><i class="pi pi-folder"></i> Dossier</p-tab>
+      <p-tab [value]="0">
+        <i class="pi pi-id-card" aria-hidden="true"></i> Dossier</p-tab
+      >
       <p-tab [value]="1"
         ><i class="fa-solid fa-stethoscope"></i> Consultations</p-tab
       >
@@ -413,7 +415,7 @@
           <span
             >Solde dû :
             <strong [class.solde-danger]="soldeDu > 0"
-              >{{ soldeDu | number }} HTG</strong
+              >{{ soldeDu | number }} FCFA</strong
             ></span
           >
           <p-button label="Nouvelle facture" icon="pi pi-plus" size="small" />
@@ -436,10 +438,10 @@
           <ng-template pTemplate="body" let-f>
             <tr>
               <td>{{ f.date | date: "dd/MM/yyyy" }}</td>
-              <td>{{ f.montant | number }} HTG</td>
-              <td>{{ f.paye | number }} HTG</td>
+              <td>{{ f.montant | number }} FCFA</td>
+              <td>{{ f.paye | number }} FCFA</td>
               <td [class.reste-danger]="f.montant - f.paye > 0">
-                {{ f.montant - f.paye | number }} HTG
+                {{ f.montant - f.paye | number }} FCFA
               </td>
               <td>
                 <p-tag

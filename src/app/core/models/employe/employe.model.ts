@@ -1,5 +1,15 @@
-export type TypeContrat = 'CDI' | 'CDD' | 'STAGE' | 'VACATAIRE';
+export type TypeContrat = 'CDI' | 'CDD' | 'STAGE' | 'VACATAIRE' | 'EXTERNE';
 export type StatutEmploye = 'ACTIF' | 'INACTIF' | 'SUSPENDU';
+export type RoleEmploye =
+  | 'MEDECIN'
+  | 'INFIRMIER'
+  | 'ADMIN'
+  | 'COMPTABLE'
+  | 'PHARMACIEN'
+  | 'LABORANTIN'
+  | 'RECEPTIONNISTE'
+  | 'URGENTISTE';
+
 export type Departement =
   | 'MEDECINE'
   | 'CHIRURGIE'
@@ -8,8 +18,7 @@ export type Departement =
   | 'ADMINISTRATION'
   | 'COMPTABILITE'
   | 'INFIRMERIE'
-  | 'URGENCES'
-  | 'AUTRES';
+  | 'URGENCES';
 
 export interface Employe {
   id: string;
@@ -27,7 +36,7 @@ export interface Employe {
   rib?: string;
   adresse?: string;
   statut: StatutEmploye;
-
+  role: RoleEmploye;
   createdAt?: string;
 }
 
@@ -48,7 +57,6 @@ export const DEPARTEMENTS: { label: string; value: Departement }[] = [
   { label: 'Comptabilité', value: 'COMPTABILITE' },
   { label: 'Infirmerie', value: 'INFIRMERIE' },
   { label: 'Urgences', value: 'URGENCES' },
-  { label: 'Autres', value: 'AUTRES' },
 ];
 
 export const CONTRATS: { label: string; value: TypeContrat }[] = [
@@ -56,4 +64,15 @@ export const CONTRATS: { label: string; value: TypeContrat }[] = [
   { label: 'CDD', value: 'CDD' },
   { label: 'Stage', value: 'STAGE' },
   { label: 'Vacataire', value: 'VACATAIRE' },
+  { label: 'Externe', value: 'EXTERNE' },
+];
+export const ROLES: { label: string; value: RoleEmploye }[] = [
+  { label: 'Médecin', value: 'MEDECIN' },
+  { label: 'Infirmier', value: 'INFIRMIER' },
+  { label: 'Administratif', value: 'ADMIN' },
+  { label: 'Comptable', value: 'COMPTABLE' },
+  { label: 'Pharmacien', value: 'PHARMACIEN' },
+  { label: 'Laborantin', value: 'LABORANTIN' },
+  { label: 'Réceptionniste', value: 'RECEPTIONNISTE' },
+  { label: 'Urgentiste', value: 'URGENTISTE' },
 ];

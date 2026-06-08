@@ -27,6 +27,7 @@ import {
   Employe,
   DEPARTEMENTS,
   CONTRATS,
+  ROLES,
 } from '../../../../core/models/employe/employe.model';
 import {
   EmployeService,
@@ -70,6 +71,7 @@ export class EmployeFormComponent implements OnInit {
 
   departements = DEPARTEMENTS;
   contrats = CONTRATS;
+  roles = ROLES;
 
   statutOptions = [
     { label: 'Actif', value: 'ACTIF' },
@@ -87,7 +89,10 @@ export class EmployeFormComponent implements OnInit {
       [Validators.required, Validators.minLength(2), Validators.maxLength(100)],
     ],
     email: ['', [Validators.required, Validators.email]],
-    telephone: ['', [Validators.pattern(/^[0-9+\s\-()\d]{8,15}$/)]],
+    telephone: [
+      '',
+      [Validators.required, Validators.pattern(/^[0-9+\s\-()\d]{8,15}$/)],
+    ],
 
     // Étape 2 — Poste
     poste: ['', [Validators.required, Validators.minLength(2)]],
@@ -104,6 +109,7 @@ export class EmployeFormComponent implements OnInit {
     rib: [''],
     adresse: [''],
     statut: ['ACTIF'],
+    role: ['MEDECIN'],
   });
 
   constructor() {
@@ -118,6 +124,7 @@ export class EmployeFormComponent implements OnInit {
           telephone: e.telephone ?? '',
           poste: e.poste,
           departement: e.departement,
+          role: e.role,
           typeContrat: e.typeContrat,
           dateEmbauche: e.dateEmbauche,
           salaireBase: e.salaireBase,

@@ -45,7 +45,7 @@ $radius-lg: 12px;
 }
 
 // ── En-tête ────────────────────────────────────────────────
-.form-header {
+/* .form-header {
   margin-bottom: 1.5rem;
   .form-title {
     font-size: 1.4rem;
@@ -58,7 +58,7 @@ $radius-lg: 12px;
     color: $text-muted;
     margin: 0;
   }
-}
+} */
 
 // ── Loader ─────────────────────────────────────────────────
 .loader-overlay {
@@ -258,7 +258,7 @@ $radius-lg: 12px;
 }
 
 // ── Étape formulaire ───────────────────────────────────────
-.form-step {
+/* .form-step {
   animation: fadeIn 0.2s ease;
 }
 @keyframes fadeIn {
@@ -278,10 +278,10 @@ $radius-lg: 12px;
   margin: 0 0 1.25rem;
   padding-bottom: 0.75rem;
   border-bottom: 0.5px solid $border;
-}
+} */
 
 // ── Champs ─────────────────────────────────────────────────
-.form-row {
+/* .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
@@ -339,103 +339,4 @@ select.form-control {
 .error-msg {
   font-size: 0.75rem;
   color: $danger;
-}
-
-// ── Radio buttons ──────────────────────────────────────────
-.radio-group {
-  display: flex;
-  gap: 1.5rem;
-  margin-top: 4px;
-}
-.radio-option {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  font-size: 0.9375rem;
-  color: $text;
-  input[type="radio"] {
-    display: none;
-  }
-  .radio-btn {
-    width: 16px;
-    height: 16px;
-    border: 2px solid $border;
-    border-radius: 50%;
-    display: inline-block;
-    transition: all 0.15s;
-    position: relative;
-  }
-  input[type="radio"]:checked + .radio-btn {
-    border-color: $primary;
-    &::after {
-      content: "";
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 8px;
-      height: 8px;
-      background: $primary;
-      border-radius: 50%;
-    }
-  }
-}
-
-// ── Boutons ────────────────────────────────────────────────
-.form-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 0.5px solid $border;
-}
-.actions-right {
-  margin-left: auto;
-}
-.btn {
-  padding: 10px 20px;
-  border-radius: $radius;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  transition: opacity 0.15s;
-  &:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-  &:not(:disabled):hover {
-    opacity: 0.85;
-  }
-
-  &.btn-primary {
-    background: $primary;
-    color: #fff;
-  }
-  &.btn-success {
-    background: $success;
-    color: #fff;
-  }
-  &.btn-secondary {
-    background: $bg;
-    color: $text-muted;
-    border: 0.5px solid $border;
-  }
-}
-
-// ── Print ─────────────────────────────────────────────────
-@media print {
-  .hero-actions,
-  .breadcrumb,
-  .summary-cards {
-    display: none;
-  }
-  .patient-hero {
-    border: none;
-    padding: 0;
-  }
-  :host ::ng-deep .p-tabs .p-tablist {
-    display: none;
-  }
-}
+} */

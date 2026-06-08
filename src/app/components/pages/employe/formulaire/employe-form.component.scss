@@ -68,78 +68,63 @@ $radius-lg: 12px;
 /* ==================================
    Stepper
 ================================== */
-
-.steps-nav {
+.steps-indicator {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+.step-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid $border;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: $text-muted;
+  background: $bg;
+  flex-shrink: 0;
+  transition: all 0.2s;
 
-  margin-bottom: 2rem;
-}
-
-.step-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-
-  border: none;
-  background: transparent;
-
-  cursor: pointer;
-  transition: 0.25s;
-
-  .step-circle {
-    width: 42px;
-    height: 42px;
-
-    border-radius: 50%;
-    border: 2px solid #d1d5db;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    font-weight: 600;
-    background: white;
+  .step-item.active & {
+    border-color: $primary;
+    background: $primary;
+    color: #fff;
   }
-
-  .step-label {
-    font-size: 0.95rem;
+  .step-item.completed & {
+    border-color: $success;
+    background: $success;
+    color: #fff;
+  }
+}
+.step-label {
+  font-size: 0.8rem;
+  color: $text-muted;
+  white-space: nowrap;
+  .step-item.active & {
+    color: $primary;
     font-weight: 500;
-    color: #6b7280;
   }
-
-  &.step-active {
-    .step-circle {
-      background: #185fa5;
-      border-color: #185fa5;
-      color: white;
-    }
-
-    .step-label {
-      color: #185fa5;
-      font-weight: 600;
-    }
-  }
-
-  &.step-done {
-    .step-circle {
-      background: #10b981;
-      border-color: #10b981;
-      color: white;
-    }
+  .step-item.completed & {
+    color: $success;
   }
 }
-
-.step-line {
-  width: 80px;
-  height: 2px;
-  background: #e5e7eb;
-  margin: 0 0.5rem;
-}
-
-.step-line-done {
-  background: #10b981;
+.step-connector {
+  flex: 1;
+  height: 1px;
+  background: $border;
+  margin: 0 8px;
+  &.completed {
+    background: $success;
+  }
 }
 
 /* ==================================
@@ -150,29 +135,9 @@ $radius-lg: 12px;
   animation: fadeIn 0.25s ease;
 }
 
-.step-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-
-  margin-bottom: 2rem;
-
-  color: #185fa5;
-  font-size: 1.2rem;
-  font-weight: 700;
-}
-
 /* ==================================
    Grille
 ================================== */
-
-.form-row {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-
-  margin-bottom: 1.5rem;
-}
 
 .field-full-row {
   margin-bottom: 1.5rem;
@@ -280,9 +245,7 @@ $radius-lg: 12px;
 }
 
 .contrat-option {
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.5rem;
 
   cursor: pointer;
   transition: 0.2s;

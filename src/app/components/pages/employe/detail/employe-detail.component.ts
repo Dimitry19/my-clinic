@@ -1,4 +1,4 @@
-﻿import { Component, inject, OnInit, signal } from '@angular/core';
+﻿import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TabsModule } from 'primeng/tabs';
@@ -11,40 +11,64 @@ import { TimelineModule } from 'primeng/timeline';
 import { AvatarModule } from 'primeng/avatar';
 import { DividerModule } from 'primeng/divider';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
-import { Patient } from '../../../../core/models/all/all.model';
-import { PatientService } from '../../../../core/services/patient/patient.service';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { TooltipModule } from 'primeng/tooltip';
+import { DialogModule } from 'primeng/dialog';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import {
+  Employe,
+  DEPARTEMENTS,
+} from '../../../../core/models/employe/employe.model';
+import {
+  EmployeService,
+  ServiceError,
+} from '../../../../core/services/employe/employe.service';
+import { EmployeFormComponent } from '../formulaire/employe-form.component';
 
-interface Consultation {
+interface FicheDePaie {
   id: string;
-  date: Date;
-  medecin: string;
-  motif: string;
-  diagnostic: string;
-  statut: string;
+  mois: number;
+  annee: number;
+  salaireBrut: number;
+  cotisations: number;
+  primes: number;
+  retenues: number;
+  salaireNet: number;
+  pdfPath?: string;
 }
-interface ExamenLabo {
+
+interface Conge {
   id: string;
-  date: Date;
   type: string;
-  statut: 'EN_ATTENTE' | 'EN_COURS' | 'TERMINE';
-  resultat?: string;
+  dateDebut: string;
+  dateFin: string;
+  statut: 'EN_ATTENTE' | 'APPROUVE' | 'REJETE';
+  motif?: string;
+  dureeJours: number;
 }
-interface Facture {
-  id: string;
+
+interface TimelineEvent {
   date: Date;
-  montant: number;
-  paye: number;
-  statut: 'IMPAYEE' | 'PARTIELLEMENT_PAYEE' | 'PAYEE';
+  icon: string;
+  color: string;
+  title: string;
+  subtitle: string;
+  type: string;
 }
-interface Ordonnance {
-  id: string;
-  date: Date;
-  medecin: string;
-  medicaments: string[];
-}
+
+const MOIS = [
+  'Jan',
+  'Fév',
+  'Mar',
+  'Avr',
+  'Mai',
+  'Jun',
+  'Jul',
+  'Aoû',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Déc',
+];
 
 @Component({
   selector: 'clnt-employe-detail',
@@ -62,202 +86,281 @@ interface Ordonnance {
     AvatarModule,
     DividerModule,
     ToastModule,
-    TooltipModule,
+    DialogModule,
+    ConfirmDialogModule,
+    EmployeFormComponent,
   ],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './employe-detail.component.html',
   styleUrls: ['./employe-detail.component.scss'],
 })
 export class EmployeDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private patientSvc = inject(PatientService);
-  private msgSvc = inject(MessageService);
+  private svc = inject(EmployeService);
+  private msg = inject(MessageService);
+  private confirm = inject(ConfirmationService);
 
-  patient = signal<Patient | null>(null);
+  employe = signal<Employe | null>(null);
   loading = signal(true);
+  loadError = signal<string | null>(null);
   activeTab = signal(0);
 
-  // Données simulées — à remplacer par de vrais services
-  consultations = signal<Consultation[]>([
+  showEditDialog = signal(false);
+
+  // Données simulées — à remplacer par de vrais appels API
+  fiches = signal<FicheDePaie[]>([
     {
       id: '1',
-      date: new Date('2026-05-20'),
-      medecin: 'Dr. Martin',
-      motif: 'Fièvre persistante',
-      diagnostic: 'Paludisme simple',
-      statut: 'TERMINE',
+      mois: 5,
+      annee: 2026,
+      salaireBrut: 30000,
+      cotisations: 2700,
+      primes: 2000,
+      retenues: 500,
+      salaireNet: 28800,
     },
     {
       id: '2',
-      date: new Date('2026-04-10'),
-      medecin: 'Dr. Dupont',
-      motif: 'Douleur abdominale',
-      diagnostic: 'Gastrite',
-      statut: 'TERMINE',
+      mois: 4,
+      annee: 2026,
+      salaireBrut: 30000,
+      cotisations: 2700,
+      primes: 0,
+      retenues: 0,
+      salaireNet: 27300,
     },
     {
       id: '3',
-      date: new Date('2026-03-02'),
-      medecin: 'Dr. Martin',
-      motif: 'Bilan de santé',
-      diagnostic: 'RAS',
-      statut: 'TERMINE',
+      mois: 3,
+      annee: 2026,
+      salaireBrut: 30000,
+      cotisations: 2700,
+      primes: 3000,
+      retenues: 0,
+      salaireNet: 30300,
+    },
+    {
+      id: '4',
+      mois: 2,
+      annee: 2026,
+      salaireBrut: 30000,
+      cotisations: 2700,
+      primes: 0,
+      retenues: 1000,
+      salaireNet: 26300,
     },
   ]);
 
-  examens = signal<ExamenLabo[]>([
+  conges = signal<Conge[]>([
     {
       id: '1',
-      date: new Date('2026-05-21'),
-      type: 'NFS + Goutte épaisse',
-      statut: 'TERMINE',
-      resultat: 'Positif Pf',
+      type: 'Congé annuel',
+      dateDebut: '2026-04-14',
+      dateFin: '2026-04-21',
+      statut: 'APPROUVE',
+      dureeJours: 7,
     },
     {
       id: '2',
-      date: new Date('2026-04-11'),
-      type: 'Échographie abdominale',
-      statut: 'TERMINE',
-      resultat: 'Normal',
+      type: 'Congé maladie',
+      dateDebut: '2026-02-03',
+      dateFin: '2026-02-05',
+      statut: 'APPROUVE',
+      dureeJours: 3,
+      motif: 'Grippe',
     },
     {
       id: '3',
-      date: new Date('2026-06-01'),
-      type: 'Glycémie à jeun',
+      type: 'Congé familial',
+      dateDebut: '2026-06-15',
+      dateFin: '2026-06-17',
       statut: 'EN_ATTENTE',
+      dureeJours: 3,
     },
   ]);
 
-  factures = signal<Facture[]>([
-    {
-      id: '1',
-      date: new Date('2026-05-20'),
-      montant: 4500,
-      paye: 4500,
-      statut: 'PAYEE',
-    },
-    {
-      id: '2',
-      date: new Date('2026-04-10'),
-      montant: 2800,
-      paye: 1500,
-      statut: 'PARTIELLEMENT_PAYEE',
-    },
-    {
-      id: '3',
-      date: new Date('2026-06-01'),
-      montant: 1200,
-      paye: 0,
-      statut: 'IMPAYEE',
-    },
-  ]);
+  timeline = signal<TimelineEvent[]>([]);
 
-  ordonnances = signal<Ordonnance[]>([
-    {
-      id: '1',
-      date: new Date('2026-05-20'),
-      medecin: 'Dr. Martin',
-      medicaments: [
-        'Artéméther-Luméfantrine 80/480mg — 1cp matin et soir 3j',
-        'Paracétamol 1g — 1cp toutes les 8h si fièvre',
-      ],
-    },
-    {
-      id: '2',
-      date: new Date('2026-04-10'),
-      medecin: 'Dr. Dupont',
-      medicaments: [
-        'Oméprazole 20mg — 1cp avant repas 14j',
-        'Antiacide — 2cp après repas 7j',
-      ],
-    },
-  ]);
+  // Computed
+  anciennete = computed(() => {
+    const e = this.employe();
+    if (!e) return 0;
+    const diff = Date.now() - new Date(e.dateEmbauche).getTime();
+    return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+  });
 
-  timeline = signal<any[]>([]);
+  totalCongesApprouves = computed(() =>
+    this.conges()
+      .filter((c) => c.statut === 'APPROUVE')
+      .reduce((a, c) => a + c.dureeJours, 0),
+  );
+
+  salaireNetMoyen = computed(() => {
+    const f = this.fiches();
+    if (!f.length) return 0;
+    return Math.round(f.reduce((a, c) => a + c.salaireNet, 0) / f.length);
+  });
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;
-    this.patientSvc.findById(id).subscribe({
-      next: (p) => {
-        this.patient.set(p);
+    this.svc.findById(id).subscribe({
+      next: (e) => {
+        this.employe.set(e);
         this.loading.set(false);
         this.buildTimeline();
       },
-      error: () => {
+      error: (err: ServiceError) => {
         this.loading.set(false);
-        this.msgSvc.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Patient introuvable.',
-        });
+        this.loadError.set(err.message);
       },
     });
   }
 
   private buildTimeline() {
-    const events = [
-      ...this.consultations().map((c) => ({
-        date: c.date,
-        icon: 'ti ti-stethoscope',
-        color: '#185FA5',
-        title: c.motif,
-        subtitle: c.medecin,
-        type: 'consultation',
+    const events: TimelineEvent[] = [
+      ...this.fiches().map((f) => ({
+        date: new Date(f.annee, f.mois - 1, 28),
+        icon: 'pi-wallet',
+        color: '#185fa5',
+        title: `Fiche de paie — ${MOIS[f.mois - 1]} ${f.annee}`,
+        subtitle: `Net : ${f.salaireNet.toLocaleString()} FCFA`,
+        type: 'paie',
       })),
-      ...this.examens().map((e) => ({
-        date: e.date,
-        icon: 'ti ti-flask',
-        color: '#0F6E56',
-        title: e.type,
-        subtitle: e.resultat ?? 'En attente',
-        type: 'examen',
+      ...this.conges().map((c) => ({
+        date: new Date(c.dateDebut),
+        icon: 'pi-calendar-times',
+        color: '#ba7517',
+        title: c.type,
+        subtitle: `${c.dureeJours} jour(s) · ${c.statut}`,
+        type: 'conge',
       })),
+      {
+        date: new Date(this.employe()!.dateEmbauche),
+        icon: 'pi-briefcase',
+        color: '#0f6e56',
+        title: "Date d'embauche",
+        subtitle: this.employe()!.poste,
+        type: 'embauche',
+      },
     ].sort((a, b) => b.date.getTime() - a.date.getTime());
     this.timeline.set(events);
   }
 
-  get age(): number {
-    const p = this.patient();
-    if (!p) return 0;
-    const diff = Date.now() - new Date(p.dateNaissance).getTime();
-    return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
-  }
-
+  // ── Helpers ───────────────────────────────────────────
   get initiales(): string {
-    const p = this.patient();
-    return p ? `${p.prenom[0]}${p.nom[0]}`.toUpperCase() : '??';
+    const e = this.employe();
+    return e ? `${e.prenom[0]}${e.nom[0]}`.toUpperCase() : '??';
   }
 
-  get soldeDu(): number {
-    return this.factures()
-      .filter((f) => f.statut !== 'PAYEE')
-      .reduce((acc, f) => acc + (f.montant - f.paye), 0);
-  }
-
-  getSexeLabel(s: string) {
-    return s === 'M' ? 'Homme' : s === 'F' ? 'Femme' : 'Autre';
-  }
-
-  getFactureSeverity(s: string) {
+  get deptLabel(): string {
     return (
-      { PAYEE: 'success', PARTIELLEMENT_PAYEE: 'warn', IMPAYEE: 'danger' }[s] ??
+      DEPARTEMENTS.find((d) => d.value === this.employe()?.departement)
+        ?.label ?? ''
+    );
+  }
+
+  getMoisLabel(m: number) {
+    return MOIS[m - 1] ?? '';
+  }
+
+  getStatutSeverity(s: string) {
+    return (
+      { ACTIF: 'success', INACTIF: 'danger', SUSPENDU: 'warn' }[s] ??
       'secondary'
     );
   }
 
-  getExamenSeverity(s: string) {
+  getContratSeverity(c: string) {
     return (
-      { TERMINE: 'success', EN_COURS: 'info', EN_ATTENTE: 'warn' }[s] ??
+      { CDI: 'success', CDD: 'info', STAGE: 'warn', VACATAIRE: 'secondary' }[
+        c
+      ] ?? 'secondary'
+    );
+  }
+
+  getCongeStatutSeverity(s: string) {
+    return (
+      { APPROUVE: 'success', EN_ATTENTE: 'warn', REJETE: 'danger' }[s] ??
       'secondary'
     );
+  }
+
+  getAvatarBg(): Record<string, string> {
+    const map: Record<string, { bg: string; color: string }> = {
+      MEDECINE: { bg: '#e6f1fb', color: '#0c447c' },
+      CHIRURGIE: { bg: '#e1f5ee', color: '#085041' },
+      LABORATOIRE: { bg: '#eeedfe', color: '#26215c' },
+      PHARMACIE: { bg: '#faeeda', color: '#633806' },
+      ADMINISTRATION: { bg: '#f1efe8', color: '#5f5e5a' },
+      COMPTABILITE: { bg: '#fcebeb', color: '#791f1f' },
+      INFIRMERIE: { bg: '#e6f1fb', color: '#185fa5' },
+      URGENCES: { bg: '#fcebeb', color: '#a32d2d' },
+    };
+    const d = this.employe()?.departement ?? '';
+    const s = map[d] ?? { bg: '#e6f1fb', color: '#0c447c' };
+    return { background: s.bg, color: s.color };
+  }
+
+  // ── Actions ───────────────────────────────────────────
+  toggleStatut() {
+    const e = this.employe();
+    if (!e) return;
+    const nouveau = e.statut === 'ACTIF' ? 'INACTIF' : 'ACTIF';
+    const label = nouveau === 'ACTIF' ? 'réactiver' : 'désactiver';
+    this.confirm.confirm({
+      header: 'Modifier le statut',
+      message: `Voulez-vous ${label} ${e.prenom} ${e.nom} ?`,
+      icon: 'pi pi-question-circle',
+      acceptLabel: 'Oui',
+      rejectLabel: 'Non',
+      accept: () => {
+        this.svc.changeStatus(e.id, nouveau).subscribe({
+          next: (updated) => {
+            this.employe.set(updated);
+            this.msg.add({
+              severity: 'success',
+              summary: 'Statut mis à jour',
+              detail: `${e.prenom} ${e.nom} est maintenant ${nouveau === 'ACTIF' ? 'actif' : 'inactif'}.`,
+            });
+          },
+          error: (err: ServiceError) => {
+            this.msg.add({
+              severity: 'error',
+              summary: 'Erreur',
+              detail: err.message,
+              life: 5000,
+            });
+          },
+        });
+      },
+    });
+  }
+
+  onFormSaved(updated: Employe) {
+    this.employe.set(updated);
+    this.showEditDialog.set(false);
+    this.msg.add({
+      severity: 'success',
+      summary: 'Mis à jour',
+      detail: 'Fiche employé mise à jour.',
+    });
+  }
+
+  onFormError(err: ServiceError) {
+    this.msg.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: err.message,
+      life: 5000,
+    });
   }
 
   copierId() {
-    navigator.clipboard.writeText(this.patient()?.id ?? '');
-    this.msgSvc.add({
+    navigator.clipboard.writeText(this.employe()?.id ?? '');
+    this.msg.add({
       severity: 'info',
       summary: 'Copié',
-      detail: 'ID patient copié.',
+      detail: 'ID employé copié.',
       life: 2000,
     });
   }

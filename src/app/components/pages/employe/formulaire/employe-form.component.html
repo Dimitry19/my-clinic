@@ -18,7 +18,7 @@
   }
 
   <!-- ── Indicateur d'étapes ── -->
-  <div class="steps-nav" role="tablist">
+  <div class="steps-indicator" role="tablist">
     @for (
       step of [
         { label: "Identité", icon: "pi-user" },
@@ -27,10 +27,11 @@
       ];
       track $index
     ) {
-      <button
-        class="step-btn"
-        [class.step-active]="activeStep() === $index"
-        [class.step-done]="activeStep() > $index"
+      <div
+        class="step-item"
+        [class.active]="activeStep() === $index"
+        [class.completed]="activeStep() > $index"
+        [style.cursor]="'pointer'"
         (click)="allerEtape($index)"
         role="tab"
         [attr.aria-selected]="activeStep() === $index"
@@ -38,17 +39,26 @@
       >
         <div class="step-circle">
           @if (activeStep() > $index) {
-            <i class="pi pi-check" aria-hidden="true"></i>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
           } @else {
             {{ $index + 1 }}
           }
         </div>
         <span class="step-label">{{ step.label }}</span>
-      </button>
+      </div>
       @if ($index < 2) {
         <div
-          class="step-line"
-          [class.step-line-done]="activeStep() > $index"
+          class="step-connector"
+          [class.completed]="activeStep() > $index"
           aria-hidden="true"
         ></div>
       }
@@ -61,90 +71,60 @@
     ════════════════════════════════ -->
     @if (activeStep() === 0) {
       <div class="form-step" role="tabpanel" aria-label="Identité">
-        <h4 class="step-title">
-          <i class="pi pi-user" aria-hidden="true"></i>
-          Informations personnelles
-        </h4>
-
+        <h3 class="step-title">Informations personnelles</h3>
         <div class="form-row">
           <!-- Nom -->
           <div
-            class="field"
-            [class.field-error]="hasError('nom')"
+            class="form-group"
+            [class.has-error]="hasError('nom')"
             [class.field-ok]="hasSuccess('nom')"
           >
-            <label for="nom" class="field-label">
-              Nom <span class="req" aria-hidden="true">*</span>
-            </label>
-            <div class="input-wrap">
-              <input
-                pInputText
-                id="nom"
-                formControlName="nom"
-                placeholder="Nom de famille"
-                autocomplete="family-name"
-                class="field-input"
-                [attr.aria-invalid]="hasError('nom')"
-                [attr.aria-describedby]="hasError('nom') ? 'nom-err' : null"
-              />
-              @if (hasSuccess("nom")) {
-                <i
-                  class="pi pi-check icon-right icon-ok"
-                  aria-hidden="true"
-                ></i>
-              }
-              @if (hasError("nom")) {
-                <i
-                  class="pi pi-times-circle icon-right icon-err"
-                  aria-hidden="true"
-                ></i>
-              }
-            </div>
-            @if (fieldError("nom")) {
-              <span id="nom-err" class="err-msg" role="alert">
-                <i class="pi pi-info-circle" aria-hidden="true"></i>
-                {{ fieldError("nom") }}
-              </span>
+            <label for="nom" class="form-label required"> Nom </label>
+            <input
+              id="nom"
+              type="text"
+              class="form-control"
+              formControlName="nom"
+              placeholder="Nom de famille"
+              autocomplete="family-name"
+              [attr.aria-invalid]="hasError('nom')"
+              [attr.aria-describedby]="hasError('nom') ? 'nom-err' : null"
+            />
+            @if (hasError("nom")) {
+              <div class="error-msg">
+                @if (form.get("nom")?.errors?.["required"]) {
+                  <span>Le nom est obligatoire.</span>
+                }
+                @if (form.get("nom")?.errors?.["minlength"]) {
+                  <span>Minimum 2 caractères.</span>
+                }
+              </div>
             }
           </div>
 
           <!-- Prénom -->
           <div
-            class="field"
-            [class.field-error]="hasError('prenom')"
+            class="form-group"
+            [class.has-error]="hasError('prenom')"
             [class.field-ok]="hasSuccess('prenom')"
           >
-            <label for="prenom" class="field-label">
-              Prénom <span class="req" aria-hidden="true">*</span>
-            </label>
-            <div class="input-wrap">
-              <input
-                pInputText
-                id="prenom"
-                formControlName="prenom"
-                placeholder="Prénom"
-                autocomplete="given-name"
-                class="field-input"
-                [attr.aria-invalid]="hasError('prenom')"
-              />
-              @if (hasSuccess("prenom")) {
-                <i
-                  class="pi pi-check icon-right icon-ok"
-                  aria-hidden="true"
-                ></i>
-              }
-              @if (hasError("prenom")) {
-                <i
-                  class="pi pi-times-circle icon-right icon-err"
-                  aria-hidden="true"
-                ></i>
-              }
-            </div>
-            @if (fieldError("prenom")) {
-              <span class="err-msg" role="alert">
-                <i class="pi pi-info-circle" aria-hidden="true"></i>
-                {{ fieldError("prenom") }}
-              </span>
+            <label for="prenom" class="form-label required"> Prénom </label>
+            <input
+              id="prenom"
+              type="text"
+              class="form-control"
+              formControlName="prenom"
+              placeholder="Prénom"
+              autocomplete="given-name"
+              [attr.aria-invalid]="hasError('prenom')"
+            />
+
+            @if (hasError("prenom")) {
+              <div class="error-msg">
+                @if (form.get("prenom")?.errors?.["required"]) {
+                  <span>Le prenom est obligatoire.</span>
+                }
+              </div>
             }
           </div>
         </div>
@@ -152,69 +132,67 @@
         <div class="form-row">
           <!-- Email -->
           <div
-            class="field"
-            [class.field-error]="hasError('email')"
+            class="form-group"
+            [class.has-error]="hasError('email')"
             [class.field-ok]="hasSuccess('email')"
           >
-            <label for="email" class="field-label">
-              <i class="pi pi-envelope" aria-hidden="true"></i>
-              Email professionnel <span class="req" aria-hidden="true">*</span>
+            <label for="email" class="form-label required">
+              Email professionnel
             </label>
-            <div class="input-wrap">
-              <input
-                pInputText
-                id="email"
-                type="email"
-                formControlName="email"
-                placeholder="employe@clinique.com"
-                autocomplete="email"
-                class="field-input"
-                [attr.aria-invalid]="hasError('email')"
-                [attr.aria-describedby]="hasError('email') ? 'email-err' : null"
-              />
-              @if (hasSuccess("email")) {
-                <i
-                  class="pi pi-check icon-right icon-ok"
-                  aria-hidden="true"
-                ></i>
-              }
-              @if (hasError("email")) {
-                <i
-                  class="pi pi-times-circle icon-right icon-err"
-                  aria-hidden="true"
-                ></i>
-              }
-            </div>
-            @if (fieldError("email")) {
-              <span id="email-err" class="err-msg" role="alert">
-                <i class="pi pi-info-circle" aria-hidden="true"></i>
-                {{ fieldError("email") }}
-              </span>
+            <input
+              id="email"
+              type="email"
+              class="form-control"
+              formControlName="email"
+              placeholder="employe@clinique.com"
+              autocomplete="email"
+              [attr.aria-invalid]="hasError('email')"
+              [attr.aria-describedby]="
+                hasError('email') ? 'Email invalide ou manquant' : null
+              "
+            />
+            @if (hasError("email")) {
+              <div class="error-msg">
+                @if (form.get("email")?.errors?.["required"]) {
+                  <span>L'email est obligatoire.</span>
+                }
+                @if (form.get("email")?.errors?.["email"]) {
+                  <span>Format d'email invalide.</span>
+                }
+              </div>
             }
           </div>
-
           <!-- Téléphone -->
-          <div class="field" [class.field-error]="hasError('telephone')">
-            <label for="telephone" class="field-label">
-              <i class="pi pi-phone" aria-hidden="true"></i>
+          <div
+            class="form-group"
+            [class.has-error]="hasError('telephone')"
+            [class.field-ok]="hasSuccess('telephone')"
+          >
+            <label for="telephone" class="form-label required">
               Téléphone
             </label>
-            <div class="input-wrap">
-              <input
-                pInputText
-                id="telephone"
-                type="tel"
-                formControlName="telephone"
-                placeholder="+509 XXXX XXXX"
-                autocomplete="tel"
-                class="field-input"
-              />
-            </div>
-            @if (fieldError("telephone")) {
-              <span class="err-msg" role="alert">
-                <i class="pi pi-info-circle" aria-hidden="true"></i>
-                {{ fieldError("telephone") }}
-              </span>
+            <input
+              id="telephone"
+              type="tel"
+              class="form-control"
+              formControlName="telephone"
+              placeholder="+509 XXXX XXXX"
+              autocomplete="tel"
+              [attr.aria-invalid]="hasError('telephone')"
+              [attr.aria-describedby]="
+                hasError('telephone') ? 'telephone-err' : null
+              "
+            />
+
+            @if (hasError("telephone")) {
+              <div class="error-msg">
+                @if (form.get("telephone")?.errors?.["required"]) {
+                  <span>Le téléphone est obligatoire.</span>
+                }
+                @if (form.get("telephone")?.errors?.["pattern"]) {
+                  <span>Format de téléphone invalide.</span>
+                }
+              </div>
             }
           </div>
         </div>
@@ -234,46 +212,42 @@
         <div class="form-row">
           <!-- Poste -->
           <div
-            class="field"
-            [class.field-error]="hasError('poste')"
+            class="form-group"
+            [class.has-error]="hasError('poste')"
             [class.field-ok]="hasSuccess('poste')"
           >
-            <label for="poste" class="field-label">
-              Intitulé du poste <span class="req" aria-hidden="true">*</span>
+            <label for="poste" class="form-label required">
+              Intitulé du poste
             </label>
-            <div class="input-wrap">
-              <input
-                pInputText
-                id="poste"
-                formControlName="poste"
-                placeholder="Ex: Médecin généraliste"
-                class="field-input"
-              />
-              @if (hasSuccess("poste")) {
-                <i
-                  class="pi pi-check icon-right icon-ok"
-                  aria-hidden="true"
-                ></i>
-              }
-              @if (hasError("poste")) {
-                <i
-                  class="pi pi-times-circle icon-right icon-err"
-                  aria-hidden="true"
-                ></i>
-              }
-            </div>
-            @if (fieldError("poste")) {
-              <span class="err-msg" role="alert">
-                <i class="pi pi-info-circle" aria-hidden="true"></i>
-                {{ fieldError("poste") }}
-              </span>
+            <input
+              id="poste"
+              type="text"
+              class="form-control"
+              formControlName="poste"
+              placeholder="Ex: Médecin généraliste"
+              autocomplete="text"
+              [attr.aria-invalid]="hasError('poste')"
+            />
+            @if (hasError("poste")) {
+              <div class="error-msg">
+                @if (form.get("poste")?.errors?.["required"]) {
+                  <span>Le poste est obligatoire.</span>
+                }
+                @if (form.get("poste")?.errors?.["minlength"]) {
+                  <span>Minimum 5 caractères.</span>
+                }
+              </div>
             }
           </div>
 
           <!-- Département -->
-          <div class="field" [class.field-error]="hasError('departement')">
-            <label for="departement" class="field-label">
-              Département <span class="req" aria-hidden="true">*</span>
+          <div
+            class="form-group"
+            [class.has-error]="hasError('departement')"
+            [class.field-ok]="hasSuccess('departement')"
+          >
+            <label for="departement" class="form-label required">
+              Département
             </label>
             <p-select
               id="departement"
@@ -285,20 +259,21 @@
               styleClass="w-full"
               [attr.aria-invalid]="hasError('departement')"
             />
-            @if (fieldError("departement")) {
-              <span class="err-msg" role="alert">
-                <i class="pi pi-info-circle" aria-hidden="true"></i>
-                {{ fieldError("departement") }}
-              </span>
+            @if (hasError("departement")) {
+              <div class="err-msg">
+                @if (form.get("departement")?.errors?.["required"]) {
+                  <span>Le departement est obligatoire.</span>
+                }
+              </div>
             }
           </div>
         </div>
 
         <div class="form-row">
           <!-- Type contrat -->
-          <div class="field" [class.field-error]="hasError('typeContrat')">
-            <label for="typeContrat" class="field-label">
-              Type de contrat <span class="req" aria-hidden="true">*</span>
+          <div class="form-group" [class.has-error]="hasError('typeContrat')">
+            <label for="typeContrat" class="field-label required">
+              Type de contrat
             </label>
             <div
               class="contrat-options"
@@ -322,17 +297,18 @@
                 </label>
               }
             </div>
-            @if (fieldError("typeContrat")) {
-              <span class="err-msg" role="alert">
-                <i class="pi pi-info-circle" aria-hidden="true"></i>
-                {{ fieldError("typeContrat") }}
-              </span>
+            @if (hasError("typeContrat")) {
+              <div class="error-msg">
+                @if (form.get("typeContrat")?.errors?.["required"]) {
+                  <span>Le type de contrat est obligatoire.</span>
+                }
+              </div>
             }
           </div>
 
           <!-- Statut -->
-          <div class="field">
-            <label class="field-label">Statut</label>
+          <div class="form-group">
+            <label class="form-label">Statut</label>
             <p-select
               formControlName="statut"
               [options]="statutOptions"
@@ -341,38 +317,68 @@
               styleClass="w-full"
             />
           </div>
+
+          <div
+            class="form-group"
+            [class.has-error]="hasError('role')"
+            [class.field-ok]="hasSuccess('role')"
+          >
+            <label for="role" class="form-label"> Rôle </label>
+            <p-select
+              id="role"
+              formControlName="role"
+              [options]="roles"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Sélectionner..."
+              styleClass="w-full"
+              [attr.aria-invalid]="hasError('role')"
+            />
+            @if (hasError("role")) {
+              <div class="err-msg">
+                @if (form.get("role")?.errors?.["required"]) {
+                  <span>Le role est obligatoire.</span>
+                }
+              </div>
+            }
+          </div>
         </div>
 
         <div class="form-row">
           <!-- Date d'embauche -->
-          <div class="field" [class.field-error]="hasError('dateEmbauche')">
-            <label for="dateEmbauche" class="field-label">
-              <i class="pi pi-calendar" aria-hidden="true"></i>
-              Date d'embauche <span class="req" aria-hidden="true">*</span>
+          <div class="form-group" [class.has-error]="hasError('dateEmbauche')">
+            <label for="dateEmbauche" class="form-label required">
+              Date d'embauche
             </label>
-            <div class="input-wrap">
-              <input
-                type="date"
-                id="dateEmbauche"
-                formControlName="dateEmbauche"
-                class="field-input"
-                [max]="today"
-              />
-            </div>
+
+            <input
+              type="date"
+              id="dateEmbauche"
+              formControlName="dateEmbauche"
+              class="field-input"
+              [max]="today"
+            />
+            @if (hasError("dateEmbauche")) {
+              <div class="error-msg">
+                @if (form.get("dateEmbauche")?.errors?.["required"]) {
+                  <span>La date d'embauche est obligatoire.</span>
+                }
+              </div>
+            }
+
             @if (fieldError("dateEmbauche")) {
-              <span class="err-msg" role="alert">
-                <i class="pi pi-info-circle" aria-hidden="true"></i>
-                {{ fieldError("dateEmbauche") }}
-              </span>
+              <div class="error-msg">
+                @if (form.get("dateEmbauche")?.errors?.["required"]) {
+                  <span> {{ fieldError("dateEmbauche") }}.</span>
+                }
+              </div>
             }
           </div>
 
           <!-- Salaire de base -->
-          <div class="field" [class.field-error]="hasError('salaireBase')">
-            <label for="salaireBase" class="field-label">
-              <i class="pi pi-wallet" aria-hidden="true"></i>
-              Salaire de base (HTG)
-              <span class="req" aria-hidden="true">*</span>
+          <div class="form-group" [class.has-error]="hasError('salaireBase')">
+            <label for="salaireBase" class="form-label required">
+              Salaire de base (FCFA)
             </label>
             <p-inputNumber
               id="salaireBase"
@@ -384,11 +390,12 @@
               styleClass="w-full"
               [attr.aria-invalid]="hasError('salaireBase')"
             />
-            @if (fieldError("salaireBase")) {
-              <span class="err-msg" role="alert">
-                <i class="pi pi-info-circle" aria-hidden="true"></i>
-                {{ fieldError("salaireBase") }}
-              </span>
+            @if (hasError("salaireBase")) {
+              <div class="error-msg">
+                @if (form.get("salaireBase")?.errors?.["required"]) {
+                  <span>Le salaire base est obligatoire.</span>
+                }
+              </div>
             }
           </div>
         </div>
@@ -411,45 +418,39 @@
 
         <div class="form-row">
           <!-- N° CNSS -->
-          <div class="field">
-            <label for="numeroCnss" class="field-label">
-              <i class="pi pi-id-card" aria-hidden="true"></i>
-              Numéro CNSS
-            </label>
+          <div class="form-group">
+            <label for="numeroCnss" class="form-label"> Numéro CNSS </label>
             <input
-              pInputText
               id="numeroCnss"
+              type="text"
+              class="form-control"
               formControlName="numeroCnss"
               placeholder="Ex: 123456789"
-              class="field-input field-full"
+              autocomplete="text"
             />
           </div>
 
           <!-- RIB -->
-          <div class="field">
-            <label for="rib" class="field-label">
-              <i class="pi pi-credit-card" aria-hidden="true"></i>
-              RIB / Compte bancaire
-            </label>
+          <div class="form-group">
+            <label for="rib" class="form-label"> RIB / Compte bancaire </label>
             <input
-              pInputText
               id="rib"
+              type="text"
+              class="form-control"
               formControlName="rib"
               placeholder="IBAN ou numéro de compte"
-              class="field-input field-full"
+              autocomplete="text"
             />
           </div>
         </div>
 
         <!-- Adresse -->
         <div class="field field-full-row">
-          <label for="adresse" class="field-label">
-            <i class="pi pi-map-marker" aria-hidden="true"></i>
-            Adresse domicile
-          </label>
+          <label for="adresse" class="form-label"> Adresse domicile </label>
           <input
             pInputText
             id="adresse"
+            type="text"
             formControlName="adresse"
             placeholder="Rue, ville, quartier..."
             class="field-input field-full"
@@ -490,12 +491,16 @@
                 >{{
                   form.get("salaireBase")?.value | number: "1.0-0"
                 }}
-                HTG</span
+                FCFA</span
               >
             </div>
             <div class="resume-item">
               <span class="resume-label">Statut</span>
               <span class="resume-val">{{ form.get("statut")?.value }}</span>
+            </div>
+            <div class="resume-item">
+              <span class="resume-label">Rôle</span>
+              <span class="resume-val">{{ form.get("role")?.value }}</span>
             </div>
           </div>
         </div>
@@ -504,44 +509,40 @@
 
     <!-- ── Navigation ── -->
     <div class="form-footer">
+      @if (activeStep() > 0) {
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="activeStep.set(activeStep() - 1)"
+          [disabled]="saving()"
+        >
+          ← Précédent
+        </button>
+      }
       <button
         type="button"
-        class="btn-cancel"
+        class="btn btn-secondary"
         (click)="annuler()"
         [disabled]="saving()"
       >
-        <i class="pi pi-times" aria-hidden="true"></i>
         Annuler
       </button>
 
       <div class="footer-right">
-        @if (activeStep() > 0) {
-          <button
-            type="button"
-            class="btn-prev"
-            (click)="activeStep.set(activeStep() - 1)"
-            [disabled]="saving()"
-          >
-            <i class="pi pi-chevron-left" aria-hidden="true"></i>
-            Précédent
-          </button>
-        }
-
         @if (activeStep() < 2) {
           <button
             type="button"
             class="btn-next"
             (click)="allerEtape(activeStep() + 1)"
           >
-            Suivant
-            <i class="pi pi-chevron-right" aria-hidden="true"></i>
+            Suivant →
           </button>
         }
 
         @if (activeStep() === 2) {
           <button
             type="submit"
-            class="btn-submit"
+            class="btn btn-success"
             [class.btn-saving]="saving()"
             [disabled]="saving()"
             [attr.aria-busy]="saving()"
@@ -550,7 +551,6 @@
               <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
               Enregistrement...
             } @else {
-              <i class="pi pi-check" aria-hidden="true"></i>
               {{ editMode() ? "Mettre à jour" : "Enregistrer" }}
             }
           </button>

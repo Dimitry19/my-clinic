@@ -8,18 +8,12 @@
 </nav>
 <div class="patient-form-container">
   <!-- En-tête -->
-  <div class="form-header">
-    <h2 class="form-title">
-      {{
-        mode === "creation" ? "Nouveau patient" : "Modifier la fiche patient"
-      }}
+  <div class="form-header clnt-header">
+    <h2 class="form-title clnt-title">
+      {{ getPageTitle() }}
     </h2>
-    <p class="form-subtitle">
-      {{
-        mode === "creation"
-          ? "Enregistrement à la réception"
-          : "Mise à jour du dossier"
-      }}
+    <p class="form-subtitle clnt-subtitle">
+      {{ getPageSubtitle() }}
     </p>
   </div>
 
@@ -92,7 +86,7 @@
 
   <!-- Messages -->
   @if (successMessage) {
-    <div   class="alert alert-success">
+    <div class="alert alert-success">
       <svg
         width="16"
         height="16"
@@ -108,7 +102,7 @@
   }
 
   @if (errorMessage) {
-    <div  class="alert alert-error">
+    <div class="alert alert-error">
       <svg
         width="16"
         height="16"
@@ -132,6 +126,8 @@
       class="step-item"
       [class.active]="currentStep === step"
       [class.completed]="currentStep > step"
+      [attr.aria-selected]="currentStep === step"
+      [attr.aria-label]="getStepLabel(step)"
     >
       <div class="step-circle">
         @if (currentStep > step) {
@@ -152,7 +148,7 @@
         }
       </div>
       <span class="step-label">
-        {{ step === 1 ? "Identité" : step === 2 ? "Médical" : "Administratif" }}
+        {{ getStepLabel(step) }}
       </span>
       @if (i < 2) {
         <div

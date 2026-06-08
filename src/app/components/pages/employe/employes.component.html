@@ -183,7 +183,7 @@
             <!-- Salaire -->
             <td>
               <span class="salaire"
-                >{{ emp.salaireBase | number: "1.0-0" }} HTG</span
+                >{{ emp.salaireBase | number: "1.0-0" }} FCFA</span
               >
             </td>
             <!-- Statut -->
@@ -278,7 +278,6 @@
 
 <!-- ── Dialog formulaire ── -->
 <p-dialog
-  [header]="editMode() ? 'Modifier l\'employé' : 'Nouvel employé'"
   [(visible)]="showDialog"
   [modal]="true"
   [draggable]="false"
@@ -288,6 +287,14 @@
   [closeOnEscape]="true"
   aria-live="polite"
 >
+  <ng-template pTemplate="header">
+    <div class="clnt-header">
+      <h2 class="clnt-title">
+        {{ getDialogTitle() }}
+      </h2>
+      <p class="clnt-subtitle">{{ getDialogSubtitle() }}</p>
+    </div>
+  </ng-template>
   @if (showDialog()) {
     <clnt-employe-form
       [employe]="selectedEmploye()"

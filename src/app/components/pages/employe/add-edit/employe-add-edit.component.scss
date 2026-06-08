@@ -1,5 +1,97 @@
-﻿// ── Variables ──────────────────────────────────────────────
-@import "../../../../../variables.scss";
+﻿@use "sass:color";
+
+$primary: #185fa5;
+$primary-dk: #0c447c;
+$primary-lt: #e6f1fb;
+$success: #0f6e56;
+$success-lt: #e1f5ee;
+$danger: #a32d2d;
+$danger-lt: #fcebeb;
+$warning: #ba7517;
+$warning-lt: #faeeda;
+$border: #d3d1c7;
+$text: #2c2c2a;
+$text-muted: #5f5e5a;
+$bg: #ffffff;
+$bg-light: #f1efe8;
+$radius: 8px;
+$radius-lg: 12px;
+
+// ── Skeleton ───────────────────────────────────────────────
+.detail-skeleton {
+  .skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    @media (max-width: 900px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
+
+// ── Erreur chargement ──────────────────────────────────────
+.load-error {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 1.25rem 1.5rem;
+  background: $danger-lt;
+  border: 0.5px solid #f09595;
+  border-radius: $radius-lg;
+  color: #791f1f;
+}
+.load-error-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(#a32d2d, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  .pi {
+    font-size: 20px;
+    color: $danger;
+  }
+}
+.load-error-body {
+  flex: 1;
+  strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  span {
+    font-size: 13px;
+    opacity: 0.85;
+  }
+}
+.load-error-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: $danger;
+  color: #fff;
+  border-radius: $radius;
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+  &:hover {
+    background: color.adjust($danger, $lightness: -8%);
+  }
+  .pi {
+    font-size: 14px;
+  }
+}
+
+// ── Page ───────────────────────────────────────────────────
+.employe-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
 
 // ── Breadcrumb ─────────────────────────────────────────────
 .breadcrumb {
@@ -12,408 +104,544 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #185fa5;
+  color: $primary;
   text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+  .pi {
+    font-size: 15px;
+  }
+}
+.bc-sep {
+  color: $text-muted;
+}
+.bc-current {
+  color: $text-muted;
 }
 
-// ── Container ──────────────────────────────────────────────
-.patient-form-container {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
+// ── Hero ───────────────────────────────────────────────────
+.employe-hero {
   background: $bg;
+  border: 0.5px solid $border;
   border-radius: $radius-lg;
-  border: 0.5px solid $border;
-}
-
-// ── En-tête ────────────────────────────────────────────────
-.form-header {
-  margin-bottom: 1.5rem;
-  .form-title {
-    font-size: 1.4rem;
-    font-weight: 500;
-    color: $text;
-    margin: 0 0 4px;
-  }
-  .form-subtitle {
-    font-size: 0.875rem;
-    color: $text-muted;
-    margin: 0;
-  }
-}
-
-// ── Loader ─────────────────────────────────────────────────
-.loader-overlay {
+  padding: 1.5rem;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 1rem;
-  color: $text-muted;
-  font-size: 0.875rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 }
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid $border;
-  border-top-color: $primary;
+.hero-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+.emp-avatar {
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-// ── Recherche ──────────────────────────────────────────────
-.search-section {
-  background: $bg-light;
-  border-radius: $radius;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.5rem;
-  position: relative;
-}
-.search-label {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: $text-muted;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 8px;
-}
-.search-wrapper {
-  position: relative;
-}
-.search-input {
-  width: 100%;
-  padding: 10px 40px 10px 14px;
-  border: 0.5px solid $border;
-  border-radius: $radius;
-  font-size: 0.9375rem;
-  background: $bg;
-  box-sizing: border-box;
-  outline: none;
-  &:focus {
-    border-color: $primary;
-  }
-}
-.search-icon {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: $text-muted;
-  pointer-events: none;
-}
-.search-spinner {
-  position: absolute;
-  right: 36px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 14px;
-  height: 14px;
-  border: 2px solid $border;
-  border-top-color: $primary;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-.search-results {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  background: $bg;
-  border: 0.5px solid $border;
-  border-radius: $radius;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  z-index: 100;
-  overflow: hidden;
-}
-.search-result-item {
-  padding: 10px 14px;
-  cursor: pointer;
-  border-bottom: 0.5px solid $border;
-  &:hover {
-    background: $bg-light;
-  }
-  .result-name {
-    font-weight: 500;
-    font-size: 0.9375rem;
-    color: $text;
-  }
-  .result-info {
-    font-size: 0.8rem;
-    color: $text-muted;
-    margin-top: 2px;
-  }
-}
-.search-result-close {
-  padding: 8px 14px;
-  font-size: 0.8rem;
-  color: $text-muted;
-  cursor: pointer;
-  text-align: right;
-  &:hover {
-    color: $text;
-  }
-}
-
-// ── Alertes ────────────────────────────────────────────────
-.alert {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: $radius;
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
-  &.alert-success {
-    background: #e1f5ee;
-    color: #085041;
-    border: 0.5px solid #5dcaa5;
-  }
-  &.alert-error {
-    background: #fcebeb;
-    color: #791f1f;
-    border: 0.5px solid #f09595;
-  }
-}
-
-// ── Indicateur d'étapes ────────────────────────────────────
-.steps-indicator {
-  display: flex;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-.step-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-}
-.step-circle {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2px solid $border;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
+  font-size: 24px;
   font-weight: 500;
-  color: $text-muted;
-  background: $bg;
   flex-shrink: 0;
-  transition: all 0.2s;
-
-  .step-item.active & {
-    border-color: $primary;
-    background: $primary;
-    color: #fff;
-  }
-  .step-item.completed & {
-    border-color: $success;
-    background: $success;
-    color: #fff;
-  }
 }
-.step-label {
-  font-size: 0.8rem;
-  color: $text-muted;
-  white-space: nowrap;
-  .step-item.active & {
-    color: $primary;
-    font-weight: 500;
-  }
-  .step-item.completed & {
-    color: $success;
-  }
-}
-.step-connector {
-  flex: 1;
-  height: 1px;
-  background: $border;
-  margin: 0 8px;
-  &.completed {
-    background: $success;
-  }
-}
-
-// ── Étape formulaire ───────────────────────────────────────
-.form-step {
-  animation: fadeIn 0.2s ease;
-}
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.step-title {
-  font-size: 1rem;
+.emp-fullname {
+  font-size: 1.4rem;
   font-weight: 500;
   color: $text;
-  margin: 0 0 1.25rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 0.5px solid $border;
+  margin-bottom: 4px;
 }
-
-// ── Champs ─────────────────────────────────────────────────
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
-  }
-}
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 1rem;
-  &.full-width {
-    grid-column: 1 / -1;
-  }
-  &.has-error .form-control {
-    border-color: $danger;
-  }
-}
-.form-label {
-  font-size: 0.8125rem;
+.emp-poste {
+  font-size: 15px;
+  color: $primary;
   font-weight: 500;
-  color: $text-muted;
-  &.required::after {
-    content: " *";
-    color: $danger;
-  }
+  margin-bottom: 8px;
 }
-.form-control {
-  padding: 10px 12px;
-  border: 0.5px solid $border;
-  border-radius: $radius;
-  font-size: 0.9375rem;
-  color: $text;
-  background: $bg;
-  outline: none;
-  transition: border-color 0.15s;
-  width: 100%;
-  box-sizing: border-box;
-  &:focus {
-    border-color: $primary;
-  }
-  &::placeholder {
-    color: #b4b2a9;
-  }
-}
-textarea.form-control {
-  resize: vertical;
-  min-height: 80px;
-}
-select.form-control {
-  cursor: pointer;
-}
-.error-msg {
-  font-size: 0.75rem;
-  color: $danger;
-}
-
-// ── Radio buttons ──────────────────────────────────────────
-.radio-group {
+.emp-meta {
   display: flex;
-  gap: 1.5rem;
-  margin-top: 4px;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: $text-muted;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+  .pi {
+    font-size: 14px;
+  }
 }
-.radio-option {
+.meta-sep {
+  color: $border;
+}
+.emp-email {
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 13px;
+  color: $text-muted;
+  margin-bottom: 10px;
+  .pi {
+    font-size: 14px;
+  }
+}
+.emp-badges {
+  display: flex;
+  gap: 8px;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-evenly;
+}
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.btn-hero-primary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: $radius;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 0.9375rem;
+  .pi {
+    font-size: 15px;
+  }
+  &:hover {
+    background: $primary-dk;
+  }
+}
+.btn-hero-secondary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  background: $bg;
+  color: $text-muted;
+  border: 0.5px solid $border;
+  border-radius: $radius;
+  font-size: 14px;
+  cursor: pointer;
+  .pi {
+    font-size: 15px;
+  }
+  &:hover {
+    background: $warning-lt;
+    color: $warning;
+    border-color: $warning;
+  }
+  &.btn-toggle-on {
+    color: $success;
+    border-color: $success;
+    background: $success-lt;
+    &:hover {
+      background: color.adjust($success-lt, $lightness: -5%);
+    }
+  }
+}
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $text-muted;
+  .pi {
+    font-size: 16px;
+  }
+  &:hover {
+    background: $bg-light;
+    color: $text;
+  }
+}
+
+// ── Summary cards ──────────────────────────────────────────
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.summary-card {
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.sc-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .pi {
+    font-size: 22px;
+  }
+  &.sc-blue {
+    background: $primary-lt;
+    .pi {
+      color: $primary;
+    }
+  }
+  &.sc-green {
+    background: $success-lt;
+    .pi {
+      color: $success;
+    }
+  }
+  &.sc-amber {
+    background: $warning-lt;
+    .pi {
+      color: $warning;
+    }
+  }
+  &.sc-purple {
+    background: #eeedfe;
+    .pi {
+      color: #534ab7;
+    }
+  }
+}
+.sc-body {
+  display: flex;
+  flex-direction: column;
+}
+.sc-val {
+  font-size: 20px;
+  font-weight: 500;
   color: $text;
-  input[type="radio"] {
-    display: none;
+}
+.sc-label {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+// ── Tabs ───────────────────────────────────────────────────
+:host ::ng-deep {
+  .p-tabs .p-tablist {
+    border-bottom: 1px solid $border;
   }
-  .radio-btn {
-    width: 16px;
-    height: 16px;
-    border: 2px solid $border;
-    border-radius: 50%;
-    display: inline-block;
-    transition: all 0.15s;
-    position: relative;
+  .p-tabs .p-tab {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    .pi {
+      font-size: 15px;
+    }
   }
-  input[type="radio"]:checked + .radio-btn {
-    border-color: $primary;
-    &::after {
-      content: "";
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 8px;
-      height: 8px;
-      background: $primary;
-      border-radius: 50%;
+  .p-tabpanels {
+    padding: 1.25rem 0 0;
+  }
+  .employe-dialog {
+    .p-dialog-header {
+      border-bottom: 0.5px solid $border;
+      padding: 1rem 1.25rem;
+    }
+    .p-dialog-content {
+      padding: 0;
     }
   }
 }
 
-// ── Boutons ────────────────────────────────────────────────
-.form-actions {
+// ── Dossier grid ───────────────────────────────────────────
+.dossier-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+.info-card {
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+.info-card-title {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 0.5px solid $border;
-}
-.actions-right {
-  margin-left: auto;
-}
-.btn {
-  padding: 10px 20px;
-  border-radius: $radius;
-  font-size: 0.9rem;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 12px;
   font-weight: 500;
-  cursor: pointer;
-  border: none;
-  transition: opacity 0.15s;
-  &:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
+  color: $text-muted;
+  background: $bg-light;
+  border-bottom: 0.5px solid $border;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  .pi {
+    font-size: 15px;
   }
-  &:not(:disabled):hover {
-    opacity: 0.85;
+}
+.info-rows {
+  padding: 4px 0;
+}
+.info-row {
+  display: flex;
+  padding: 9px 16px;
+  border-bottom: 0.5px solid $bg-light;
+  font-size: 14px;
+  &:last-child {
+    border-bottom: none;
   }
-
-  &.btn-primary {
-    background: $primary;
-    color: #fff;
-  }
-  &.btn-success {
-    background: $success;
-    color: #fff;
-  }
-  &.btn-secondary {
-    background: $bg;
-    color: $text-muted;
-    border: 0.5px solid $border;
+}
+.info-label {
+  width: 140px;
+  color: $text-muted;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+.info-val {
+  color: $text;
+  font-weight: 500;
+  flex: 1;
+  &.salaire-highlight {
+    color: $success;
   }
 }
 
-// ── Print ─────────────────────────────────────────────────
+// ── Tab panel header ───────────────────────────────────────
+.tab-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  font-size: 14px;
+  color: $text-muted;
+}
+.btn-tab-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: $radius;
+  font-size: 13px;
+  cursor: pointer;
+  .pi {
+    font-size: 14px;
+  }
+  &:hover {
+    background: $primary-dk;
+  }
+}
+
+// ── Fiches de paie ─────────────────────────────────────────
+.fiches-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+.fiche-card {
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+.fiche-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: $bg-light;
+  border-bottom: 0.5px solid $border;
+}
+.fiche-periode {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  .pi {
+    font-size: 15px;
+    color: $primary;
+  }
+}
+.fiche-mois {
+  font-weight: 500;
+  color: $text;
+}
+.btn-dl {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: $radius;
+  font-size: 12px;
+  cursor: pointer;
+  .pi {
+    font-size: 13px;
+  }
+  &:hover {
+    background: $primary-dk;
+  }
+}
+.fiche-body {
+  padding: 8px 0;
+}
+.fiche-ligne {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 14px;
+  font-size: 13px;
+  border-bottom: 0.5px solid $bg-light;
+  &:last-of-type {
+    border-bottom: none;
+  }
+}
+.fiche-ligne-label {
+  color: $text-muted;
+}
+.fiche-ligne-val {
+  font-weight: 500;
+  color: $text;
+}
+.val-neg {
+  color: $danger;
+}
+.val-pos {
+  color: $success;
+}
+.fiche-net {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: $primary-lt;
+  font-weight: 500;
+  font-size: 14px;
+  color: $primary;
+  margin-top: 4px;
+}
+
+// ── Empty tab ─────────────────────────────────────────────
+.empty-tab {
+  text-align: center;
+  padding: 3rem;
+  color: $text-muted;
+  .pi {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 1rem;
+    opacity: 0.25;
+  }
+  p {
+    font-size: 14px;
+  }
+}
+
+// ── Timeline ──────────────────────────────────────────────
+.timeline-wrap {
+  padding: 0.5rem 0;
+}
+.tl-marker {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .pi {
+    font-size: 14px;
+    color: #fff;
+  }
+}
+.tl-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 1rem;
+}
+.tl-date {
+  font-size: 12px;
+  color: $text-muted;
+}
+.tl-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: $text;
+}
+.tl-sub {
+  font-size: 13px;
+  color: $text-muted;
+}
+
+// ── Not found ────────────────────────────────────────────
+.not-found {
+  text-align: center;
+  padding: 4rem;
+  color: $text-muted;
+  .pi {
+    font-size: 64px;
+    display: block;
+    margin-bottom: 1rem;
+    opacity: 0.25;
+  }
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: $text;
+    margin-bottom: 8px;
+  }
+  p {
+    margin-bottom: 1.5rem;
+  }
+}
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: $primary;
+  color: #fff;
+  border-radius: $radius;
+  text-decoration: none;
+  font-size: 14px;
+  &:hover {
+    background: $primary-dk;
+  }
+  .pi {
+    font-size: 15px;
+  }
+}
+
+// ── Print ───────────────────────────────────────────────
 @media print {
   .hero-actions,
   .breadcrumb,
   .summary-cards {
     display: none;
   }
-  .patient-hero {
+  .employe-hero {
     border: none;
     padding: 0;
   }

@@ -311,4 +311,10 @@ export class EmployesComponent implements OnInit {
   getStatutLabel(statut: string): string {
     return statut === 'ACTIF' ? 'Désactiver' : 'Réactiver';
   }
+  getDialogTitle(): string {
+    return this.editMode() ? "Modifier l'employé" : 'Nouvel employé';
+  } 
+  getDialogSubtitle(): string {
+    return this.editMode() ? "Mise à jour du dossier" : 'Création du dossier';
+  }
 }

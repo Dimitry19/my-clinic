@@ -12,51 +12,8 @@ $bg-light: #f1efe8;
 $radius: 8px;
 $radius-lg: 12px;
 
-// ── Skeleton ───────────────────────────────────────────────
-.detail-skeleton {
-  .skeleton-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-  }
-}
-
-// ── Page ───────────────────────────────────────────────────
-.patient-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-// ── Breadcrumb ─────────────────────────────────────────────
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-}
-.bc-link {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: $primary;
-  text-decoration: none;
-  &:hover {
-    text-decoration: underline;
-  }
-  i {
-    font-size: 16px;
-  }
-}
-.bc-sep {
-  color: $text-muted;
-}
-.bc-current {
-  color: $text-muted;
-}
-
 // ── Hero ───────────────────────────────────────────────────
-.patient-hero {
+.employe-hero {
   background: $bg;
   border: 0.5px solid $border;
   border-radius: $radius-lg;
@@ -71,7 +28,7 @@ $radius-lg: 12px;
   align-items: flex-start;
   gap: 1.25rem;
 }
-.patient-avatar {
+.clnt-avatar {
   width: 72px;
   height: 72px;
   border-radius: 50%;
@@ -88,13 +45,13 @@ $radius-lg: 12px;
     color: #633806;
   }
 }
-.patient-fullname {
+.clnt-fullname {
   font-size: 1.4rem;
   font-weight: 500;
   color: $text;
   margin-bottom: 6px;
 }
-.patient-meta {
+.clnt-meta {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -117,7 +74,7 @@ $radius-lg: 12px;
   font-size: 12px;
   font-weight: 500;
 }
-.patient-contacts {
+.clnt-contacts {
   display: flex;
   gap: 16px;
   font-size: 13px;
@@ -149,97 +106,6 @@ $radius-lg: 12px;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
-}
-
-// ── Summary cards ──────────────────────────────────────────
-.summary-cards {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-}
-.summary-card {
-  background: $bg;
-  border: 0.5px solid $border;
-  border-radius: $radius-lg;
-  padding: 1rem 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  transition: border-color 0.15s;
-
-  &.sc-danger {
-    border-color: #f09595;
-    background: #fcebeb;
-  }
-}
-.sc-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  i {
-    font-size: 22px;
-  }
-
-  &.sc-blue {
-    background: #e6f1fb;
-    i {
-      color: $primary;
-    }
-  }
-  &.sc-green {
-    background: #e1f5ee;
-    i {
-      color: $success;
-    }
-  }
-  &.sc-amber {
-    background: #faeeda;
-    i {
-      color: $warning;
-    }
-  }
-  &.sc-red {
-    background: #fcebeb;
-    i {
-      color: $danger;
-    }
-  }
-}
-.sc-body {
-  display: flex;
-  flex-direction: column;
-}
-.sc-val {
-  font-size: 22px;
-  font-weight: 500;
-  color: $text;
-}
-.sc-label {
-  font-size: 12px;
-  color: $text-muted;
-}
-
-// ── Tabs ───────────────────────────────────────────────────
-:host ::ng-deep {
-  .p-tabs .p-tablist {
-    border-bottom: 1px solid $border;
-  }
-  .p-tabs .p-tab {
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    i {
-      font-size: 16px;
-    }
-  }
-  .p-tabpanels {
-    padding: 1.25rem 0 0;
-  }
 }
 
 // ── Dossier grid ───────────────────────────────────────────
@@ -300,23 +166,6 @@ $radius-lg: 12px;
     color: #7a4f00;
     font-weight: 400;
   }
-}
-
-// ── Notes ─────────────────────────────────────────────────
-.notes-card {
-  background: $bg;
-  border: 0.5px solid $border;
-  border-radius: $radius-lg;
-  overflow: hidden;
-  margin: 1rem;
-}
-.notes-text {
-  padding: 1rem 1.25rem;
-  font-size: 14px;
-  color: $text;
-  line-height: 1.6;
-  margin: 0;
-  white-space: pre-wrap;
 }
 
 // ── Tab panel header ───────────────────────────────────────
@@ -467,7 +316,7 @@ $radius-lg: 12px;
   .summary-cards {
     display: none;
   }
-  .patient-hero {
+  .clnt-hero {
     border: none;
     padding: 0;
   }

@@ -301,4 +301,19 @@ export class PatientAddEditComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
+  getPageTitle(): string {
+    return this.mode === 'creation'
+      ? 'Nouveau patient'
+      : 'Modifier la fiche patient';
+  }
+
+  getPageSubtitle(): string {
+    return this.mode === 'creation'
+      ? 'Enregistrement à la réception'
+      : 'Mise à jour du dossier';
+  }
+
+  getStepLabel(step: number): string {
+    return step === 1 ? 'Identité' : step === 2 ? 'Médical' : 'Administratif';
+  }
 }

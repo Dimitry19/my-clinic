@@ -1,497 +1,511 @@
-﻿<p-toast />
+﻿<p-toast position="top-right" />
+<p-confirmDialog />
 
-<!-- Skeleton pendant le chargement -->
-<div *ngIf="loading()" class="detail-skeleton">
-  <p-skeleton height="120px" borderRadius="12px" styleClass="mb-3" />
-  <div class="skeleton-grid">
-    <p-skeleton height="200px" borderRadius="12px" />
-    <p-skeleton height="200px" borderRadius="12px" />
-    <p-skeleton height="200px" borderRadius="12px" />
+<!-- ── Skeleton ── -->
+@if (loading()) {
+  <div class="detail-skeleton">
+    <p-skeleton height="120px" borderRadius="12px" styleClass="mb-3" />
+    <div class="skeleton-grid">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <p-skeleton height="90px" borderRadius="12px" />
+      }
+    </div>
+    <p-skeleton height="320px" borderRadius="12px" styleClass="mt-3" />
   </div>
-  <p-skeleton height="300px" borderRadius="12px" styleClass="mt-3" />
-</div>
+}
 
-<div *ngIf="!loading() && patient()" class="patient-detail">
-  <!-- ── Breadcrumb ── -->
-  <nav class="breadcrumb">
-    <a routerLink="/patients" class="bc-link">
-      <i class="pi pi-arrow-left"></i> Patients
+<!-- ── Erreur chargement ── -->
+@if (!loading() && loadError()) {
+  <div class="load-error" role="alert">
+    <div class="load-error-icon">
+      <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+    </div>
+    <div class="load-error-body">
+      <strong>Impossible de charger le dossier</strong>
+      <span>{{ loadError() }}</span>
+    </div>
+    <a routerLink="/rh" class="load-error-back">
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+      Retour à la liste
     </a>
-    <span class="bc-sep">/</span>
-    <span class="bc-current">{{ patient()!.prenom }} {{ patient()!.nom }}</span>
-  </nav>
-
-  <!-- ── En-tête patient ── -->
-  <div class="patient-hero">
-    <div class="hero-left">
-      <!-- Avatar -->
-      <div
-        class="patient-avatar"
-        [class.avatar-m]="patient()!.sexe === 'M'"
-        [class.avatar-f]="patient()!.sexe === 'F'"
-      >
-        {{ initiales }}
-      </div>
-
-      <!-- Infos principales -->
-      <div class="patient-main-info">
-        <div class="patient-fullname">
-          {{ patient()!.prenom }} {{ patient()!.nom }}
-        </div>
-        <div class="patient-meta">
-          <span><i class="pi pi-calendar"></i> {{ age }} ans</span>
-          <span class="meta-sep">·</span>
-          <span>{{ getSexeLabel(patient()!.sexe) }}</span>
-          <span *ngIf="patient()!.groupeSanguin" class="meta-sep">·</span>
-          <span *ngIf="patient()!.groupeSanguin" class="blood-badge">
-            {{ patient()!.groupeSanguin }}
-          </span>
-        </div>
-        <div class="patient-contacts">
-          <span *ngIf="patient()!.telephone">
-            <i class="pi pi-phone"></i> {{ patient()!.telephone }}
-          </span>
-          <span *ngIf="patient()!.email">
-            <i class="fa-regular fa-envelope"></i> {{ patient()!.email }}
-          </span>
-        </div>
-        <!-- Allergies -->
-        <div *ngIf="patient()!.allergies" class="allergies-alert">
-          <i class="pi pi-exclamation-circle"></i>
-          <span><strong>Allergies :</strong> {{ patient()!.allergies }}</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="hero-actions">
-      <p-button label="Nouvelle consultation" styleClass="hero-btn-primary">
-        <ng-template pTemplate="icon">
-          <i class="fa-solid fa-stethoscope"></i>
-        </ng-template>
-      </p-button>
-      <p-button
-        label="Modifier"
-        icon="pi pi-user-edit"
-        severity="secondary"
-        [outlined]="true"
-        [routerLink]="['/patients', patient()!.id, 'edit']"
-      />
-      <p-button
-        icon="pi pi-print"
-        severity="secondary"
-        [outlined]="true"
-        pTooltip="Imprimer la fiche"
-        tooltipPosition="top"
-        (onClick)="imprimerFiche()"
-      />
-      <p-button
-        icon="pi pi-copy"
-        severity="secondary"
-        [outlined]="true"
-        pTooltip="Copier l'ID"
-        tooltipPosition="top"
-        (onClick)="copierId()"
-      />
-    </div>
   </div>
+}
 
-  <!-- ── Cartes résumé ── -->
-  <div class="summary-cards">
-    <div class="summary-card">
-      <div class="sc-icon sc-blue">
-        <i class="fa-solid fa-stethoscope"></i>
-      </div>
-      <div class="sc-body">
-        <span class="sc-val">{{ consultations().length }}</span>
-        <span class="sc-label">Consultations</span>
-      </div>
-    </div>
-    <div class="summary-card">
-      <div class="sc-icon sc-green"><i class="fa-solid fa-flask"></i></div>
-      <div class="sc-body">
-        <span class="sc-val">{{ examens().length }}</span>
-        <span class="sc-label">Examens</span>
-      </div>
-    </div>
-    <div class="summary-card">
-      <div class="sc-icon sc-amber"><i class="pi pi-receipt"></i></div>
-      <div class="sc-body">
-        <span class="sc-val">{{ factures().length }}</span>
-        <span class="sc-label">Factures</span>
-      </div>
-    </div>
-    <div class="summary-card" [class.sc-danger]="soldeDu > 0">
-      <div
-        class="sc-icon"
-        [class.sc-red]="soldeDu > 0"
-        [class.sc-green]="soldeDu === 0"
+<!-- ── Contenu principal ── -->
+@if (!loading() && employe()) {
+  <div class="clnt-detail">
+    <!-- ── Breadcrumb ── -->
+    <nav class="breadcrumb" aria-label="Navigation">
+      <a routerLink="/employes" class="bc-link">
+        <i class="pi pi-arrow-left" aria-hidden="true"></i>
+        Ressources humaines
+      </a>
+      <span class="bc-sep" aria-hidden="true">/</span>
+      <span class="bc-current"
+        >{{ employe()!.prenom }} {{ employe()!.nom }}</span
       >
-        <i
-          class="pi"
-          [ngClass]="soldeDu > 0 ? 'pi-exclamation-circle' : 'pi-verified'"
-        ></i>
-      </div>
-      <div class="sc-body">
-        <span class="sc-val">{{ soldeDu | number }} HTG</span>
-        <span class="sc-label">Solde dû</span>
-      </div>
-    </div>
-  </div>
+    </nav>
 
-  <!-- ── Onglets ── -->
-  <p-tabs [(value)]="activeTab">
-    <!-- ── Onglet Dossier médical ── -->
-    <p-tablist>
-      <p-tab [value]="0"><i class="pi pi-folder"></i> Dossier</p-tab>
-      <p-tab [value]="1"
-        ><i class="fa-solid fa-stethoscope"></i> Consultations</p-tab
-      >
-      <p-tab [value]="2"><i class="fa-solid fa-flask"></i> Labo</p-tab>
-      <p-tab [value]="3"><i class="fa-solid fa-pills"></i> Ordonnances</p-tab>
-      <p-tab [value]="4"><i class="pi pi-receipt"></i> Facturation</p-tab>
-      <p-tab [value]="5"><i class="pi pi-history"></i> Historique</p-tab>
-    </p-tablist>
-
-    <!-- PANNEAU 0 : Dossier médical -->
-    <p-tabpanels>
-      <p-tabpanel [value]="0">
-        <div class="dossier-grid">
-          <!-- Informations personnelles -->
-          <div class="info-card">
-            <div class="info-card-title">
-              <i class="pi pi-user"></i> Informations personnelles
-            </div>
-            <div class="info-rows">
-              <div class="info-row">
-                <span class="info-label">Nom complet</span>
-                <span class="info-val"
-                  >{{ patient()!.prenom }} {{ patient()!.nom }}</span
-                >
-              </div>
-              <div class="info-row">
-                <span class="info-label">Date de naissance</span>
-                <span class="info-val"
-                  >{{ patient()!.dateNaissance | date: "dd/MM/yyyy" }} ({{
-                    age
-                  }}
-                  ans)</span
-                >
-              </div>
-              <div class="info-row">
-                <span class="info-label">Sexe</span>
-                <span class="info-val">{{
-                  getSexeLabel(patient()!.sexe)
-                }}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">Téléphone</span>
-                <span class="info-val">{{ patient()!.telephone ?? "—" }}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">Email</span>
-                <span class="info-val">{{ patient()!.email ?? "—" }}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">Adresse</span>
-                <span class="info-val">{{ patient()!.adresse ?? "—" }}</span>
-              </div>
-            </div>
+    <!-- ── Hero ── -->
+    <div class="clnt-hero">
+      <div class="hero-left">
+        <div class="clnt-avatar" [ngStyle]="getAvatarBg()">
+          {{ initiales }}
+        </div>
+        <div class="clnt-main-info">
+          <div class="clnt-fullname">
+            {{ employe()!.prenom }} {{ employe()!.nom }}
           </div>
+          <div class="emp-poste">{{ employe()!.poste }}</div>
+          <div class="clnt-meta">
+            <span>
+              <i class="pi pi-building" aria-hidden="true"></i>
+              {{ deptLabel }}
+            </span>
+            <span class="meta-sep" aria-hidden="true">·</span>
+            <span>
+              <i class="pi pi-calendar" aria-hidden="true"></i>
+              {{ anciennete() }} an(s) d'ancienneté
+            </span>
+            @if (employe()!.telephone) {
+              <span class="meta-sep" aria-hidden="true">·</span>
+              <span>
+                <i class="pi pi-phone" aria-hidden="true"></i>
+                {{ employe()!.telephone }}
+              </span>
+            }
+          </div>
+          <div class="emp-email">
+            <i class="pi pi-envelope" aria-hidden="true"></i>
+            {{ employe()!.email }}
+          </div>
+          <div class="emp-badges">
+            <p-tag
+              [value]="employe()!.statut"
+              [severity]="getStatutSeverity(employe()!.statut)"
+            />
+            <p-tag
+              [value]="employe()!.typeContrat"
+              [severity]="getContratSeverity(employe()!.typeContrat)"
+            />
+          </div>
+        </div>
+      </div>
 
-          <!-- Informations médicales -->
-          <div class="info-card">
-            <div class="info-card-title">
-              <i class="fa-solid fa-heart-pulse"></i> Informations médicales
+      <!-- Actions -->
+      <div class="hero-actions">
+        <button
+          class="btn-hero-primary"
+          (click)="showEditDialog.set(true)"
+          aria-label="Modifier la fiche"
+        >
+          <i class="pi pi-pencil" aria-hidden="true"></i>
+          Modifier
+        </button>
+        <button
+          class="btn-hero-secondary"
+          [class.btn-toggle-on]="employe()!.statut !== 'ACTIF'"
+          (click)="toggleStatut()"
+          [attr.aria-label]="
+            employe()!.statut === 'ACTIF' ? 'Désactiver' : 'Réactiver'
+          "
+        >
+          <i
+            class="pi"
+            [class.pi-ban]="employe()!.statut === 'ACTIF'"
+            [class.pi-check-circle]="employe()!.statut !== 'ACTIF'"
+            aria-hidden="true"
+          ></i>
+          {{ employe()!.statut === "ACTIF" ? "Désactiver" : "Réactiver" }}
+        </button>
+        <button
+          class="btn-icon"
+          pTooltip="Imprimer"
+          (click)="imprimerFiche()"
+          aria-label="Imprimer la fiche"
+        >
+          <i class="pi pi-print" aria-hidden="true"></i>
+        </button>
+        <button
+          class="btn-icon"
+          pTooltip="Copier l'ID"
+          (click)="copierId()"
+          aria-label="Copier l'identifiant"
+        >
+          <i class="pi pi-copy" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Cartes résumé ── -->
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="sc-icon sc-blue">
+          <i class="pi pi-wallet" aria-hidden="true"></i>
+        </div>
+        <div class="sc-body">
+          <span class="sc-val"
+            >{{ employe()!.salaireBase | number: "1.0-0" }} FCFA</span
+          >
+          <span class="sc-label">Salaire de base</span>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-icon sc-green">
+          <i class="pi pi-chart-line" aria-hidden="true"></i>
+        </div>
+        <div class="sc-body">
+          <span class="sc-val"
+            >{{ salaireNetMoyen() | number: "1.0-0" }} FCFA</span
+          >
+          <span class="sc-label">Net moyen (3 mois)</span>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-icon sc-amber">
+          <i class="pi pi-calendar-times" aria-hidden="true"></i>
+        </div>
+        <div class="sc-body">
+          <span class="sc-val">{{ totalCongesApprouves() }}</span>
+          <span class="sc-label">Jours de congé pris</span>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-icon sc-purple">
+          <i class="pi pi-file-pdf" aria-hidden="true"></i>
+        </div>
+        <div class="sc-body">
+          <span class="sc-val">{{ fiches().length }}</span>
+          <span class="sc-label">Fiches de paie</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Onglets ── -->
+    <p-tabs [(value)]="activeTab">
+      <p-tablist>
+        <p-tab [value]="0">
+          <i class="pi pi-id-card" aria-hidden="true"></i>
+          Dossier
+        </p-tab>
+        <p-tab [value]="1">
+          <i class="pi pi-wallet" aria-hidden="true"></i>
+          Fiches de paie
+        </p-tab>
+        <p-tab [value]="2">
+          <i class="pi pi-calendar-times" aria-hidden="true"></i>
+          Congés
+        </p-tab>
+        <p-tab [value]="3">
+          <i class="pi pi-timeline" aria-hidden="true"></i>
+          Historique
+        </p-tab>
+      </p-tablist>
+
+      <p-tabpanels>
+        <!-- ════════ PANNEAU 0 : Dossier ════════ -->
+        <p-tabpanel [value]="0">
+          <div class="dossier-grid">
+            <!-- Informations personnelles -->
+            <div class="info-card">
+              <div class="info-card-title">
+                <i class="pi pi-user" aria-hidden="true"></i>
+                Informations personnelles
+              </div>
+              <div class="info-rows">
+                @for (
+                  row of [
+                    {
+                      label: "Nom complet",
+                      val: employe()!.prenom + " " + employe()!.nom,
+                    },
+                    { label: "Email", val: employe()!.email },
+                    { label: "Téléphone", val: employe()!.telephone || "—" },
+                    { label: "Adresse", val: employe()!.adresse || "—" },
+                  ];
+                  track row.label
+                ) {
+                  <div class="info-row">
+                    <span class="info-label">{{ row.label }}</span>
+                    <span class="info-val">{{ row.val }}</span>
+                  </div>
+                }
+              </div>
             </div>
-            <div class="info-rows">
-              <div class="info-row">
-                <span class="info-label">Groupe sanguin</span>
-                <span class="info-val">
-                  <span *ngIf="patient()!.groupeSanguin" class="blood-badge">
-                    {{ patient()!.groupeSanguin }}
+
+            <!-- Informations professionnelles -->
+            <div class="info-card">
+              <div class="info-card-title">
+                <i class="pi pi-briefcase" aria-hidden="true"></i>
+                Informations professionnelles
+              </div>
+              <div class="info-rows">
+                @for (
+                  row of [
+                    { label: "Poste", val: employe()!.poste },
+                    { label: "Département", val: deptLabel },
+                    { label: "Type de contrat", val: employe()!.typeContrat },
+                    {
+                      label: "Date d'embauche",
+                      val:
+                        (employe()!.dateEmbauche | date: "dd/MM/yyyy") ?? "—",
+                    },
+                    { label: "Ancienneté", val: anciennete() + " an(s)" },
+                  ];
+                  track row.label
+                ) {
+                  <div class="info-row">
+                    <span class="info-label">{{ row.label }}</span>
+                    <span class="info-val">{{ row.val }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Rémunération -->
+            <div class="info-card">
+              <div class="info-card-title">
+                <i class="pi pi-dollar" aria-hidden="true"></i>
+                Rémunération
+              </div>
+              <div class="info-rows">
+                <div class="info-row">
+                  <span class="info-label">Salaire de base</span>
+                  <span class="info-val salaire-highlight">
+                    {{ employe()!.salaireBase | number: "1.0-0" }} FCFA
                   </span>
-                  <span *ngIf="!patient()!.groupeSanguin">—</span>
-                </span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Net moyen</span>
+                  <span class="info-val"
+                    >{{ salaireNetMoyen() | number: "1.0-0" }} FCFA</span
+                  >
+                </div>
               </div>
-              <div class="info-row">
-                <span class="info-label">Allergies</span>
-                <span class="info-val allergies-text">
-                  {{ patient()!.allergies || "Aucune allergie connue" }}
-                </span>
+            </div>
+
+            <!-- Administratif -->
+            <div class="info-card">
+              <div class="info-card-title">
+                <i class="pi pi-file" aria-hidden="true"></i>
+                Informations administratives
               </div>
-              <div class="info-row">
-                <span class="info-label">Antécédents</span>
-                <span class="info-val">{{
-                  patient()!.antecedents || "Aucun antécédent renseigné"
-                }}</span>
+              <div class="info-rows">
+                @for (
+                  row of [
+                    { label: "N° CNSS", val: employe()!.numeroCnss || "—" },
+                    { label: "RIB", val: employe()!.rib || "—" },
+                    { label: "Statut", val: employe()!.statut },
+                  ];
+                  track row.label
+                ) {
+                  <div class="info-row">
+                    <span class="info-label">{{ row.label }}</span>
+                    <span class="info-val">{{ row.val }}</span>
+                  </div>
+                }
               </div>
             </div>
           </div>
+        </p-tabpanel>
 
-          <!-- Assurance / Mutuelle -->
-          <div class="info-card">
-            <div class="info-card-title">
-              <i class="pi pi-shield"></i> Assurance & Mutuelle
-            </div>
-            <div class="info-rows">
-              <div class="info-row">
-                <span class="info-label">Mutuelle</span>
-                <span class="info-val">{{ patient()!.mutuelle ?? "—" }}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">N° adhérent</span>
-                <span class="info-val">{{
-                  patient()!.numeroMutuelle ?? "—"
-                }}</span>
-              </div>
-            </div>
+        <!-- ════════ PANNEAU 1 : Fiches de paie ════════ -->
+        <p-tabpanel [value]="1">
+          <div class="tab-panel-header">
+            <span>{{ fiches().length }} fiche(s) générée(s)</span>
+            <button class="btn-tab-action">
+              <i class="pi pi-plus" aria-hidden="true"></i>
+              Générer la fiche du mois
+            </button>
           </div>
 
-          <!-- Contact d'urgence -->
-          <div class="info-card">
-            <div class="info-card-title">
-              <i class="pi pi-address-book"></i> Contact d'urgence
+          @if (fiches().length === 0) {
+            <div class="empty-tab">
+              <i class="pi pi-wallet" aria-hidden="true"></i>
+              <p>Aucune fiche de paie générée.</p>
             </div>
-            <div class="info-rows">
-              <div class="info-row">
-                <span class="info-label">Nom</span>
-                <span class="info-val">{{
-                  patient()!.contactUrgenceNom ?? "—"
-                }}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">Téléphone</span>
-                <span class="info-val">{{
-                  patient()!.contactUrgenceTel ?? "—"
-                }}</span>
-              </div>
+          } @else {
+            <div class="fiches-list">
+              @for (f of fiches(); track f.id) {
+                <div class="fiche-card">
+                  <div class="fiche-header">
+                    <div class="fiche-periode">
+                      <i class="pi pi-calendar" aria-hidden="true"></i>
+                      <span class="fiche-mois"
+                        >{{ getMoisLabel(f.mois) }} {{ f.annee }}</span
+                      >
+                    </div>
+                    <button
+                      class="btn-dl"
+                      aria-label="Télécharger la fiche PDF"
+                    >
+                      <i class="pi pi-download" aria-hidden="true"></i>
+                      PDF
+                    </button>
+                  </div>
+                  <div class="fiche-body">
+                    @for (
+                      ligne of [
+                        { label: "Salaire brut", val: f.salaireBrut, cls: "" },
+                        {
+                          label: "Cotisations",
+                          val: -f.cotisations,
+                          cls: "neg",
+                        },
+                        { label: "Primes", val: f.primes, cls: "pos" },
+                        { label: "Retenues", val: -f.retenues, cls: "neg" },
+                      ];
+                      track ligne.label
+                    ) {
+                      <div class="fiche-ligne">
+                        <span class="fiche-ligne-label">{{ ligne.label }}</span>
+                        <span
+                          class="fiche-ligne-val"
+                          [class.val-neg]="ligne.val < 0"
+                          [class.val-pos]="ligne.cls === 'pos' && ligne.val > 0"
+                        >
+                          {{
+                            ligne.val < 0
+                              ? "- "
+                              : ligne.val > 0 && ligne.cls === "pos"
+                                ? "+ "
+                                : ""
+                          }}{{
+                            (ligne.val < 0 ? -ligne.val : ligne.val)
+                              | number: "1.0-0"
+                          }}
+                          FCFA
+                        </span>
+                      </div>
+                    }
+                    <div class="fiche-net">
+                      <span>Salaire net</span>
+                      <span>{{ f.salaireNet | number: "1.0-0" }} FCFA</span>
+                    </div>
+                  </div>
+                </div>
+              }
             </div>
+          }
+        </p-tabpanel>
+
+        <!-- ════════ PANNEAU 2 : Congés ════════ -->
+        <p-tabpanel [value]="2">
+          <div class="tab-panel-header">
+            <span
+              >{{ totalCongesApprouves() }} jour(s) pris ·
+              {{ conges().length }} demande(s)</span
+            >
+            <button class="btn-tab-action">
+              <i class="pi pi-plus" aria-hidden="true"></i>
+              Nouvelle demande
+            </button>
           </div>
-        </div>
 
-        <!-- Notes générales -->
-        <div *ngIf="patient()!.notesGenerales" class="notes-card">
-          <div class="info-card-title">
-            <i class="pi pi-clipboard"></i> Notes générales
-          </div>
-          <p class="notes-text">{{ patient()!.notesGenerales }}</p>
-        </div>
-      </p-tabpanel>
-
-      <!-- PANNEAU 1 : Consultations -->
-      <p-tabpanel [value]="1">
-        <div class="tab-panel-header">
-          <span>{{ consultations().length }} consultation(s)</span>
-          <p-button
-            label="Nouvelle consultation"
-            icon="pi pi-plus"
-            size="small"
-          />
-        </div>
-        <p-table
-          [value]="consultations()"
-          styleClass="p-datatable-sm"
-          [rowHover]="true"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Date</th>
-              <th>Médecin</th>
-              <th>Motif</th>
-              <th>Diagnostic</th>
-              <th>Statut</th>
-              <th></th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-c>
-            <tr>
-              <td>{{ c.date | date: "dd/MM/yyyy" }}</td>
-              <td>{{ c.medecin }}</td>
-              <td>{{ c.motif }}</td>
-              <td>{{ c.diagnostic }}</td>
-              <td><p-tag value="Terminé" severity="success" /></td>
-              <td>
-                <p-button
-                  icon="pi pi-eye"
-                  [text]="true"
-                  size="small"
-                  pTooltip="Voir détails"
-                />
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </p-tabpanel>
-
-      <!-- PANNEAU 2 : Labo -->
-      <p-tabpanel [value]="2">
-        <div class="tab-panel-header">
-          <span>{{ examens().length }} examen(s)</span>
-          <p-button
-            label="Prescrire un examen"
-            icon="pi pi-plus"
-            size="small"
-          />
-        </div>
-        <p-table
-          [value]="examens()"
-          styleClass="p-datatable-sm"
-          [rowHover]="true"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Date</th>
-              <th>Type d'examen</th>
-              <th>Résultat</th>
-              <th>Statut</th>
-              <th></th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-e>
-            <tr>
-              <td>{{ e.date | date: "dd/MM/yyyy" }}</td>
-              <td>{{ e.type }}</td>
-              <td>{{ e.resultat ?? "—" }}</td>
-              <td>
-                <p-tag
-                  [value]="e.statut"
-                  [severity]="getExamenSeverity(e.statut)"
-                />
-              </td>
-              <td>
-                <p-button
-                  icon="pi pi-file"
-                  [text]="true"
-                  size="small"
-                  pTooltip="Voir rapport"
-                  [disabled]="e.statut !== 'TERMINE'"
-                />
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </p-tabpanel>
-
-      <!-- PANNEAU 3 : Ordonnances -->
-      <p-tabpanel [value]="3">
-        <div class="tab-panel-header">
-          <span>{{ ordonnances().length }} ordonnance(s)</span>
-          <p-button
-            label="Nouvelle ordonnance"
-            icon="pi pi-plus"
-            size="small"
-          />
-        </div>
-        <div class="ordonnances-list">
-          <div *ngFor="let o of ordonnances()" class="ordonnance-card">
-            <div class="ord-header">
-              <div class="ord-meta">
-                <i class="fa-solid fa-prescription"></i>
-                <span class="ord-date">{{ o.date | date: "dd/MM/yyyy" }}</span>
-                <span class="ord-medecin">{{ o.medecin }}</span>
-              </div>
-              <p-button
-                icon="pi pi-download"
-                [text]="true"
-                size="small"
-                pTooltip="Télécharger PDF"
-              />
+          @if (conges().length === 0) {
+            <div class="empty-tab">
+              <i class="pi pi-calendar-times" aria-hidden="true"></i>
+              <p>Aucune demande de congé enregistrée.</p>
             </div>
-            <ul class="ord-meds">
-              <li *ngFor="let m of o.medicaments">
-                <i class="fa-solid fa-pills"></i> {{ m }}
-              </li>
-            </ul>
+          } @else {
+            <p-table
+              [value]="conges()"
+              styleClass="p-datatable-sm"
+              [rowHover]="true"
+            >
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Type</th>
+                  <th>Début</th>
+                  <th>Fin</th>
+                  <th>Durée</th>
+                  <th>Motif</th>
+                  <th>Statut</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-c>
+                <tr>
+                  <td>{{ c.type }}</td>
+                  <td>{{ c.dateDebut | date: "dd/MM/yyyy" }}</td>
+                  <td>{{ c.dateFin | date: "dd/MM/yyyy" }}</td>
+                  <td>{{ c.dureeJours }} jour(s)</td>
+                  <td>{{ c.motif || "—" }}</td>
+                  <td>
+                    <p-tag
+                      [value]="c.statut"
+                      [severity]="getCongeStatutSeverity(c.statut)"
+                    />
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          }
+        </p-tabpanel>
+
+        <!-- ════════ PANNEAU 3 : Historique timeline ════════ -->
+        <p-tabpanel [value]="3">
+          <div class="timeline-wrap">
+            @if (timeline().length === 0) {
+              <div class="empty-tab">
+                <i class="pi pi-history" aria-hidden="true"></i>
+                <p>Aucun événement enregistré.</p>
+              </div>
+            } @else {
+              <p-timeline [value]="timeline()" align="left">
+                <ng-template pTemplate="marker" let-event>
+                  <div class="tl-marker" [style.background]="event.color">
+                    <i class="pi" [ngClass]="event.icon" aria-hidden="true"></i>
+                  </div>
+                </ng-template>
+                <ng-template pTemplate="content" let-event>
+                  <div class="tl-content">
+                    <span class="tl-date">{{
+                      event.date | date: "dd/MM/yyyy"
+                    }}</span>
+                    <span class="tl-title">{{ event.title }}</span>
+                    <span class="tl-sub">{{ event.subtitle }}</span>
+                  </div>
+                </ng-template>
+              </p-timeline>
+            }
           </div>
-        </div>
-      </p-tabpanel>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+}
 
-      <!-- PANNEAU 4 : Facturation -->
-      <p-tabpanel [value]="4">
-        <div class="tab-panel-header">
-          <span
-            >Solde dû :
-            <strong [class.solde-danger]="soldeDu > 0"
-              >{{ soldeDu | number }} HTG</strong
-            ></span
-          >
-          <p-button label="Nouvelle facture" icon="pi pi-plus" size="small" />
-        </div>
-        <p-table
-          [value]="factures()"
-          styleClass="p-datatable-sm"
-          [rowHover]="true"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Date</th>
-              <th>Montant total</th>
-              <th>Montant payé</th>
-              <th>Reste dû</th>
-              <th>Statut</th>
-              <th></th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-f>
-            <tr>
-              <td>{{ f.date | date: "dd/MM/yyyy" }}</td>
-              <td>{{ f.montant | number }} HTG</td>
-              <td>{{ f.paye | number }} HTG</td>
-              <td [class.reste-danger]="f.montant - f.paye > 0">
-                {{ f.montant - f.paye | number }} HTG
-              </td>
-              <td>
-                <p-tag
-                  [value]="f.statut"
-                  [severity]="getFactureSeverity(f.statut)"
-                />
-              </td>
-              <td>
-                <p-button icon="pi pi-eye" [text]="true" size="small" />
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </p-tabpanel>
+<!-- ── Employé introuvable ── -->
+@if (!loading() && !employe() && !loadError()) {
+  <div class="not-found">
+    <i class="pi pi-user-minus" aria-hidden="true"></i>
+    <h3>Employé introuvable</h3>
+    <p>Le dossier demandé n'existe pas ou a été supprimé.</p>
+    <a routerLink="/rh" class="btn-back">
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+      Retour à la liste
+    </a>
+  </div>
+}
 
-      <!-- PANNEAU 5 : Historique timeline -->
-      <p-tabpanel [value]="5">
-        <div class="timeline-wrap">
-          <p-timeline
-            [value]="timeline()"
-            align="left"
-            styleClass="patient-timeline"
-          >
-            <ng-template pTemplate="marker" let-event>
-              <div class="tl-marker" [style.background]="event.color">
-                <i class="pi" [ngClass]="event.icon"></i>
-              </div>
-            </ng-template>
-            <ng-template pTemplate="content" let-event>
-              <div class="tl-content">
-                <span class="tl-date">{{
-                  event.date | date: "dd/MM/yyyy"
-                }}</span>
-                <span class="tl-title">{{ event.title }}</span>
-                <span class="tl-sub">{{ event.subtitle }}</span>
-              </div>
-            </ng-template>
-          </p-timeline>
-        </div>
-      </p-tabpanel>
-    </p-tabpanels>
-  </p-tabs>
-</div>
-
-<!-- Patient introuvable -->
-<div *ngIf="!loading() && !patient()" class="not-found">
-  <i class="ti ti-user-off"></i>
-  <h3>Patient introuvable</h3>
-  <p>Le dossier demandé n'existe pas ou a été supprimé.</p>
-  <p-button
-    label="Retour à la liste"
-    icon="pi pi-arrow-left"
-    routerLink="/patients"
-  />
-</div>
+<!-- ── Dialog modification ── -->
+<p-dialog
+  header="Modifier la fiche employé"
+  [(visible)]="showEditDialog"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '680px' }"
+  styleClass="employe-dialog"
+  [closeOnEscape]="true"
+>
+  @if (showEditDialog()) {
+    <clnt-employe-form
+      [employe]="employe()"
+      [editMode]="true"
+      (saved)="onFormSaved($event)"
+      (errorOccured)="onFormError($event)"
+      (cancelled)="showEditDialog.set(false)"
+    />
+  }
+</p-dialog>
