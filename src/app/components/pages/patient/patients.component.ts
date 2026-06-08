@@ -16,6 +16,7 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 import { PatientService } from '../../../core/services/patient/patient.service';
 import { Patient, Page } from '../../../core/models/all/all.model';
 import { TooltipModule } from 'primeng/tooltip';
+import { Configuration } from '../../../core/models/configuration/configuration.model';
 
 @Component({
   selector: 'clnt-patients',
@@ -47,7 +48,7 @@ export class PatientsComponent implements OnInit {
   page = signal<Page<Patient> | null>(null);
   loading = signal(true);
   searchQuery = '';
-  pageSize = 20;
+  readonly pageSize = Configuration.pageSize;
 
   totalPatients = computed(() => this.page()?.totalElements ?? 0);
 

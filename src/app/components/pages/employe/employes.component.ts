@@ -42,6 +42,7 @@ import {
 } from '../../../core/services/employe/employe.service';
 import { CommonService } from '../../../core/services/common.services';
 import { EmployeFormComponent } from './formulaire/employe-form.component';
+import { Configuration } from '../../../core/models/configuration/configuration.model';
 
 @Component({
   selector: 'clnt-employes',
@@ -82,7 +83,7 @@ export class EmployesComponent implements OnInit {
   searchQuery = '';
   filterDept = signal<string>('');
   pageIndex = signal(0);
-  readonly pageSize = 15;
+  readonly pageSize = Configuration.pageSize;
 
   // Formulaire dialog
   showDialog = signal(false);
@@ -313,8 +314,8 @@ export class EmployesComponent implements OnInit {
   }
   getDialogTitle(): string {
     return this.editMode() ? "Modifier l'employé" : 'Nouvel employé';
-  } 
+  }
   getDialogSubtitle(): string {
-    return this.editMode() ? "Mise à jour du dossier" : 'Création du dossier';
+    return this.editMode() ? 'Mise à jour du dossier' : 'Création du dossier';
   }
 }

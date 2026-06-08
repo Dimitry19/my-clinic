@@ -1,111 +1,99 @@
 ﻿// ── Variables ──────────────────────────────────────────────
 
-$primary: #185fa5;
-$success: #0f6e56;
-$danger: #a32d2d;
-$warning: #ba7517;
-$border: #d3d1c7;
-$text: #2c2c2a;
-$text-muted: #5f5e5a;
-$bg: #ffffff;
-$bg-light: #f1efe8;
-$radius: 8px;
-$radius-lg: 12px;
+@import "../../../../../variables.scss";
 
-// ── Hero ───────────────────────────────────────────────────
-.employe-hero {
-  background: $bg;
-  border: 0.5px solid $border;
-  border-radius: $radius-lg;
-  padding: 1.5rem;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-}
-.hero-left {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.25rem;
-}
-.clnt-avatar {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  font-weight: 500;
-  flex-shrink: 0;
-  background: #e6f1fb;
-  color: #0c447c;
-  &.avatar-f {
-    background: #faeeda;
-    color: #633806;
-  }
-}
-.clnt-fullname {
-  font-size: 1.4rem;
-  font-weight: 500;
-  color: $text;
-  margin-bottom: 6px;
-}
-.clnt-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: $text-muted;
-  margin-bottom: 8px;
-  i {
-    font-size: 15px;
-  }
-}
-.meta-sep {
-  color: $border;
-}
-.blood-badge {
-  background: #fcebeb;
-  color: #791f1f;
-  border: 0.5px solid #f09595;
-  border-radius: 20px;
-  padding: 2px 10px;
-  font-size: 12px;
-  font-weight: 500;
-}
-.clnt-contacts {
-  display: flex;
-  gap: 16px;
-  font-size: 13px;
-  color: $text-muted;
-  margin-bottom: 8px;
-  i {
-    font-size: 14px;
-    margin-right: 4px;
-  }
-}
-.allergies-alert {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #fff8e6;
-  border: 0.5px solid #f0c860;
-  border-radius: $radius;
-  padding: 6px 12px;
-  font-size: 13px;
-  color: #7a4f00;
-  i {
-    font-size: 16px;
-    color: $warning;
-    flex-shrink: 0;
-  }
-}
+// ── Hero actions — override PrimeNG ───────────────────────
 .hero-actions {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  flex-wrap: wrap;
+
+  // Reset complet des boutons natifs surchargés par PrimeNG
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    outline: none;
+  }
+}
+
+.btn-hero-primary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  background: $primary !important;
+  color: #fff !important;
+  border: none;
+  border-radius: $radius;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: none !important;
+
+  .pi {
+    font-size: 15px;
+  }
+
+  &:hover {
+    background: $primary-dk !important;
+  }
+  &:focus {
+    box-shadow: 0 0 0 3px rgba(#185fa5, 0.2) !important;
+  }
+}
+
+.btn-hero-secondary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  background: $bg !important;
+  color: $text-muted !important;
+  border: 0.5px solid $border !important;
+  border-radius: $radius;
+  font-size: 14px;
+  box-shadow: none !important;
+
+  .pi {
+    font-size: 15px;
+  }
+
+  &:hover {
+    background: $warning-lt !important;
+    color: $warning !important;
+    border-color: $warning !important;
+  }
+
+  &.btn-toggle-on {
+    color: $success !important;
+    border-color: $success !important;
+    background: $success-lt !important;
+  }
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  background: $bg !important;
+  border: 0.5px solid $border !important;
+  border-radius: $radius;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $text-muted !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+
+  .pi {
+    font-size: 16px;
+  }
+
+  &:hover {
+    background: $bg-light !important;
+    color: $text !important;
+  }
 }
 
 // ── Dossier grid ───────────────────────────────────────────
@@ -166,6 +154,23 @@ $radius-lg: 12px;
     color: #7a4f00;
     font-weight: 400;
   }
+}
+
+// ── Notes ─────────────────────────────────────────────────
+.notes-card {
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  margin: 1rem;
+}
+.notes-text {
+  padding: 1rem 1.25rem;
+  font-size: 14px;
+  color: $text;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
 }
 
 // ── Tab panel header ───────────────────────────────────────
