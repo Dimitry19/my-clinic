@@ -1,0 +1,559 @@
+﻿<p-toast position="top-right" />
+<p-confirmDialog />
+
+<div class="agenda-page">
+  <!-- ── En-tête ── -->
+  <div class="page-header">
+    <div>
+      <h2><i class="pi pi-calendar" aria-hidden="true"></i> Agenda</h2>
+      <p>
+        {{ totalRdvsMois() }} RDV ce mois
+        <span class="inline-badge badge-success">
+          <i class="pi pi-check-circle" aria-hidden="true"></i>
+          {{ rdvConfirmes() }} confirmés
+        </span>
+        <span class="inline-badge badge-warn">
+          <i class="pi pi-clock" aria-hidden="true"></i>
+          {{ rdvEnAttente() }} en attente
+        </span>
+      </p>
+    </div>
+    <p-button
+      label="Nouveau RDV"
+      icon="pi pi-plus"
+      (onClick)="ouvrirCreation()"
+    />
+  </div>
+
+  <!-- ── Erreur chargement ── -->
+  @if (loadError()) {
+    <p-message severity="error" [text]="loadError()!" styleClass="w-full" />
+  }
+
+  <!-- ── Stats rapides du jour ── -->
+  <div class="stats-row">
+    <div class="stat-chip">
+      <i class="pi pi-sun" aria-hidden="true"></i>
+      <span
+        >Aujourd'hui : <strong>{{ rdvAujourdhui().length }} RDV</strong></span
+      >
+    </div>
+    @for (rdv of rdvAujourdhui().slice(0, 3); track rdv.id) {
+      <div class="rdv-chip" (click)="ouvrirDetail(rdv, $event)">
+        <span class="rdv-chip-heure">{{ formatHeure(rdv.dateHeure) }}</span>
+        <span class="rdv-chip-nom"
+          >{{ rdv.patientPrenom }} {{ rdv.patientNom }}</span
+        >
+        <p-tag
+          [value]="statutConfig[rdv.statut].label"
+          [severity]="statutConfig[rdv.statut].severity"
+          styleClass="tag-xs"
+        />
+      </div>
+    }
+    @if (rdvAujourdhui().length > 3) {
+      <div class="rdv-chip rdv-chip-more">
+        + {{ rdvAujourdhui().length - 3 }} autres
+      </div>
+    }
+  </div>
+
+  <!-- ── Calendrier ── -->
+  <div class="calendar-card">
+    <!-- Toolbar navigation -->
+    <div class="cal-toolbar">
+      <div class="cal-nav">
+        <p-button
+          icon="pi pi-chevron-left"
+          [text]="true"
+          severity="secondary"
+          (onClick)="moisPrecedent()"
+          pTooltip="Mois précédent"
+        />
+        <h3 class="cal-titre">{{ moisLabel() }}</h3>
+        <p-button
+          icon="pi pi-chevron-right"
+          [text]="true"
+          severity="secondary"
+          (onClick)="moisSuivant()"
+          pTooltip="Mois suivant"
+        />
+      </div>
+      <p-button
+        label="Aujourd'hui"
+        [outlined]="true"
+        severity="secondary"
+        size="small"
+        (onClick)="allerAujourdhui()"
+      />
+    </div>
+
+    <!-- Skeleton pendant le chargement -->
+    @if (loading()) {
+      <div class="cal-skeleton">
+        <div class="cal-jours-header">
+          @for (j of joursLabel; track j) {
+            <div class="jour-header">{{ j }}</div>
+          }
+        </div>
+        <div class="cal-grid">
+          @for (
+            i of [
+              1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+              20, 21, 22, 23, 24, 25, 26, 27, 28,
+            ];
+            track i
+          ) {
+            <p-skeleton height="80px" borderRadius="8px" />
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Grille calendrier -->
+    @if (!loading()) {
+      <div class="cal-content">
+        <!-- Entêtes jours -->
+        <div class="cal-jours-header">
+          @for (j of joursLabel; track j) {
+            <div class="jour-header">{{ j }}</div>
+          }
+        </div>
+
+        <!-- Cellules -->
+        <div class="cal-grid">
+          @for (day of calendarDays(); track day.date.toISOString()) {
+            <div
+              class="cal-cell"
+              [class.cell-today]="day.isToday"
+              [class.cell-other-month]="!day.isCurrentMonth"
+              [class.cell-selected]="
+                jourSelectionne()?.toDateString() === day.date.toDateString()
+              "
+              [class.cell-has-rdv]="day.rdvs.length > 0"
+              (click)="selectionnerJour(day)"
+            >
+              <!-- Numéro du jour -->
+              <div class="cell-numero">
+                <span [class.numero-today]="day.isToday">{{
+                  day.date.getDate()
+                }}</span>
+                @if (day.rdvs.length > 0 && !day.isToday) {
+                  <span class="rdv-count-dot">{{ day.rdvs.length }}</span>
+                }
+              </div>
+
+              <!-- RDVs dans la cellule (max 2) -->
+              @for (rdv of day.rdvs.slice(0, 2); track rdv.id) {
+                <div
+                  class="cell-rdv"
+                  [class.rdv-confirme]="rdv.statut === 'CONFIRME'"
+                  [class.rdv-planifie]="rdv.statut === 'PLANIFIE'"
+                  [class.rdv-annule]="rdv.statut === 'ANNULE'"
+                  [class.rdv-termine]="rdv.statut === 'TERMINE'"
+                  [class.rdv-absent]="rdv.statut === 'ABSENT'"
+                  (click)="ouvrirDetail(rdv, $event)"
+                  [pTooltip]="
+                    rdv.patientPrenom + ' ' + rdv.patientNom + ' — ' + rdv.motif
+                  "
+                  tooltipPosition="top"
+                >
+                  <span class="cell-rdv-heure">{{
+                    formatHeure(rdv.dateHeure)
+                  }}</span>
+                  <span class="cell-rdv-nom"
+                    >{{ rdv.patientPrenom[0] }}. {{ rdv.patientNom }}</span
+                  >
+                </div>
+              }
+              @if (day.rdvs.length > 2) {
+                <div class="cell-rdv-more">
+                  +{{ day.rdvs.length - 2 }} autres
+                </div>
+              }
+
+              <!-- Bouton ajouter au survol -->
+              <button
+                class="cell-add-btn"
+                (click)="$event.stopPropagation(); ouvrirCreation(day.date)"
+                aria-label="Ajouter un RDV"
+                pTooltip="Ajouter un RDV"
+                tooltipPosition="top"
+              >
+                <i class="pi pi-plus" aria-hidden="true"></i>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- ── Panneau jour sélectionné ── -->
+  @if (jourSelectionne()) {
+    <div class="jour-panel">
+      <div class="jour-panel-header">
+        <h4>
+          <i class="pi pi-list" aria-hidden="true"></i>
+          RDV du {{ jourSelectionne()! | date: "EEEE d MMMM" : "" : "fr" }}
+        </h4>
+        <p-button
+          icon="pi pi-plus"
+          label="Ajouter"
+          size="small"
+          [outlined]="true"
+          (onClick)="ouvrirCreation(jourSelectionne()!)"
+        />
+      </div>
+
+      @if (rdvJourSelectionne().length === 0) {
+        <div class="jour-empty">
+          <i class="pi pi-calendar-times" aria-hidden="true"></i>
+          <span>Aucun rendez-vous ce jour.</span>
+          <p-button
+            label="Planifier un RDV"
+            icon="pi pi-plus"
+            [text]="true"
+            size="small"
+            (onClick)="ouvrirCreation(jourSelectionne()!)"
+          />
+        </div>
+      } @else {
+        <div class="rdv-list">
+          @for (rdv of rdvJourSelectionne(); track rdv.id) {
+            <div class="rdv-item" (click)="ouvrirDetail(rdv, $event)">
+              <div class="rdv-heure-col">
+                <span class="rdv-heure">{{ formatHeure(rdv.dateHeure) }}</span>
+                <span class="rdv-duree">{{ rdv.dureeMinutes }} min</span>
+              </div>
+              <div
+                class="rdv-barre"
+                [class.barre-confirme]="rdv.statut === 'CONFIRME'"
+                [class.barre-planifie]="rdv.statut === 'PLANIFIE'"
+                [class.barre-annule]="rdv.statut === 'ANNULE'"
+                [class.barre-termine]="rdv.statut === 'TERMINE'"
+                [class.barre-absent]="rdv.statut === 'ABSENT'"
+                aria-hidden="true"
+              ></div>
+              <div class="rdv-body">
+                <div class="rdv-patient">
+                  {{ rdv.patientPrenom }} {{ rdv.patientNom }}
+                </div>
+                <div class="rdv-motif">
+                  <i class="pi pi-clipboard" aria-hidden="true"></i>
+                  {{ rdv.motif }}
+                </div>
+                <div class="rdv-medecin">
+                  <i class="pi pi-user" aria-hidden="true"></i>
+                  {{ rdv.medecinNom }}
+                </div>
+              </div>
+              <div class="rdv-actions">
+                <p-tag
+                  [value]="statutConfig[rdv.statut].label"
+                  [severity]="statutConfig[rdv.statut].severity"
+                />
+                <div class="rdv-btns">
+                  <p-button
+                    icon="pi pi-pencil"
+                    [text]="true"
+                    size="small"
+                    pTooltip="Modifier"
+                    (onClick)="
+                      ouvrirModification(rdv); $event.stopPropagation()
+                    "
+                  />
+                  <p-button
+                    icon="pi pi-trash"
+                    [text]="true"
+                    size="small"
+                    severity="danger"
+                    pTooltip="Supprimer"
+                    (onClick)="
+                      confirmerSuppression(rdv); $event.stopPropagation()
+                    "
+                  />
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- ══ Dialog formulaire RDV ══ -->
+<p-dialog
+  [header]="editMode() ? 'Modifier le rendez-vous' : 'Nouveau rendez-vous'"
+  [(visible)]="showDialog"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '520px' }"
+  [closeOnEscape]="true"
+>
+  @if (showDialog()) {
+    <form
+      [formGroup]="form"
+      (ngSubmit)="soumettre()"
+      novalidate
+      class="rdv-form"
+    >
+      @if (formError()) {
+        <p-message
+          severity="error"
+          [text]="formError()!"
+          styleClass="w-full mb-3"
+        />
+      }
+
+      <!-- Patient -->
+      <div class="f-field" [class.f-err]="hasError('patientId')">
+        <label class="f-label">
+          <i class="pi pi-user" aria-hidden="true"></i>
+          Patient <span class="req" aria-hidden="true">*</span>
+        </label>
+        <p-select
+          formControlName="patientId"
+          [options]="patients"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Sélectionner un patient"
+          styleClass="w-full"
+          filter
+          filterPlaceholder="Rechercher..."
+        />
+        @if (fieldError("patientId")) {
+          <span class="f-err-msg" role="alert">
+            <i class="pi pi-info-circle" aria-hidden="true"></i>
+            {{ fieldError("patientId") }}
+          </span>
+        }
+      </div>
+
+      <!-- Médecin -->
+      <div class="f-field" [class.f-err]="hasError('medecinId')">
+        <label class="f-label">
+          <i class="pi pi-user-plus" aria-hidden="true"></i>
+          Médecin <span class="req" aria-hidden="true">*</span>
+        </label>
+        <p-select
+          formControlName="medecinId"
+          [options]="medecins"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Sélectionner un médecin"
+          styleClass="w-full"
+        />
+        @if (fieldError("medecinId")) {
+          <span class="f-err-msg" role="alert">
+            <i class="pi pi-info-circle" aria-hidden="true"></i>
+            {{ fieldError("medecinId") }}
+          </span>
+        }
+      </div>
+
+      <!-- Date + Durée -->
+      <div class="f-row">
+        <div class="f-field" [class.f-err]="hasError('dateHeure')">
+          <label class="f-label">
+            <i class="pi pi-calendar" aria-hidden="true"></i>
+            Date et heure <span class="req" aria-hidden="true">*</span>
+          </label>
+          <input
+            type="datetime-local"
+            formControlName="dateHeure"
+            class="f-input"
+          />
+          @if (fieldError("dateHeure")) {
+            <span class="f-err-msg" role="alert">
+              <i class="pi pi-info-circle" aria-hidden="true"></i>
+              {{ fieldError("dateHeure") }}
+            </span>
+          }
+        </div>
+
+        <div class="f-field" [class.f-err]="hasError('dureeMinutes')">
+          <label class="f-label">
+            <i class="pi pi-clock" aria-hidden="true"></i>
+            Durée (min) <span class="req" aria-hidden="true">*</span>
+          </label>
+          <p-inputNumber
+            formControlName="dureeMinutes"
+            [min]="5"
+            [max]="240"
+            [step]="5"
+            styleClass="w-full"
+            suffix=" min"
+          />
+          @if (fieldError("dureeMinutes")) {
+            <span class="f-err-msg" role="alert">
+              <i class="pi pi-info-circle" aria-hidden="true"></i>
+              {{ fieldError("dureeMinutes") }}
+            </span>
+          }
+        </div>
+      </div>
+
+      <!-- Motif -->
+      <div class="f-field" [class.f-err]="hasError('motif')">
+        <label class="f-label">
+          <i class="pi pi-clipboard" aria-hidden="true"></i>
+          Motif de consultation <span class="req" aria-hidden="true">*</span>
+        </label>
+        <input
+          pInputText
+          formControlName="motif"
+          placeholder="Ex: Fièvre, bilan annuel..."
+          class="f-input"
+        />
+        @if (fieldError("motif")) {
+          <span class="f-err-msg" role="alert">
+            <i class="pi pi-info-circle" aria-hidden="true"></i>
+            {{ fieldError("motif") }}
+          </span>
+        }
+      </div>
+
+      <!-- Notes -->
+      <div class="f-field">
+        <label class="f-label">
+          <i class="pi pi-pencil" aria-hidden="true"></i>
+          Notes (optionnel)
+        </label>
+        <textarea
+          pTextarea
+          formControlName="notes"
+          rows="3"
+          placeholder="Informations complémentaires..."
+          class="f-input f-textarea"
+        ></textarea>
+      </div>
+
+      <!-- Footer -->
+      <div class="f-footer">
+        <p-button
+          label="Annuler"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="showDialog.set(false)"
+          [disabled]="saving()"
+        />
+        <p-button
+          type="submit"
+          [label]="
+            saving()
+              ? 'Enregistrement...'
+              : editMode()
+                ? 'Mettre à jour'
+                : 'Enregistrer'
+          "
+          [icon]="saving() ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+          [loading]="saving()"
+          [disabled]="saving()"
+        />
+      </div>
+    </form>
+  }
+</p-dialog>
+
+<!-- ══ Dialog détail RDV ══ -->
+<p-dialog
+  header="Détail du rendez-vous"
+  [(visible)]="showDetail"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '460px' }"
+>
+  @if (showDetail() && detailRdv()) {
+    <div class="rdv-detail">
+      <!-- Patient info -->
+      <div class="detail-patient">
+        <div class="detail-avatar">{{ getInitiales(detailRdv()!) }}</div>
+        <div>
+          <div class="detail-nom">
+            {{ detailRdv()!.patientPrenom }} {{ detailRdv()!.patientNom }}
+          </div>
+          <div class="detail-meta">
+            <i class="pi pi-calendar" aria-hidden="true"></i>
+            {{ formatDate(detailRdv()!.dateHeure) }} à
+            {{ formatHeure(detailRdv()!.dateHeure) }} ·
+            {{ detailRdv()!.dureeMinutes }} min
+          </div>
+        </div>
+        <p-tag
+          [value]="statutConfig[detailRdv()!.statut].label"
+          [severity]="statutConfig[detailRdv()!.statut].severity"
+        />
+      </div>
+
+      <!-- Infos -->
+      <div class="detail-rows">
+        <div class="detail-row">
+          <span class="detail-label"
+            ><i class="pi pi-user" aria-hidden="true"></i> Médecin</span
+          >
+          <span class="detail-val">{{ detailRdv()!.medecinNom }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label"
+            ><i class="pi pi-clipboard" aria-hidden="true"></i> Motif</span
+          >
+          <span class="detail-val">{{ detailRdv()!.motif }}</span>
+        </div>
+        @if (detailRdv()!.notes) {
+          <div class="detail-row">
+            <span class="detail-label"
+              ><i class="pi pi-pencil" aria-hidden="true"></i> Notes</span
+            >
+            <span class="detail-val">{{ detailRdv()!.notes }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Changer statut -->
+      <div class="detail-statuts">
+        <span class="detail-statut-label">Changer le statut :</span>
+        <div class="statut-btns">
+          @for (opt of statutOptions; track opt.value) {
+            <p-button
+              [label]="opt.label"
+              size="small"
+              [outlined]="detailRdv()!.statut !== opt.value"
+              [severity]="
+                opt.value === 'ANNULE'
+                  ? 'danger'
+                  : opt.value === 'CONFIRME'
+                    ? 'success'
+                    : opt.value === 'ABSENT'
+                      ? 'warn'
+                      : 'secondary'
+              "
+              (onClick)="changerStatut(detailRdv()!, $any(opt.value))"
+            />
+          }
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="detail-actions">
+        <p-button
+          icon="pi pi-pencil"
+          label="Modifier"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="ouvrirModification(detailRdv()!)"
+        />
+        <p-button
+          icon="pi pi-trash"
+          label="Supprimer"
+          severity="danger"
+          [outlined]="true"
+          (onClick)="confirmerSuppression(detailRdv()!)"
+        />
+      </div>
+    </div>
+  }
+</p-dialog>

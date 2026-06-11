@@ -35,14 +35,14 @@ export const routes: Routes = [
       },
       ...patientRoutes,
       ...employeRoutes,
-      /*{
+      {
         path: 'agenda',
         loadComponent: () =>
           import('./components/pages/agenda/agenda.component').then(
             (m) => m.AgendaComponent,
           ),
         title: 'Agenda — Clinique Trinité',
-      },*/
+      },
     ],
   },
 

@@ -313,10 +313,11 @@
         <p-tabpanel [value]="1">
           <div class="tab-panel-header">
             <span>{{ fiches().length }} fiche(s) générée(s)</span>
-            <button class="btn-tab-action">
-              <i class="pi pi-plus" aria-hidden="true"></i>
-              Générer la fiche du mois
-            </button>
+            <p-button
+              label="Générer la fiche du mois"
+              icon="pi pi-plus"
+              size="small"
+            />
           </div>
 
           @if (fiches().length === 0) {
@@ -325,65 +326,104 @@
               <p>Aucune fiche de paie générée.</p>
             </div>
           } @else {
-            <div class="fiches-list">
+            <div class="fiches-grid">
               @for (f of fiches(); track f.id) {
-                <div class="fiche-card">
-                  <div class="fiche-header">
-                    <div class="fiche-periode">
-                      <i class="pi pi-calendar" aria-hidden="true"></i>
-                      <span class="fiche-mois"
-                        >{{ getMoisLabel(f.mois) }} {{ f.annee }}</span
-                      >
+                <p-card styleClass="fiche-card">
+                  <!-- Header mois/année -->
+                  <ng-template pTemplate="header">
+                    <div class="fiche-card-header">
+                      <div class="fiche-periode">
+                        <div class="fiche-periode-icon">
+                          <i class="pi pi-calendar" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                          <span class="fiche-mois"
+                            >{{ getMoisLabel(f.mois) }} {{ f.annee }}</span
+                          >
+                          <span class="fiche-net-preview"
+                            >Net :
+                            {{ f.salaireNet | number: "1.0-0" }} HTG</span
+                          >
+                        </div>
+                      </div>
+                      <p-button
+                        icon="pi pi-download"
+                        label="PDF"
+                        size="small"
+                        severity="secondary"
+                        [outlined]="true"
+                        pTooltip="Télécharger la fiche PDF"
+                        aria-label="Télécharger la fiche PDF"
+                      />
                     </div>
-                    <button
-                      class="btn-dl"
-                      aria-label="Télécharger la fiche PDF"
-                    >
-                      <i class="pi pi-download" aria-hidden="true"></i>
-                      PDF
-                    </button>
-                  </div>
-                  <div class="fiche-body">
-                    @for (
-                      ligne of [
-                        { label: "Salaire brut", val: f.salaireBrut, cls: "" },
-                        {
-                          label: "Cotisations",
-                          val: -f.cotisations,
-                          cls: "neg",
-                        },
-                        { label: "Primes", val: f.primes, cls: "pos" },
-                        { label: "Retenues", val: -f.retenues, cls: "neg" },
-                      ];
-                      track ligne.label
-                    ) {
-                      <div class="fiche-ligne">
-                        <span class="fiche-ligne-label">{{ ligne.label }}</span>
-                        <span
-                          class="fiche-ligne-val"
-                          [class.val-neg]="ligne.val < 0"
-                          [class.val-pos]="ligne.cls === 'pos' && ligne.val > 0"
-                        >
-                          {{
-                            ligne.val < 0
-                              ? "- "
-                              : ligne.val > 0 && ligne.cls === "pos"
-                                ? "+ "
-                                : ""
-                          }}{{
-                            (ligne.val < 0 ? -ligne.val : ligne.val)
-                              | number: "1.0-0"
-                          }}
-                          FCFA
+                  </ng-template>
+
+                  <!-- Lignes de la fiche -->
+                  <div class="fiche-lignes">
+                    <!-- Salaire brut -->
+                    <div class="fiche-ligne">
+                      <span class="fiche-ligne-label">
+                        <i class="pi pi-money-bill" aria-hidden="true"></i>
+                        Salaire brut
+                      </span>
+                      <span class="fiche-ligne-val">
+                        {{ f.salaireBrut | number: "1.0-0" }} HTG
+                      </span>
+                    </div>
+
+                    <!-- Cotisations -->
+                    <div class="fiche-ligne fiche-ligne-neg">
+                      <span class="fiche-ligne-label">
+                        <i class="pi pi-minus-circle" aria-hidden="true"></i>
+                        Cotisations
+                      </span>
+                      <span class="fiche-ligne-val">
+                        − {{ f.cotisations | number: "1.0-0" }} HTG
+                      </span>
+                    </div>
+
+                    <!-- Primes si > 0 -->
+                    @if (f.primes > 0) {
+                      <div class="fiche-ligne fiche-ligne-pos">
+                        <span class="fiche-ligne-label">
+                          <i class="pi pi-plus-circle" aria-hidden="true"></i>
+                          Primes
+                        </span>
+                        <span class="fiche-ligne-val">
+                          + {{ f.primes | number: "1.0-0" }} HTG
                         </span>
                       </div>
                     }
-                    <div class="fiche-net">
-                      <span>Salaire net</span>
-                      <span>{{ f.salaireNet | number: "1.0-0" }} FCFA</span>
-                    </div>
+
+                    <!-- Retenues si > 0 -->
+                    @if (f.retenues > 0) {
+                      <div class="fiche-ligne fiche-ligne-neg">
+                        <span class="fiche-ligne-label">
+                          <i class="pi pi-minus-circle" aria-hidden="true"></i>
+                          Retenues
+                        </span>
+                        <span class="fiche-ligne-val">
+                          − {{ f.retenues | number: "1.0-0" }} HTG
+                        </span>
+                      </div>
+                    }
                   </div>
-                </div>
+
+                  <!-- Footer net à payer -->
+                  <ng-template pTemplate="footer">
+                    <div class="fiche-net-footer">
+                      <span class="fiche-net-label">
+                        <i class="pi pi-check-circle" aria-hidden="true"></i>
+                        Net à payer
+                      </span>
+                      <p-tag
+                        [value]="(f.salaireNet | number: '1.0-0') + ' HTG'"
+                        severity="success"
+                        styleClass="fiche-net-tag"
+                      />
+                    </div>
+                  </ng-template>
+                </p-card>
               }
             </div>
           }
@@ -396,10 +436,8 @@
               >{{ totalCongesApprouves() }} jour(s) pris ·
               {{ conges().length }} demande(s)</span
             >
-            <button class="btn-tab-action">
-              <i class="pi pi-plus" aria-hidden="true"></i>
-              Nouvelle demande
-            </button>
+
+            <p-button label="Nouvelle demande" icon="pi pi-plus" size="small" />
           </div>
 
           @if (conges().length === 0) {
