@@ -1,17 +1,14 @@
 package it.solutions.services.trinity.employe.services;
 
-import it.solutions.services.trinity.core.security.services.MyUserDetailsService;
+
 import it.solutions.services.trinity.core.security.services.UserService;
-import it.solutions.services.trinity.core.shared.dao.UserDao;
 import it.solutions.services.trinity.core.shared.entities.User;
-import it.solutions.services.trinity.core.shared.enums.Departement;
-import it.solutions.services.trinity.core.shared.enums.Role;
 import it.solutions.services.trinity.core.shared.enums.Statut;
 import it.solutions.services.trinity.employe.dao.EmployeDao;
+import it.solutions.services.trinity.employe.dao.FicheDePaieDao;
 import it.solutions.services.trinity.employe.dto.EmployeDto;
 
 import it.solutions.services.trinity.employe.entities.Employe;
-import it.solutions.services.trinity.employe.validations.EmployeValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +29,7 @@ public class EmployeService {
 
     private final UserService userService;
     private final EmployeDao dao;
+
 
     @Cacheable(value = "employes", key = "#id")
     public EmployeDto.Response findById(UUID id) {
@@ -110,7 +108,7 @@ public class EmployeService {
     }
 
     private EmployeDto.Response toResponse(Employe e) {
-        User user=userService.findById(e.getUtilisateurId()); // TODO Remplacer plus tard par un mapping 1-1 leger
+        User user=userService.findById(e.getUtilisateurId());
         return EmployeDto.Response.builder()
                 .nom(e.getNom().toUpperCase())
                 .prenom(e.getPrenom())

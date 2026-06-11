@@ -2,8 +2,6 @@ package it.solutions.services.trinity.employe.entities;
 
 import it.solutions.services.trinity.core.shared.entities.BaseEntity;
 import it.solutions.services.trinity.core.shared.enums.Departement;
-import it.solutions.services.trinity.core.shared.enums.Genre;
-import it.solutions.services.trinity.core.shared.enums.GroupeSanguin;
 import it.solutions.services.trinity.core.shared.enums.TypeContrat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -12,7 +10,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -57,5 +56,9 @@ public class Employe extends BaseEntity {
     private String numeroCnss;
     private String rib;
     private boolean actif;
+
+
+    @OneToMany(mappedBy = "employe")
+    private List<FicheDePaie> fichesDePaie = new ArrayList<>();
 
 }
