@@ -1,7 +1,5 @@
 package it.solutions.services.trinity.patient.services;
 
-import it.solutions.services.trinity.core.exception.ValidationException;
-import it.solutions.services.trinity.core.shared.enums.GroupeSanguin;
 import it.solutions.services.trinity.patient.dao.PatientDao;
 import it.solutions.services.trinity.patient.dto.PatientDto;
 import it.solutions.services.trinity.patient.entities.Patient;

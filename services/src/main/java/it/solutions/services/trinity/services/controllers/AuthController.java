@@ -1,5 +1,9 @@
 package it.solutions.services.trinity.services.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import it.solutions.services.trinity.core.security.services.CookieUtils;
 import it.solutions.services.trinity.core.security.services.JwtService;
 import it.solutions.services.trinity.core.security.services.MyUserDetailsService;
 import it.solutions.services.trinity.core.security.services.UserService;
@@ -7,15 +11,23 @@ import it.solutions.services.trinity.core.shared.api.ApiResponse;
 import it.solutions.services.trinity.core.shared.entities.User;
 
 import it.solutions.services.trinity.core.shared.enums.Role;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+
+import static it.solutions.services.trinity.core.shared.Constants.COOKIE_ACCESS_TOKEN;
 
 
 @RestController
@@ -26,6 +38,8 @@ public class AuthController {
     private final AuthenticationManager authManager;
     private final UserService userService;
     private final JwtService jwtService;
+    private final CookieUtils cookieUtil;
+
 
 
 
@@ -46,6 +60,32 @@ public class AuthController {
         authManager.authenticate(new UsernamePasswordAuthenticationToken(req.email(), req.password()));
         User user = (User) userService.loadUserByUsername(req.email());
         return successLogin(user);
+    }
+
+    @Operation(summary = "Logout",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successful Logout",
+                            content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "You are not authorized to view the resource"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "The resource you were trying to reach is not found"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error")
+            })
+    @GetMapping(value = "/logout")
+    public  ResponseEntity<ApiResponse<Boolean>> logout() throws Exception {
+
+
+
+        ApiResponse<Boolean> apiResponse = new ApiResponse<>();
+        apiResponse.setSuccess(true);
+        apiResponse.setMessage("Déconnexion complétée");
+        apiResponse.setData(true);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.SET_COOKIE, cookieUtil.deleteAccessTokenCookie().toString());
+        responseHeaders.add(HttpHeaders.SET_COOKIE, cookieUtil.deleteRefreshTokenCookie().toString());
+
+        SecurityContextHolder.clearContext();
+        return  ResponseEntity.ok().headers(responseHeaders).body(apiResponse);
     }
 
     private ResponseEntity<ApiResponse<AuthResponse>> successLogin(User user) throws Exception{

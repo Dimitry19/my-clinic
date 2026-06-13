@@ -1,7 +1,9 @@
 package it.solutions.services.trinity.patient.controller;
 
 import it.solutions.services.trinity.core.shared.api.ApiResponse;
+import it.solutions.services.trinity.patient.dto.ConsultationDto;
 import it.solutions.services.trinity.patient.dto.PatientDto;
+import it.solutions.services.trinity.patient.services.ConsultationService;
 import it.solutions.services.trinity.patient.services.PatientService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import java.util.UUID;
 public class PatientController {
 
     private final PatientService patientService;
+    private final ConsultationService consultationService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE')")
@@ -59,5 +62,12 @@ public class PatientController {
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
         patientService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok("Patient supprimé", null));
+    }
+
+
+    @PostMapping("/consultation")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN')")
+    public ResponseEntity<ApiResponse<ConsultationDto.Response>> createConsultation(@Valid @RequestBody ConsultationDto.Request req) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Consultation créée", consultationService.create(req)));
     }
 }

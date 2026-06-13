@@ -24,7 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EmployeController {
 
-    private final EmployeService employeService;
+    private final EmployeService service;
     private final FicheDePaieService ficheDePaieService;
     private final CongeService congeService;
 
@@ -33,7 +33,7 @@ public class EmployeController {
     public ResponseEntity<ApiResponse<Page<EmployeDto.Response>>> all(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(ApiResponse.ok(employeService.findAll(page, size)));
+        return ResponseEntity.ok(ApiResponse.ok(service.findAll(page, size)));
     }
 
     @GetMapping("/search")
@@ -43,32 +43,32 @@ public class EmployeController {
             @RequestParam(required = false) String departement,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(ApiResponse.ok(employeService.search(q,departement, page, size)));
+        return ResponseEntity.ok(ApiResponse.ok(service.search(q,departement, page, size)));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MEDECIN','INFIRMIER')")
     public ResponseEntity<ApiResponse<EmployeDto.Response>> findById(@PathVariable UUID id) {
-        return ResponseEntity.ok(ApiResponse.ok(employeService.findById(id)));
+        return ResponseEntity.ok(ApiResponse.ok(service.findById(id)));
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ApiResponse<EmployeDto.Response>> create(@Valid @RequestBody EmployeDto.Request req) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Employé créé", employeService.create(req)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Employé créé", service.create(req)));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MEDECIN','RECEPTIONNISTE')")
     public ResponseEntity<ApiResponse<EmployeDto.Response>> edit(
             @PathVariable UUID id, @Valid @RequestBody EmployeDto.Request req) {
-        return ResponseEntity.ok(ApiResponse.ok("Employé modifié", employeService.edit(id, req)));
+        return ResponseEntity.ok(ApiResponse.ok("Employé modifié", service.edit(id, req)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
-        employeService.delete(id);
+        service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok("Employé supprimé", null));
     }
 

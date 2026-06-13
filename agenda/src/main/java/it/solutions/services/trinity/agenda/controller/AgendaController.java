@@ -1,0 +1,69 @@
+package it.solutions.services.trinity.agenda.controller;
+
+import it.solutions.services.trinity.agenda.dto.AgendaDto;
+import it.solutions.services.trinity.agenda.services.AgendaService;
+import it.solutions.services.trinity.core.security.services.CookieUtils;
+import it.solutions.services.trinity.core.security.services.JwtService;
+import it.solutions.services.trinity.core.shared.api.ApiResponse;
+import it.solutions.services.trinity.core.shared.enums.StatutRendezVous;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+import static it.solutions.services.trinity.core.shared.Constants.COOKIE_ACCESS_TOKEN;
+
+@RestController
+@RequestMapping("/api/agenda")
+@RequiredArgsConstructor
+public class AgendaController {
+
+    private final AgendaService service;
+    private final CookieUtils cookieUtil;
+    private final JwtService jwtService;
+
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE')")
+    public ResponseEntity<ApiResponse<List<AgendaDto.Response>>> findAgendaByPeriode(HttpServletRequest request,
+                                                                     @RequestParam  int annee,
+                                                                     @RequestParam int mois, @CookieValue(name = COOKIE_ACCESS_TOKEN, required = false) String accessToken) {
+        String access= StringUtils.isEmpty(accessToken)?cookieUtil.mixedExtractFromRequest(request,COOKIE_ACCESS_TOKEN):accessToken;
+        return ResponseEntity.ok(ApiResponse.ok(service.findAgendaByPeriode(jwtService.extraireEmail(access),annee, mois)));
+    }
+
+
+    @PostMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN')")
+    public ResponseEntity<ApiResponse<AgendaDto.Response>> create(@Valid @RequestBody AgendaDto.Request req) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Rendez-vous créé", service.create(req)));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN')")
+    public ResponseEntity<ApiResponse<AgendaDto.Response>> edit(
+            @PathVariable UUID id, @Valid @RequestBody AgendaDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok("Rendez-vous modifié", service.edit(id, req)));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<AgendaDto.Response>> changeStatus(@PathVariable UUID id, @RequestBody StatutRendezVous statut) {
+
+        return ResponseEntity.ok(ApiResponse.ok("Statut du rendez-vous modifié", service.changeStatus(id, statut)));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN')")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
+        service.delete(id);
+        return ResponseEntity.ok(ApiResponse.ok("Rendez-vous supprimé", null));
+    }
+
+}

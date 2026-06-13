@@ -15,9 +15,23 @@ import java.util.UUID;
 @Setter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
 @Immutable
 public class UserLight {
+
+
+    public UserLight(
+            UUID id,
+            String email,
+            String nom,
+            String prenom,
+            Role role
+    ) {
+        this.setId(id);
+        this.nom = nom;
+        this.prenom = prenom;
+        this.email = email;
+        this.role = role;
+    }
 
     @Id
     private UUID id;

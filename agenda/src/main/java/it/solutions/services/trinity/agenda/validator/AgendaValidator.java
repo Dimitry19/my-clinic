@@ -1,7 +1,6 @@
-package it.solutions.services.trinity.patient.validations;
+package it.solutions.services.trinity.agenda.validator;
 
 import it.solutions.services.trinity.core.exception.ValidationException;
-import it.solutions.services.trinity.core.shared.enums.GroupeSanguin;
 import it.solutions.services.trinity.patient.dao.PatientDao;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +10,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class PatientValidator {
+public class AgendaValidator {
 
     private final PatientDao dao;
 
