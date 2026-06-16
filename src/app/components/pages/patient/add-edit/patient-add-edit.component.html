@@ -39,7 +39,7 @@
           (focus)="showSearchResults = searchResults.length > 0"
           autocomplete="off"
         />
-        <span class="search-icon">
+        <span class="search-icon-add-patient">
           <svg
             width="16"
             height="16"
@@ -61,10 +61,7 @@
       @if (showSearchResults) {
         <div class="search-results">
           @for (patient of searchResults; track patient) {
-            <div
-              class="search-result-item"
-              (click)="selectionnerPatient(patient)"
-            >
+            <div class="search-result-item" (click)="selectPatient(patient)">
               <div class="result-name">
                 {{ patient.prenom }} {{ patient.nom }}
               </div>
@@ -160,7 +157,7 @@
   </div>
 
   <!-- Formulaire -->
-  <form [formGroup]="form" (ngSubmit)="soumettre()" novalidate>
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <!-- ── ETAPE 1 : Identité ────────────────────────────────── -->
     @if (currentStep === 1) {
       <div class="form-step">
@@ -399,7 +396,7 @@
         type="button"
         class="btn btn-secondary"
         *ngIf="currentStep > 1"
-        (click)="stepPrecedent()"
+        (click)="previousStep()"
       >
         ← Précédent
       </button>
@@ -413,8 +410,8 @@
           type="button"
           class="btn btn-primary"
           *ngIf="currentStep < totalSteps"
-          (click)="stepSuivant()"
-          [disabled]="!etapeValide()"
+          (click)="nextStep()"
+          [disabled]="!validStep()"
         >
           Suivant →
         </button>

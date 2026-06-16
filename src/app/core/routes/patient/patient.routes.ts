@@ -7,11 +7,6 @@ export const patientRoutes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'all',
-        pathMatch: 'full',
-      },
-      {
-        path: 'all',
         loadComponent: () =>
           import('../../../components/pages/patient/patients.component').then(
             (m) => m.PatientsComponent,
@@ -48,16 +43,10 @@ export const patientRoutes: Routes = [
 ];
 
 export const patientServerRoutes: ServerRoute[] = [
-  // Routes avec paramètres dynamiques → client uniquement
-  { path: 'patients/:id', renderMode: RenderMode.Client },
   {
     // Routes avec paramètres dynamiques → client uniquement
     path: 'patients/:id/edit',
     renderMode: RenderMode.Client,
   },
-  {
-    // Routes avec paramètres dynamiques → client uniquement
-    path: 'patients/all',
-    renderMode: RenderMode.Client,
-  },
+  { path: 'patients/:id', renderMode: RenderMode.Client },
 ];

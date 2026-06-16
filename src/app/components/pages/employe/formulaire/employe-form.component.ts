@@ -29,10 +29,8 @@ import {
   CONTRATS,
   ROLES,
 } from '../../../../core/models/employe/employe.model';
-import {
-  EmployeService,
-  ServiceError,
-} from '../../../../core/services/employe/employe.service';
+import { EmployeService } from '../../../../core/services/employe/employe.service';
+import { ServiceError } from '../../../../core/models/all/all.model';
 
 @Component({
   selector: 'clnt-employe-form',
@@ -214,7 +212,7 @@ export class EmployeFormComponent implements OnInit {
   }
 
   // ── Soumission ────────────────────────────────────────
-  soumettre() {
+  submit() {
     this.form.markAllAsTouched();
     if (this.form.invalid) {
       // Aller à la première étape avec des erreurs

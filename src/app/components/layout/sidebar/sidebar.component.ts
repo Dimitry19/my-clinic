@@ -1,10 +1,12 @@
 ﻿import { CommonService } from './../../../core/services/common.services';
-import { Component, input, output, inject } from '@angular/core';
+import { Component, input, output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { AuthService } from '../../../core/services/auth/auth.service';
+import { ApiResponse } from '../../../core/models/response/api-response.model';
+import { ErrorType } from '../../../core/models/all/all.model';
 
 interface NavItem {
   label: string;
@@ -32,6 +34,10 @@ export class SidebarComponent {
   toggleCollapse = output();
   auth = inject(AuthService);
   commonService = inject(CommonService);
+  router = inject(Router);
+
+  errorType = signal<ErrorType>(null);
+  errorMsg = signal('');
 
   get initiales() {
     const u = this.auth.currentUser();
@@ -51,4 +57,39 @@ export class SidebarComponent {
     { label: 'RH', icon: 'pi pi-users', route: '/employes' },
     { label: 'Paramètres', icon: 'pi pi-cog', route: '/settings' },
   ];
+
+  logout() {
+    this.auth.logout().subscribe({
+      next: (response: ApiResponse<boolean>) => {
+        if (this.commonService.isSuccessResponse(response)) {
+          setTimeout(() => this.router.navigate(['/login']), 800);
+        } else {
+          this.errorType.set('network');
+          this.errorMsg.set(
+            response.message ??
+              'Une erreur est survenue. Réessayez dans quelques instants.',
+          );
+        }
+      },
+      error: (err) => {
+        const status = err?.status;
+        if (status === 0 || status === 503) {
+          this.errorType.set('network');
+          this.errorMsg.set(
+            'Impossible de contacter le serveur. Vérifiez votre connexion internet.',
+          );
+        } else if (status >= 500) {
+          this.errorType.set('server');
+          this.errorMsg.set(
+            'Une erreur serveur est survenue. Réessayez dans quelques instants.',
+          );
+        } else {
+          this.errorType.set('server');
+          this.errorMsg.set(
+            err?.error?.message ?? 'Une erreur inattendue est survenue.',
+          );
+        }
+      },
+    });
+  }
 }

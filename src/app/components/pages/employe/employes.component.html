@@ -30,7 +30,7 @@
   <!-- ── Barre de recherche + filtres ── -->
   <div class="toolbar">
     <div class="search-bar" [class.search-active]="searchQuery.length > 0">
-      <i class="pi pi-search search-icon" aria-hidden="true"></i>
+      <i class="pi pi-search search-icon-all-emp" aria-hidden="true"></i>
       <input
         type="text"
         class="search-input"
@@ -237,7 +237,7 @@
                   pTooltip="Supprimer l'employé"
                   aria-label="Supprimer l'employé"
                   tooltipPosition="top"
-                  (onClick)="confirmerSuppression(emp)"
+                  (onClick)="confirmDelete(emp)"
                 />
               </div>
             </td>

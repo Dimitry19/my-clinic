@@ -1,10 +1,11 @@
 ﻿import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
-import { StatDashboard, RendezVous } from '../../models/all/all.model';
+import { StatDashboard } from '../../models/all/all.model';
 import { ApiResponse } from '../../models/response/api-response.model';
 import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../../../../environments/environment';
+import { RendezVous } from '../../models/agenda/agenda.model';
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {

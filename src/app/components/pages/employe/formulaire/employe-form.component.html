@@ -65,7 +65,7 @@
     }
   </div>
 
-  <form [formGroup]="form" (ngSubmit)="soumettre()" novalidate>
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <!-- ════════════════════════════════
          ÉTAPE 0 — Identité
     ════════════════════════════════ -->
@@ -355,7 +355,7 @@
               type="date"
               id="dateEmbauche"
               formControlName="dateEmbauche"
-              class="field-input"
+              class="form-control"
               [max]="today"
             />
             @if (hasError("dateEmbauche")) {

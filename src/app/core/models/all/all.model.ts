@@ -1,33 +1,13 @@
-﻿export interface Patient {
-  id: string;
-  nom: string;
-  prenom: string;
-  dateNaissance: string;
-  sexe: 'M' | 'F' | 'AUTRE';
-  telephone?: string;
-  email?: string;
-  adresse?: string;
-  groupeSanguin?: string;
-  allergies?: string;
-  antecedents?: string;
-  mutuelle?: string;
-  numeroMutuelle?: string;
-  contactUrgenceNom?: string;
-  contactUrgenceTel?: string;
-  notesGenerales?: string;
-  age: number;
-  statut?: 'EN_ATTENTE' | 'EN_COURS' | 'TERMINE' | 'ANNULE';
-}
-
-export interface RendezVous {
-  id: string;
-  patientNom: string;
-  patientPrenom: string;
-  medecinNom: string;
-  dateHeure: Date;
-  dureeMinutes: number;
-  motif: string;
-  statut: 'PLANIFIE' | 'CONFIRME' | 'ANNULE' | 'TERMINE' | 'ABSENT';
+﻿export interface ServiceError {
+  code:
+    | 'NOT_FOUND'
+    | 'CONFLICT'
+    | 'NETWORK'
+    | 'SERVER'
+    | 'FORBIDDEN'
+    | 'UNKNOWN';
+  message: string;
+  field?: string;
 }
 
 export interface StatDashboard {
@@ -44,3 +24,6 @@ export interface Page<T> {
   number: number;
   size: number;
 }
+
+export type LoginStep = 'idle' | 'loading' | 'success' | 'error';
+export type ErrorType = 'credentials' | 'network' | 'locked' | 'server' | null;

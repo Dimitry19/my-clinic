@@ -1,11 +1,11 @@
 ﻿import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { ApiResponse } from '../../models/response/api-response.model';
-import { Page, Patient } from '../../models/all/all.model';
+import { Page } from '../../models/all/all.model';
 import { environment } from '../../../../environments/environment.prod';
+import { Patient } from '../../models/patient/patient.model';
 
 @Injectable({ providedIn: 'root' })
 export class PatientService {

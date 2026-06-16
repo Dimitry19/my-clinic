@@ -1,9 +1,4 @@
-﻿export type StatutRdv =
-  | 'PLANIFIE'
-  | 'CONFIRME'
-  | 'ANNULE'
-  | 'TERMINE'
-  | 'ABSENT';
+﻿import { StatutRendezVous } from '../enums/enums.model';
 
 export interface RendezVous {
   id: string;
@@ -15,7 +10,7 @@ export interface RendezVous {
   dateHeure: string; // ISO string
   dureeMinutes: number;
   motif: string;
-  statut: StatutRdv;
+  statut: StatutRendezVous;
   notes?: string;
 }
 
@@ -28,12 +23,6 @@ export interface RdvRequest {
   notes?: string;
 }
 
-export interface ApiResponse<T> {
-  success: boolean;
-  message?: string;
-  data: T;
-}
-
 export interface CalendarDay {
   date: Date;
   rdvs: RendezVous[];
@@ -42,7 +31,7 @@ export interface CalendarDay {
 }
 
 export const STATUT_CONFIG: Record<
-  StatutRdv,
+  StatutRendezVous,
   { label: string; severity: string; icon: string }
 > = {
   PLANIFIE: { label: 'Planifié', severity: 'info', icon: 'pi-clock' },

@@ -397,6 +397,107 @@ select.form-control {
   flex-shrink: 0;
 }
 
+// ── Recherche ──────────────────────────────────────────────
+.search-section {
+  background: $bg-light;
+  border-radius: $radius;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+.search-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+.search-wrapper {
+  position: relative;
+}
+.search-input {
+  width: 100%;
+  padding: 10px 40px 10px 14px;
+  border: 0.5px solid $border;
+  border-radius: $radius;
+  font-size: 0.9375rem;
+  background: $bg;
+  box-sizing: border-box;
+  outline: none;
+  &:focus {
+    border-color: $primary;
+  }
+}
+.search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: $text-muted;
+  pointer-events: none;
+}
+
+.search-icon-mini {
+  position: absolute;
+  right: 3px;
+  top: 30%;
+  color: #5f5e5a;
+  pointer-events: none;
+}
+.search-spinner {
+  position: absolute;
+  right: 36px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  border: 2px solid $border;
+  border-top-color: $primary;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.search-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  z-index: 100;
+  overflow: hidden;
+}
+.search-result-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 0.5px solid $border;
+  &:hover {
+    background: $bg-light;
+  }
+  .result-name {
+    font-weight: 500;
+    font-size: 0.9375rem;
+    color: $text;
+  }
+  .result-info {
+    font-size: 0.8rem;
+    color: $text-muted;
+    margin-top: 2px;
+  }
+}
+.search-result-close {
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  color: $text-muted;
+  cursor: pointer;
+  text-align: right;
+  &:hover {
+    color: $text;
+  }
+}
+
 // ── Summary cards ──────────────────────────────────────────
 .summary-cards {
   display: grid;

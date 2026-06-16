@@ -10,7 +10,7 @@ import { RouterLink } from '@angular/router';
 })
 export class HomeComponent {
   // Données simples pour rendre la page évolutive (SSR-safe)
-  title = 'Clinique Trinité';
+  title = 'Centre  Médical la Trinité';
   subtitle =
     'Gestion intelligente et sécurisée des patients et des dossiers médicaux';
 

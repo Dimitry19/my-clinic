@@ -1,4 +1,8 @@
 ﻿/
-/delivery
-/tracking
-/pickup
+/dashboard
+/patients
+/agenda
+/employes
+/parametres
+/laboratoire
+/pharmacie

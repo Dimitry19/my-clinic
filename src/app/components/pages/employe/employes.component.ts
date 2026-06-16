@@ -36,13 +36,12 @@ import {
   Employe,
   EmployePage,
 } from '../../../core/models/employe/employe.model';
-import {
-  EmployeService,
-  ServiceError,
-} from '../../../core/services/employe/employe.service';
+import { EmployeService } from '../../../core/services/employe/employe.service';
 import { CommonService } from '../../../core/services/common.services';
 import { EmployeFormComponent } from './formulaire/employe-form.component';
 import { Configuration } from '../../../core/models/configuration/configuration.model';
+import { ServiceError } from '../../../core/models/all/all.model';
+import { StatutEmploye } from '../../../core/models/enums/enums.model';
 
 @Component({
   selector: 'clnt-employes',
@@ -92,7 +91,8 @@ export class EmployesComponent implements OnInit {
 
   totalEmployes = computed(() => this.page()?.totalElements ?? 0);
   actifs = computed(
-    () => this.employes().filter((e) => e.statut === 'ACTIF').length,
+    () =>
+      this.employes().filter((e) => e.statut === StatutEmploye.ACTIF).length,
   );
 
   departementOptions = [
@@ -189,7 +189,7 @@ export class EmployesComponent implements OnInit {
     });
   }
 
-  confirmerSuppression(e: Employe) {
+  confirmDelete(e: Employe) {
     this.confirm.confirm({
       header: 'Confirmer la suppression',
       message: `Supprimer l'employé <strong>${e.prenom} ${e.nom}</strong> ? Cette action est irréversible.`,
@@ -225,8 +225,9 @@ export class EmployesComponent implements OnInit {
 
   // ── Changement de statut ──────────────────────────────
   toggleStatut(e: Employe) {
-    const nouveau = e.statut === 'ACTIF' ? 'ACTIF' : 'INACTIF';
+    const nouveau = e.statut === 'ACTIF' ? 'INACTIF' : 'ACTIF';
     const label = nouveau === 'INACTIF' ? 'réactiver' : 'désactiver';
+
     this.confirm.confirm({
       header: 'Modifier le statut',
       message: `Voulez-vous ${label} ${e.prenom} ${e.nom} ?`,

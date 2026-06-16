@@ -15,7 +15,7 @@ export const routes: Routes = [
       import('./components/auth/login/login.component').then(
         (m) => m.LoginComponent,
       ),
-    title: 'Connexion — Clinique Trinité',
+    title: 'Connexion — Centre  Médical la Trinité',
   },
   {
     path: '',
@@ -31,7 +31,7 @@ export const routes: Routes = [
           import('./components/pages/dashboard/dashboard.component').then(
             (m) => m.DashboardComponent,
           ),
-        title: 'Dashboard — Clinique Trinité',
+        title: 'Dashboard — Centre  Médical la Trinité',
       },
       ...patientRoutes,
       ...employeRoutes,
@@ -41,9 +41,16 @@ export const routes: Routes = [
           import('./components/pages/agenda/agenda.component').then(
             (m) => m.AgendaComponent,
           ),
-        title: 'Agenda — Clinique Trinité',
+        title: 'Agenda — Centre  Médical la Trinité',
       },
     ],
+  },
+  {
+    path: 'not-found',
+    loadComponent: () =>
+      import('./components/pages/not-found/not-found.component').then(
+        (m) => m.NotFoundComponent,
+      ),
   },
 
   { path: '**', redirectTo: 'dashboard' },

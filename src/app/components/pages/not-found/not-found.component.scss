@@ -1,0 +1,27 @@
+﻿// ── Variables ──────────────────────────────────────────────
+
+@import "../../../../variables.scss";
+
+.notfound-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.notfound-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 500;
+    margin: 0 0 4px;
+    color: $text;
+  }
+  p {
+    font-size: 14px;
+    color: $text-muted;
+    margin: 0;
+  }
+}

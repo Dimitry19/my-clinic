@@ -6,6 +6,8 @@ import { BehaviorSubject, Observable, of, Subject, throwError } from 'rxjs';
 
 import { ApiResponseService } from '../models/response/api.service';
 import { ApiResponse } from '../models/response/api-response.model';
+import { ServiceError } from '../models/all/all.model';
+import { Entite } from '../models/enums/enums.model';
 
 @Injectable({
   providedIn: 'root',
@@ -59,6 +61,62 @@ export class CommonService {
       const finalRoutes = routes.slice(0, 2).concat(routeParams);
       this.router.navigate(finalRoutes);
     });
+  }
+
+  public handleError(
+    err: HttpErrorResponse,
+    entite: Entite,
+  ): Observable<never> {
+    let error: ServiceError;
+    let label404 = '';
+    let label409 = '';
+    let field = '';
+
+    if (entite === Entite.EMPLOYE) {
+      label404 = 'Employé introuvable.';
+      label409 = 'Un employé avec cet email existe déjà.';
+      field = 'email';
+    }
+
+    if (entite === Entite.AGENDA) {
+      label404 = 'Rendez-vous introuvable.';
+      label409 = 'Ce créneau est déjà occupé.';
+    }
+
+    if (err.status === 0) {
+      error = {
+        code: 'NETWORK',
+        message:
+          'Impossible de contacter le serveur. Vérifiez votre connexion.',
+      };
+    } else if (err.status === 403) {
+      error = {
+        code: 'FORBIDDEN',
+        message: "Vous n'avez pas les droits pour effectuer cette action.",
+      };
+    } else if (err.status === 404) {
+      error = {
+        code: 'NOT_FOUND',
+        message: err.error ?? label404,
+      };
+    } else if (err.status === 409) {
+      error = {
+        code: 'CONFLICT',
+        message: err.error ?? label409,
+        field: field,
+      };
+    } else if (err.status >= 500) {
+      error = {
+        code: 'SERVER',
+        message: 'Erreur serveur. Réessayez dans quelques instants.',
+      };
+    } else {
+      error = {
+        code: 'UNKNOWN',
+        message: err.error ?? 'Une erreur inattendue est survenue.',
+      };
+    }
+    return throwError(() => error);
   }
 
   public globalErrorHandler(error: any): Observable<any> {

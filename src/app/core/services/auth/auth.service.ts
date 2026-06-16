@@ -8,7 +8,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, delay, map, tap } from 'rxjs/operators';
-import { environment } from '../../../../environments/environment.prod';
+import { environment } from '../../../../environments/environment';
 import { HeaderService } from '../headers.service';
 import { CommonService } from '../common.services';
 import { Authenticate, User } from '../../models/auth/auth.model';

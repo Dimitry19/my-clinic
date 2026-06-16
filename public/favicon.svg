@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Fond arrondi bleu médical -->
+  <rect width="64" height="64" rx="14" fill="#185FA5"/>
+
+  <!-- Croix médicale blanche -->
+  <rect x="27" y="14" width="10" height="36" rx="3" fill="white"/>
+  <rect x="14" y="27" width="36" height="10" rx="3" fill="white"/>
+
+  <!-- Petit cœur accent vert -->
+  <path d="M32 44 C31 43 27 40 27 37.5 C27 35.5 28.5 34 30.5 34 C31.5 34 32 34.8 32 34.8 C32 34.8 32.5 34 33.5 34 C35.5 34 37 35.5 37 37.5 C37 40 33 43 32 44Z"
+        fill="#5DCAA5"/>
+</svg>

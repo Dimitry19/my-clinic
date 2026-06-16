@@ -25,9 +25,17 @@ import { AgendaService } from '../../../core/services/agenda/agenda.service';
 import {
   RendezVous,
   CalendarDay,
-  StatutRdv,
   STATUT_CONFIG,
+  RdvRequest,
 } from '../../../core/models/agenda/agenda.model';
+
+import { forkJoin, Subject } from 'rxjs';
+import { ServiceError } from '../../../core/models/all/all.model';
+import { StatutRendezVous } from '../../../core/models/enums/enums.model';
+import { PatientService } from '../../../core/services/patient/patient.service';
+import { Patient } from '../../../core/models/patient/patient.model';
+import { Employe } from '../../../core/models/employe/employe.model';
+import { EmployeService } from '../../../core/services/employe/employe.service';
 
 const JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MOIS = [
@@ -46,7 +54,7 @@ const MOIS = [
 ];
 
 @Component({
-  selector: 'app-agenda',
+  selector: 'clnt-agenda',
   standalone: true,
   imports: [
     CommonModule,
@@ -72,8 +80,20 @@ const MOIS = [
 export class AgendaComponent implements OnInit {
   private svc = inject(AgendaService);
   private msg = inject(MessageService);
+  private patientService = inject(PatientService);
+  private employeService = inject(EmployeService);
   private confirm = inject(ConfirmationService);
   private fb = inject(FormBuilder);
+
+  patientSearchQuery = '';
+  medecinSearchQuery = '';
+
+  searchLoading = false;
+  showSearchResults = false;
+  showSearchMedecinResults = false;
+  searchResults: Patient[] = [];
+  searchMedecinResults: Employe[] = [];
+  private searchSubject = new Subject<string>();
 
   // ── State calendrier ──────────────────────────────────
   aujourdhui = new Date();
@@ -173,10 +193,12 @@ export class AgendaComponent implements OnInit {
 
   totalRdvsMois = computed(() => this.rdvs().length);
   rdvConfirmes = computed(
-    () => this.rdvs().filter((r) => r.statut === 'CONFIRME').length,
+    () =>
+      this.rdvs().filter((r) => r.statut === StatutRendezVous.CONFIRME).length,
   );
   rdvEnAttente = computed(
-    () => this.rdvs().filter((r) => r.statut === 'PLANIFIE').length,
+    () =>
+      this.rdvs().filter((r) => r.statut === StatutRendezVous.PLANIFIE).length,
   );
 
   statutOptions = Object.entries(STATUT_CONFIG).map(([v, c]) => ({
@@ -188,7 +210,9 @@ export class AgendaComponent implements OnInit {
   // ── Formulaire ────────────────────────────────────────
   form = this.fb.group({
     patientId: ['', Validators.required],
+    patientNom: ['', Validators.required],
     medecinId: ['', Validators.required],
+    medecinNom: ['', Validators.required],
     dateHeure: ['', Validators.required],
     dureeMinutes: [30, [Validators.required, Validators.min(5)]],
     motif: ['', [Validators.required, Validators.minLength(3)]],
@@ -222,7 +246,7 @@ export class AgendaComponent implements OnInit {
         dateHeure: new Date(y, m, now.getDate(), 9, 0).toISOString(),
         dureeMinutes: 30,
         motif: 'Fièvre persistante',
-        statut: 'EN_COURS' as any,
+        statut: 'PLANIFIE' as any,
       },
       {
         id: '2',
@@ -288,46 +312,78 @@ export class AgendaComponent implements OnInit {
   })();
 
   ngOnInit() {
-    this.charger();
+    this.load();
   }
 
-  charger() {
+  recuperationsParallesDesDonnees(
+    annee: number,
+    mois: number,
+    medecinId: string,
+  ) {
+    forkJoin({
+      rendezVous: this.svc.findAgendaByPeriode(annee, mois, medecinId),
+    }).subscribe({
+      next: ({ rendezVous }) => {
+        this.rdvs.set(rendezVous);
+        this.loading.set(false);
+      },
+      error: (err: ServiceError) => {
+        this.loading.set(false);
+        this.loadError.set(err.message);
+      },
+    });
+  }
+
+  load() {
     this.loading.set(true);
     this.loadError.set(null);
-    // Simulation — remplacer par this.svc.findByMois(...)
-    setTimeout(() => {
+    this.svc
+      .findAgendaByPeriode(this.getCurrentYear(), this.getCurrentMonth(), '')
+      .subscribe({
+        next: (rendezVous: RendezVous[]) => {
+          this.rdvs.set(rendezVous);
+          this.loading.set(false);
+        },
+        error: (err: ServiceError) => {
+          this.loading.set(false);
+          this.loadError.set(err.message);
+        },
+      });
+
+    // Simulation — remplacer par this.svc.findByMonth(...)
+    /*setTimeout(() => {
       this.rdvs.set(this.mockRdvs);
       this.loading.set(false);
-    }, 600);
+    }, 600);*/
   }
 
   // ── Navigation ────────────────────────────────────────
-  moisPrecedent() {
+  previousMonth() {
     const d = new Date(this.dateNavigation());
     d.setMonth(d.getMonth() - 1);
     this.dateNavigation.set(d);
-    this.charger();
+    this.load();
   }
 
-  moisSuivant() {
+  nextMonth() {
     const d = new Date(this.dateNavigation());
     d.setMonth(d.getMonth() + 1);
     this.dateNavigation.set(d);
-    this.charger();
+    this.load();
   }
 
-  allerAujourdhui() {
+  goToToday() {
     this.dateNavigation.set(new Date());
-    this.charger();
+    this.load();
   }
 
   // ── Sélection jour ────────────────────────────────────
-  selectionnerJour(day: CalendarDay) {
+  selectDay(day: CalendarDay) {
     this.jourSelectionne.set(day.date);
   }
 
   // ── Dialogs ───────────────────────────────────────────
-  ouvrirCreation(date?: Date) {
+  openCreation(date?: Date) {
     this.editMode.set(false);
     this.selectedRdv.set(null);
     this.formError.set(null);
@@ -347,19 +403,21 @@ export class AgendaComponent implements OnInit {
     this.showDialog.set(true);
   }
 
-  ouvrirDetail(rdv: RendezVous, event: Event) {
+  openDetail(rdv: RendezVous, event: Event) {
     event.stopPropagation();
     this.detailRdv.set(rdv);
     this.showDetail.set(true);
   }
 
-  ouvrirModification(rdv: RendezVous) {
+  openEdit(rdv: RendezVous) {
     this.editMode.set(true);
     this.selectedRdv.set(rdv);
     this.formError.set(null);
     this.form.patchValue({
       patientId: rdv.patientId,
       medecinId: rdv.medecinId,
+      patientNom: rdv.patientNom + ' ' + rdv.patientPrenom,
+      medecinNom: rdv.medecinNom,
       dateHeure: rdv.dateHeure.slice(0, 16),
       dureeMinutes: rdv.dureeMinutes,
       motif: rdv.motif,
@@ -369,13 +427,54 @@ export class AgendaComponent implements OnInit {
     this.showDialog.set(true);
   }
 
-  soumettre() {
+  submit() {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
     this.saving.set(true);
     this.formError.set(null);
+
+    const data = this.form.value as Partial<RdvRequest>;
+
+    if (this.editMode()) {
+      this.svc.edit(this.selectedRdv()!.id, data).subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.showDialog.set(false);
+          this.msg.add({
+            severity: 'success',
+            summary: this.editMode() ? 'RDV modifié' : 'RDV créé',
+            detail: 'Rendez-vous enregistré avec succès.',
+          });
+          this.load();
+        },
+        error: (err: ServiceError) => {
+          this.saving.set(false);
+          this.loading.set(false);
+          this.loadError.set(err.message);
+        },
+      });
+    } else {
+      this.svc.create(data).subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.showDialog.set(false);
+          this.msg.add({
+            severity: 'success',
+            summary: this.editMode() ? 'RDV modifié' : 'RDV créé',
+            detail: 'Rendez-vous enregistré avec succès.',
+          });
+          this.load();
+        },
+        error: (err: ServiceError) => {
+          this.saving.set(false);
+          this.loading.set(false);
+          this.loadError.set(err.message);
+        },
+      });
+    }
+
     // Simulation
-    setTimeout(() => {
+    /*    setTimeout(() => {
       this.saving.set(false);
       this.showDialog.set(false);
       this.msg.add({
@@ -383,23 +482,33 @@ export class AgendaComponent implements OnInit {
         summary: this.editMode() ? 'RDV modifié' : 'RDV créé',
         detail: 'Rendez-vous enregistré avec succès.',
       });
-      this.charger();
-    }, 800);
+      this.load();
+    }, 800); */
   }
 
-  changerStatut(rdv: RendezVous, statut: StatutRdv) {
-    this.rdvs.update((list) =>
-      list.map((r) => (r.id === rdv.id ? { ...r, statut } : r)),
-    );
-    if (this.detailRdv()?.id === rdv.id) this.detailRdv.set({ ...rdv, statut });
-    this.msg.add({
-      severity: 'success',
-      summary: 'Statut mis à jour',
-      detail: `Rendez-vous marqué comme ${STATUT_CONFIG[statut].label}.`,
+  changeStatus(rdv: RendezVous, statut: StatutRendezVous) {
+    this.svc.updateStatus(rdv.id, statut).subscribe({
+      next: () => {
+        this.rdvs.update((list) =>
+          list.map((r) => (r.id === rdv.id ? { ...r, statut } : r)),
+        );
+        if (this.detailRdv()?.id === rdv.id)
+          this.detailRdv.set({ ...rdv, statut });
+        this.msg.add({
+          severity: 'success',
+          summary: 'Statut mis à jour',
+          detail: `Rendez-vous marqué comme ${STATUT_CONFIG[statut].label}.`,
+        });
+      },
+      error: (err: ServiceError) => {
+        this.saving.set(false);
+        this.loading.set(false);
+        this.loadError.set(err.message);
+      },
     });
   }
 
-  confirmerSuppression(rdv: RendezVous) {
+  confirmDelete(rdv: RendezVous) {
     this.showDetail.set(false);
     this.confirm.confirm({
       header: 'Supprimer le rendez-vous',
@@ -409,17 +518,102 @@ export class AgendaComponent implements OnInit {
       rejectLabel: 'Annuler',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        this.rdvs.update((list) => list.filter((r) => r.id !== rdv.id));
-        this.msg.add({
-          severity: 'success',
-          summary: 'Supprimé',
-          detail: 'Rendez-vous supprimé.',
+        this.svc.delete(rdv.id).subscribe({
+          next: () => {
+            this.rdvs.update((list) => list.filter((r) => r.id !== rdv.id));
+            this.msg.add({
+              severity: 'success',
+              summary: 'Supprimé',
+              detail: 'Rendez-vous supprimé.',
+            });
+          },
+          error: (err: ServiceError) => {
+            this.msg.add({
+              severity: 'error',
+              summary: 'Erreur',
+              detail: err.message,
+              life: 5000,
+            });
+          },
         });
+      },
+    });
+  }
+  onSearchInput(event: Event): void {
+    const query = (event.target as HTMLInputElement).value;
+    if (query.length < 3) {
+      this.showSearchResults = false;
+      return;
+    }
+    this.patientSearchQuery = query;
+    this.searchSubject.next(query);
+    this.patientService.findAll(0, 5, query).subscribe((res) => {
+      this.searchResults = res.content;
+      this.showSearchResults = true;
+    });
+  }
+
+  selectPatient(patient: Patient): void {
+    this.loading.set(true);
+    this.showSearchResults = false;
+    this.patientService.findById(patient.id).subscribe({
+      next: (p) => {
+        this.onPatientSelected(p);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+      },
+    });
+  }
+
+  onSearchMedecinInput(event: Event): void {
+    const query = (event.target as HTMLInputElement).value;
+    if (query.length < 3) {
+      this.showSearchMedecinResults = false;
+      return;
+    }
+    this.medecinSearchQuery = query;
+    this.searchSubject.next(query);
+    this.employeService.findAll(0, 5, query).subscribe((res) => {
+      this.searchMedecinResults = res.content;
+      this.showSearchMedecinResults = true;
+    });
+  }
+  selectMedecin(medecin: Employe): void {
+    this.loading.set(true);
+    this.showSearchResults = false;
+    this.employeService.findById(medecin.id).subscribe({
+      next: (e) => {
+        this.onMedecinSelected(e);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
       },
     });
   }
 
   // ── Helpers ───────────────────────────────────────────
+
+  onPatientSelected(patient: Patient): void {
+    this.form.patchValue({
+      patientId: patient.id,
+      patientNom: `${patient.prenom} ${patient.nom}`,
+    });
+    this.showSearchResults = false;
+
+    this.form.get('patientNom')?.disable();
+  }
+
+  onMedecinSelected(medecin: Employe): void {
+    this.form.patchValue({
+      medecinId: medecin.id,
+      medecinNom: `${medecin.prenom} ${medecin.nom}`,
+    });
+    this.showSearchMedecinResults = false;
+    this.form.get('medecinNom')?.disable();
+  }
   formatHeure(iso: string) {
     const d = new Date(iso);
     return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
@@ -447,5 +641,12 @@ export class AgendaComponent implements OnInit {
   hasError(name: string) {
     const c = this.form.get(name);
     return c && (c.dirty || c.touched) && c.invalid;
+  }
+
+  getCurrentMonth(): number {
+    return this.dateNavigation().getMonth();
+  }
+  getCurrentYear(): number {
+    return this.dateNavigation().getFullYear();
   }
 }

@@ -12,40 +12,22 @@ import { AvatarModule } from 'primeng/avatar';
 import { DividerModule } from 'primeng/divider';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { Patient } from '../../../../core/models/all/all.model';
+
 import { PatientService } from '../../../../core/services/patient/patient.service';
 
 import { TooltipModule } from 'primeng/tooltip';
 import { CommonService } from '../../../../core/services/common.services';
-
-interface Consultation {
-  id: string;
-  date: Date;
-  medecin: string;
-  motif: string;
-  diagnostic: string;
-  statut: string;
-}
-interface ExamenLabo {
-  id: string;
-  date: Date;
-  type: string;
-  statut: 'EN_ATTENTE' | 'EN_COURS' | 'TERMINE';
-  resultat?: string;
-}
-interface Facture {
-  id: string;
-  date: Date;
-  montant: number;
-  paye: number;
-  statut: 'IMPAYEE' | 'PARTIELLEMENT_PAYEE' | 'PAYEE';
-}
-interface Ordonnance {
-  id: string;
-  date: Date;
-  medecin: string;
-  medicaments: string[];
-}
+import {
+  Consultation,
+  ExamenLabo,
+  Facture,
+  Ordonnance,
+  Patient,
+} from '../../../../core/models/patient/patient.model';
+import {
+  StatutExamenLabo,
+  StatutFacture,
+} from '../../../../core/models/enums/enums.model';
 
 @Component({
   selector: 'clnt-patient-detail',
@@ -112,21 +94,21 @@ export class PatientDetailComponent implements OnInit {
       id: '1',
       date: new Date('2026-05-21'),
       type: 'NFS + Goutte épaisse',
-      statut: 'TERMINE',
+      statut: StatutExamenLabo.TERMINE,
       resultat: 'Positif Pf',
     },
     {
       id: '2',
       date: new Date('2026-04-11'),
       type: 'Échographie abdominale',
-      statut: 'TERMINE',
+      statut: StatutExamenLabo.TERMINE,
       resultat: 'Normal',
     },
     {
       id: '3',
       date: new Date('2026-06-01'),
       type: 'Glycémie à jeun',
-      statut: 'EN_ATTENTE',
+      statut: StatutExamenLabo.EN_ATTENTE,
     },
   ]);
 
@@ -136,21 +118,21 @@ export class PatientDetailComponent implements OnInit {
       date: new Date('2026-05-20'),
       montant: 4500,
       paye: 4500,
-      statut: 'PAYEE',
+      statut: StatutFacture.PAYEE,
     },
     {
       id: '2',
       date: new Date('2026-04-10'),
       montant: 2800,
       paye: 1500,
-      statut: 'PARTIELLEMENT_PAYEE',
+      statut: StatutFacture.PARTIELLEMENT_PAYEE,
     },
     {
       id: '3',
       date: new Date('2026-06-01'),
       montant: 1200,
       paye: 0,
-      statut: 'IMPAYEE',
+      statut: StatutFacture.IMPAYEE,
     },
   ]);
 

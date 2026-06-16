@@ -7,18 +7,12 @@ export const employeRoutes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'all',
-        pathMatch: 'full',
-      },
-      {
-        path: 'all',
         loadComponent: () =>
           import('../../../components/pages/employe/employes.component').then(
             (m) => m.EmployesComponent,
           ),
         title: 'Tous les employés',
       },
-
       {
         path: 'add',
         loadComponent: () =>
@@ -28,14 +22,6 @@ export const employeRoutes: Routes = [
         title: 'Nouvel employé',
       },
       {
-        path: ':id',
-        loadComponent: () =>
-          import('../../../components/pages/employe/detail/employe-detail.component').then(
-            (m) => m.EmployeDetailComponent,
-          ),
-        title: 'Dossier employé',
-      },
-      {
         path: ':id/edit',
         loadComponent: () =>
           import('../../../components/pages/employe/add-edit/employe-add-edit.component').then(
@@ -43,21 +29,25 @@ export const employeRoutes: Routes = [
           ),
         title: 'Modifier employé',
       },
+      {
+        path: ':id',
+        loadComponent: () =>
+          import('../../../components/pages/employe/detail/employe-detail.component').then(
+            (m) => m.EmployeDetailComponent,
+          ),
+        title: 'Dossier employé',
+      },
     ],
   },
 ];
 
 export const employeServerRoutes: ServerRoute[] = [
   // Routes avec paramètres dynamiques → client uniquement
-  { path: 'employes/:id', renderMode: RenderMode.Client },
+
   {
     // Routes avec paramètres dynamiques → client uniquement
     path: 'employes/:id/edit',
     renderMode: RenderMode.Client,
   },
-  {
-    // Routes avec paramètres dynamiques → client uniquement
-    path: 'employes/all',
-    renderMode: RenderMode.Client,
-  },
+  { path: 'employes/:id', renderMode: RenderMode.Client },
 ];

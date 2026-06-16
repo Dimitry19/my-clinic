@@ -21,7 +21,7 @@
     <p-button
       label="Nouveau RDV"
       icon="pi pi-plus"
-      (onClick)="ouvrirCreation()"
+      (onClick)="openCreation()"
     />
   </div>
 
@@ -39,7 +39,7 @@
       >
     </div>
     @for (rdv of rdvAujourdhui().slice(0, 3); track rdv.id) {
-      <div class="rdv-chip" (click)="ouvrirDetail(rdv, $event)">
+      <div class="rdv-chip" (click)="openDetail(rdv, $event)">
         <span class="rdv-chip-heure">{{ formatHeure(rdv.dateHeure) }}</span>
         <span class="rdv-chip-nom"
           >{{ rdv.patientPrenom }} {{ rdv.patientNom }}</span
@@ -67,7 +67,7 @@
           icon="pi pi-chevron-left"
           [text]="true"
           severity="secondary"
-          (onClick)="moisPrecedent()"
+          (onClick)="previousMonth()"
           pTooltip="Mois précédent"
         />
         <h3 class="cal-titre">{{ moisLabel() }}</h3>
@@ -75,7 +75,7 @@
           icon="pi pi-chevron-right"
           [text]="true"
           severity="secondary"
-          (onClick)="moisSuivant()"
+          (onClick)="nextMonth()"
           pTooltip="Mois suivant"
         />
       </div>
@@ -84,7 +84,7 @@
         [outlined]="true"
         severity="secondary"
         size="small"
-        (onClick)="allerAujourdhui()"
+        (onClick)="goToToday()"
       />
     </div>
 
@@ -131,7 +131,7 @@
                 jourSelectionne()?.toDateString() === day.date.toDateString()
               "
               [class.cell-has-rdv]="day.rdvs.length > 0"
-              (click)="selectionnerJour(day)"
+              (click)="selectDay(day)"
             >
               <!-- Numéro du jour -->
               <div class="cell-numero">
@@ -152,7 +152,7 @@
                   [class.rdv-annule]="rdv.statut === 'ANNULE'"
                   [class.rdv-termine]="rdv.statut === 'TERMINE'"
                   [class.rdv-absent]="rdv.statut === 'ABSENT'"
-                  (click)="ouvrirDetail(rdv, $event)"
+                  (click)="openDetail(rdv, $event)"
                   [pTooltip]="
                     rdv.patientPrenom + ' ' + rdv.patientNom + ' — ' + rdv.motif
                   "
@@ -175,7 +175,7 @@
               <!-- Bouton ajouter au survol -->
               <button
                 class="cell-add-btn"
-                (click)="$event.stopPropagation(); ouvrirCreation(day.date)"
+                (click)="$event.stopPropagation(); openCreation(day.date)"
                 aria-label="Ajouter un RDV"
                 pTooltip="Ajouter un RDV"
                 tooltipPosition="top"
@@ -202,7 +202,7 @@
           label="Ajouter"
           size="small"
           [outlined]="true"
-          (onClick)="ouvrirCreation(jourSelectionne()!)"
+          (onClick)="openCreation(jourSelectionne()!)"
         />
       </div>
 
@@ -215,13 +215,13 @@
             icon="pi pi-plus"
             [text]="true"
             size="small"
-            (onClick)="ouvrirCreation(jourSelectionne()!)"
+            (onClick)="openCreation(jourSelectionne()!)"
           />
         </div>
       } @else {
         <div class="rdv-list">
           @for (rdv of rdvJourSelectionne(); track rdv.id) {
-            <div class="rdv-item" (click)="ouvrirDetail(rdv, $event)">
+            <div class="rdv-item" (click)="openDetail(rdv, $event)">
               <div class="rdv-heure-col">
                 <span class="rdv-heure">{{ formatHeure(rdv.dateHeure) }}</span>
                 <span class="rdv-duree">{{ rdv.dureeMinutes }} min</span>
@@ -259,9 +259,7 @@
                     [text]="true"
                     size="small"
                     pTooltip="Modifier"
-                    (onClick)="
-                      ouvrirModification(rdv); $event.stopPropagation()
-                    "
+                    (onClick)="openEdit(rdv); $event.stopPropagation()"
                   />
                   <p-button
                     icon="pi pi-trash"
@@ -269,9 +267,7 @@
                     size="small"
                     severity="danger"
                     pTooltip="Supprimer"
-                    (onClick)="
-                      confirmerSuppression(rdv); $event.stopPropagation()
-                    "
+                    (onClick)="confirmDelete(rdv); $event.stopPropagation()"
                   />
                 </div>
               </div>
@@ -294,12 +290,7 @@
   [closeOnEscape]="true"
 >
   @if (showDialog()) {
-    <form
-      [formGroup]="form"
-      (ngSubmit)="soumettre()"
-      novalidate
-      class="rdv-form"
-    >
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="rdv-form">
       @if (formError()) {
         <p-message
           severity="error"
@@ -307,64 +298,180 @@
           styleClass="w-full mb-3"
         />
       }
+      <!-- Champs de recherche du patient et du medecin formulaire-->
 
+      @if (!editMode()) {
+        <div class="search-section">
+          <div class="search-label">Rechercher le patient</div>
+          <div class="search-wrapper">
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Rechercher par nom ou téléphone..."
+              [value]="patientSearchQuery"
+              (input)="onSearchInput($event)"
+              (focus)="showSearchResults = searchResults.length > 0"
+              autocomplete="off"
+            />
+            <span class="search-icon-mini">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+            </span>
+            @if (searchLoading) {
+              <div class="search-spinner"></div>
+            }
+          </div>
+
+          <!-- Résultats de recherche -->
+          @if (showSearchResults) {
+            <div class="search-results">
+              @for (patient of searchResults; track patient) {
+                <div
+                  class="search-result-item"
+                  (click)="selectPatient(patient)"
+                >
+                  <div class="result-name">
+                    {{ patient.prenom }} {{ patient.nom }}
+                  </div>
+                  <div class="result-info">
+                    {{ patient.age }} ans
+                    @if (patient.telephone) {
+                      <span> · {{ patient.telephone }}</span>
+                    }
+                  </div>
+                </div>
+              }
+              <div
+                class="search-result-close"
+                (click)="showSearchResults = false"
+              >
+                Fermer
+              </div>
+            </div>
+          }
+        </div>
+        <div class="search-section">
+          <div class="search-label">Rechercher le médecin</div>
+          <div class="search-wrapper">
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Rechercher par nom ou téléphone..."
+              [value]="medecinSearchQuery"
+              (input)="onSearchMedecinInput($event)"
+              (focus)="
+                showSearchMedecinResults = searchMedecinResults.length > 0
+              "
+              autocomplete="off"
+            />
+            <span class="search-icon-mini">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+            </span>
+            @if (searchLoading) {
+              <div class="search-spinner"></div>
+            }
+          </div>
+
+          <!-- Résultats de recherche -->
+          @if (showSearchMedecinResults) {
+            <div class="search-results">
+              @for (medecin of searchMedecinResults; track medecin) {
+                <div
+                  class="search-result-item"
+                  (click)="selectMedecin(medecin)"
+                >
+                  <div class="result-name">
+                    {{ medecin.prenom }} {{ medecin.nom }}
+                  </div>
+                  <div class="result-info">
+                    {{ medecin.role }}
+                    @if (medecin.telephone) {
+                      <span> · {{ medecin.telephone }}</span>
+                    }
+                  </div>
+                </div>
+              }
+              <div
+                class="search-result-close"
+                (click)="showSearchMedecinResults = false"
+              >
+                Fermer
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Champs du formulaire-->
       <!-- Patient -->
-      <div class="f-field" [class.f-err]="hasError('patientId')">
-        <label class="f-label">
-          <i class="pi pi-user" aria-hidden="true"></i>
-          Patient <span class="req" aria-hidden="true">*</span>
-        </label>
-        <p-select
-          formControlName="patientId"
-          [options]="patients"
-          optionLabel="label"
-          optionValue="value"
+      <div class="f-field" [class.f-err]="hasError('patientNom')">
+        <label class="form-label required">Patient</label>
+        <input
+          id="patientNom"
+          type="text"
+          class="form-control"
+          formControlName="patientNom"
           placeholder="Sélectionner un patient"
-          styleClass="w-full"
-          filter
-          filterPlaceholder="Rechercher..."
+          autocomplete="text"
+          [attr.aria-invalid]="hasError('patientNom')"
         />
-        @if (fieldError("patientId")) {
-          <span class="f-err-msg" role="alert">
-            <i class="pi pi-info-circle" aria-hidden="true"></i>
-            {{ fieldError("patientId") }}
-          </span>
+        @if (hasError("patientNom")) {
+          <div class="error-msg">
+            @if (form.get("patientNom")?.errors?.["required"]) {
+              <span>Le patient est obligatoire.</span>
+            }
+          </div>
         }
       </div>
 
       <!-- Médecin -->
-      <div class="f-field" [class.f-err]="hasError('medecinId')">
-        <label class="f-label">
-          <i class="pi pi-user-plus" aria-hidden="true"></i>
-          Médecin <span class="req" aria-hidden="true">*</span>
-        </label>
-        <p-select
-          formControlName="medecinId"
-          [options]="medecins"
-          optionLabel="label"
-          optionValue="value"
+      <div class="f-field" [class.f-err]="hasError('medecinNom')">
+        <label class="form-label required">Médecin</label>
+        <input
+          id="medecinNom"
+          type="text"
+          class="form-control"
+          formControlName="medecinNom"
           placeholder="Sélectionner un médecin"
-          styleClass="w-full"
+          autocomplete="text"
+          [attr.aria-invalid]="hasError('medecinNom')"
         />
-        @if (fieldError("medecinId")) {
-          <span class="f-err-msg" role="alert">
-            <i class="pi pi-info-circle" aria-hidden="true"></i>
-            {{ fieldError("medecinId") }}
-          </span>
+        @if (hasError("medecinNom")) {
+          <div class="error-msg">
+            @if (form.get("medecinNom")?.errors?.["required"]) {
+              <span>Le medecin est obligatoire.</span>
+            }
+          </div>
         }
       </div>
 
       <!-- Date + Durée -->
       <div class="f-row">
         <div class="f-field" [class.f-err]="hasError('dateHeure')">
-          <label class="f-label">
-            <i class="pi pi-calendar" aria-hidden="true"></i>
-            Date et heure <span class="req" aria-hidden="true">*</span>
-          </label>
+          <label class="form-label required">Date et heure</label>
           <input
             type="datetime-local"
             formControlName="dateHeure"
-            class="f-input"
+            class="f-input form-control"
           />
           @if (fieldError("dateHeure")) {
             <span class="f-err-msg" role="alert">
@@ -375,10 +482,7 @@
         </div>
 
         <div class="f-field" [class.f-err]="hasError('dureeMinutes')">
-          <label class="f-label">
-            <i class="pi pi-clock" aria-hidden="true"></i>
-            Durée (min) <span class="req" aria-hidden="true">*</span>
-          </label>
+          <label class="form-label required"> Durée (min) </label>
           <p-inputNumber
             formControlName="dureeMinutes"
             [min]="5"
@@ -398,10 +502,7 @@
 
       <!-- Motif -->
       <div class="f-field" [class.f-err]="hasError('motif')">
-        <label class="f-label">
-          <i class="pi pi-clipboard" aria-hidden="true"></i>
-          Motif de consultation <span class="req" aria-hidden="true">*</span>
-        </label>
+        <label class="form-label required"> Motif de consultation </label>
         <input
           pInputText
           formControlName="motif"
@@ -418,10 +519,7 @@
 
       <!-- Notes -->
       <div class="f-field">
-        <label class="f-label">
-          <i class="pi pi-pencil" aria-hidden="true"></i>
-          Notes (optionnel)
-        </label>
+        <label class="form-label"> Notes (optionnel) </label>
         <textarea
           pTextarea
           formControlName="notes"
@@ -531,7 +629,7 @@
                       ? 'warn'
                       : 'secondary'
               "
-              (onClick)="changerStatut(detailRdv()!, $any(opt.value))"
+              (onClick)="changeStatus(detailRdv()!, $any(opt.value))"
             />
           }
         </div>
@@ -544,14 +642,14 @@
           label="Modifier"
           severity="secondary"
           [outlined]="true"
-          (onClick)="ouvrirModification(detailRdv()!)"
+          (onClick)="openEdit(detailRdv()!)"
         />
         <p-button
           icon="pi pi-trash"
           label="Supprimer"
           severity="danger"
           [outlined]="true"
-          (onClick)="confirmerSuppression(detailRdv()!)"
+          (onClick)="confirmDelete(detailRdv()!)"
         />
       </div>
     </div>

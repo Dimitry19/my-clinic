@@ -1,5 +1,7 @@
+import { StatutConge, StatutEmploye } from '../enums/enums.model';
+
 export type TypeContrat = 'CDI' | 'CDD' | 'STAGE' | 'VACATAIRE' | 'EXTERNE';
-export type StatutEmploye = 'ACTIF' | 'INACTIF' | 'SUSPENDU';
+
 export type RoleEmploye =
   | 'MEDECIN'
   | 'INFIRMIER'
@@ -76,3 +78,34 @@ export const ROLES: { label: string; value: RoleEmploye }[] = [
   { label: 'Réceptionniste', value: 'RECEPTIONNISTE' },
   { label: 'Urgentiste', value: 'URGENTISTE' },
 ];
+
+export interface FicheDePaie {
+  id: string;
+  mois: number;
+  annee: number;
+  salaireBrut: number;
+  cotisations: number;
+  primes: number;
+  retenues: number;
+  salaireNet: number;
+  pdfPath?: string;
+}
+
+export interface Conge {
+  id: string;
+  type: string;
+  dateDebut: string;
+  dateFin: string;
+  statut: StatutConge;
+  motif?: string;
+  dureeJours: number;
+}
+
+export interface TimelineEvent {
+  date: Date;
+  icon: string;
+  color: string;
+  title: string;
+  subtitle: string;
+  type: string;
+}

@@ -201,6 +201,15 @@
   }
 }
 
+.search-icon-all-patients {
+  position: absolute;
+  right: 4rem;
+  top: 21%;
+  transform: translateY(-50%);
+  color: #5f5e5a;
+  pointer-events: none;
+}
+
 // ── Alertes ────────────────────────────────────────────────
 .alert {
   display: flex;

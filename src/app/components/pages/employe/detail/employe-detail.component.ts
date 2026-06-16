@@ -17,43 +17,15 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import {
   Employe,
   DEPARTEMENTS,
+  Conge,
+  FicheDePaie,
+  TimelineEvent,
 } from '../../../../core/models/employe/employe.model';
-import {
-  EmployeService,
-  ServiceError,
-} from '../../../../core/services/employe/employe.service';
+import { EmployeService } from '../../../../core/services/employe/employe.service';
 import { EmployeFormComponent } from '../formulaire/employe-form.component';
-
-interface FicheDePaie {
-  id: string;
-  mois: number;
-  annee: number;
-  salaireBrut: number;
-  cotisations: number;
-  primes: number;
-  retenues: number;
-  salaireNet: number;
-  pdfPath?: string;
-}
-
-interface Conge {
-  id: string;
-  type: string;
-  dateDebut: string;
-  dateFin: string;
-  statut: 'EN_ATTENTE' | 'APPROUVE' | 'REJETE';
-  motif?: string;
-  dureeJours: number;
-}
-
-interface TimelineEvent {
-  date: Date;
-  icon: string;
-  color: string;
-  title: string;
-  subtitle: string;
-  type: string;
-}
+import { forkJoin } from 'rxjs';
+import { StatutConge } from '../../../../core/models/enums/enums.model';
+import { ServiceError } from '../../../../core/models/all/all.model';
 
 const MOIS = [
   'Jan',
@@ -106,9 +78,11 @@ export class EmployeDetailComponent implements OnInit {
   activeTab = signal(0);
 
   showEditDialog = signal(false);
+  fiches = signal<FicheDePaie[]>([]);
+  conges = signal<Conge[]>([]);
 
   // Données simulées — à remplacer par de vrais appels API
-  fiches = signal<FicheDePaie[]>([
+  /* fiches = signal<FicheDePaie[]>([
     {
       id: '1',
       mois: 5,
@@ -177,7 +151,7 @@ export class EmployeDetailComponent implements OnInit {
       statut: 'EN_ATTENTE',
       dureeJours: 3,
     },
-  ]);
+  ]);*/
 
   timeline = signal<TimelineEvent[]>([]);
 
@@ -191,7 +165,7 @@ export class EmployeDetailComponent implements OnInit {
 
   totalCongesApprouves = computed(() =>
     this.conges()
-      .filter((c) => c.statut === 'APPROUVE')
+      .filter((c) => c.statut === StatutConge.APPROUVE)
       .reduce((a, c) => a + c.dureeJours, 0),
   );
 
@@ -201,9 +175,29 @@ export class EmployeDetailComponent implements OnInit {
     return Math.round(f.reduce((a, c) => a + c.salaireNet, 0) / f.length);
   });
 
+  recuperationsParallesDesDonnees(id: string) {
+    forkJoin({
+      emp: this.svc.findById(id),
+      fpaies: this.svc.getFichesDePaie(id),
+      cong: this.svc.getConges(id),
+    }).subscribe({
+      next: ({ emp, fpaies, cong }) => {
+        this.employe.set(emp);
+        this.fiches.set(fpaies);
+        this.conges.set(cong);
+        this.loading.set(false);
+        this.buildTimeline();
+      },
+      error: (err: ServiceError) => {
+        this.loading.set(false);
+        this.loadError.set(err.message);
+      },
+    });
+  }
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;
-    this.svc.findById(id).subscribe({
+    this.recuperationsParallesDesDonnees(id);
+    /*this.svc.findById(id).subscribe({
       next: (e) => {
         this.employe.set(e);
         this.loading.set(false);
@@ -213,7 +207,7 @@ export class EmployeDetailComponent implements OnInit {
         this.loading.set(false);
         this.loadError.set(err.message);
       },
-    });
+    });*/
   }
 
   private buildTimeline() {
@@ -307,6 +301,7 @@ export class EmployeDetailComponent implements OnInit {
     if (!e) return;
     const nouveau = e.statut === 'ACTIF' ? 'INACTIF' : 'ACTIF';
     const label = nouveau === 'ACTIF' ? 'réactiver' : 'désactiver';
+
     this.confirm.confirm({
       header: 'Modifier le statut',
       message: `Voulez-vous ${label} ${e.prenom} ${e.nom} ?`,

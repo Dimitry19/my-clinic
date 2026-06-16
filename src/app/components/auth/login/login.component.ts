@@ -17,9 +17,7 @@ import { AuthService } from '../../../core/services/auth/auth.service';
 import { Authenticate, User } from '../../../core/models/auth/auth.model';
 import { CommonService } from '../../../core/services/common.services';
 import { ApiResponse } from '../../../core/models/response/api-response.model';
-
-type LoginStep = 'idle' | 'loading' | 'success' | 'error';
-type ErrorType = 'credentials' | 'network' | 'locked' | 'server' | null;
+import { LoginStep, ErrorType } from '../../../core/models/all/all.model';
 
 @Component({
   selector: 'clnt-login',

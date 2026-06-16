@@ -4,22 +4,15 @@
 
 @import "../../../../variables.scss";
 
-/* $primary: #185fa5;
-$primary-dk: #0c447c;
-$primary-lt: #e6f1fb;
-$success: #0f6e56;
-$success-lt: #e1f5ee;
-$danger: #a32d2d;
-$danger-lt: #fcebeb;
-$warning: #ba7517;
-$warning-lt: #faeeda;
-$border: #d3d1c7;
-$text: #2c2c2a;
-$text-muted: #5f5e5a;
-$bg: #ffffff;
-$bg-light: #f1efe8;
-$radius: 8px;
-$radius-lg: 12px; */
+.search-icon-all-emp {
+  position: absolute;
+  right: 18.5rem;
+  top: 21.3%;
+  transform: translateY(-50%);
+  color: #5f5e5a;
+  pointer-events: none;
+  z-index: 1;
+}
 
 .employes-page {
   display: flex;

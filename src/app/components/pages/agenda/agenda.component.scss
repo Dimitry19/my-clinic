@@ -1,1 +1,734 @@
-﻿
+﻿@use "sass:color";
+
+$primary: #185fa5;
+$primary-dk: #0c447c;
+$primary-lt: #e6f1fb;
+$success: #0f6e56;
+$success-lt: #e1f5ee;
+$danger: #a32d2d;
+$danger-lt: #fcebeb;
+$warning: #ba7517;
+$warning-lt: #faeeda;
+$border: #d3d1c7;
+$text: #2c2c2a;
+$text-muted: #5f5e5a;
+$bg: #ffffff;
+$bg-light: #f1efe8;
+$radius: 8px;
+$radius-lg: 12px;
+
+// ══════════════════════════════════════
+// PAGE
+// ══════════════════════════════════════
+.agenda-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+// ══════════════════════════════════════
+// EN-TÊTE
+// ══════════════════════════════════════
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: $text;
+    margin: 0 0 6px;
+    .pi {
+      font-size: 20px;
+      color: $primary;
+    }
+  }
+
+  p {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: $text-muted;
+    margin: 0;
+    flex-wrap: wrap;
+  }
+}
+
+// Badges inline dans le sous-titre
+.inline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  .pi {
+    font-size: 12px;
+  }
+
+  &.badge-success {
+    background: $success-lt;
+    color: $success;
+  }
+  &.badge-warn {
+    background: $warning-lt;
+    color: $warning;
+  }
+}
+
+// ══════════════════════════════════════
+// STATS RDV DU JOUR
+// ══════════════════════════════════════
+.stats-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: 20px;
+  font-size: 13px;
+  color: $text-muted;
+  white-space: nowrap;
+  flex-shrink: 0;
+  .pi {
+    font-size: 15px;
+    color: $warning;
+  }
+  strong {
+    color: $text;
+  }
+}
+
+.rdv-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: $primary;
+  }
+
+  &.rdv-chip-more {
+    color: $text-muted;
+    cursor: default;
+    &:hover {
+      border-color: $border;
+    }
+  }
+}
+
+.rdv-chip-heure {
+  font-weight: 500;
+  color: $primary;
+  font-size: 11px;
+}
+
+.rdv-chip-nom {
+  color: $text;
+}
+
+:host ::ng-deep .tag-xs .p-tag {
+  font-size: 10px;
+  padding: 1px 7px;
+}
+
+// ══════════════════════════════════════
+// CARTE CALENDRIER
+// ══════════════════════════════════════
+.calendar-card {
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+
+// Toolbar navigation
+.cal-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid $border;
+  background: $bg-light;
+}
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cal-titre {
+  font-size: 16px;
+  font-weight: 500;
+  color: $text;
+  min-width: 180px;
+  text-align: center;
+  margin: 0;
+}
+
+// ── Entêtes jours ─────────────────────────────────────────
+.cal-jours-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 0.5px solid $border;
+}
+
+.jour-header {
+  padding: 8px 0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+// ── Grille skeleton ────────────────────────────────────────
+.cal-skeleton {
+  padding: 1rem;
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-top: 4px;
+  }
+}
+
+// ── Grille calendrier ──────────────────────────────────────
+.cal-content {
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-left: 0.5px solid $border;
+  }
+}
+
+// ── Cellule jour ──────────────────────────────────────────
+.cal-cell {
+  min-height: 88px;
+  border-right: 0.5px solid $border;
+  border-bottom: 0.5px solid $border;
+  padding: 6px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.12s;
+
+  &:hover {
+    background: rgba($primary-lt, 0.5);
+
+    .cell-add-btn {
+      opacity: 1;
+    }
+  }
+
+  &.cell-today {
+    background: $primary-lt;
+  }
+  &.cell-selected {
+    background: rgba($primary, 0.08);
+    outline: 2px solid $primary;
+    outline-offset: -2px;
+  }
+  &.cell-other-month .cell-numero span {
+    color: $border;
+  }
+  &.cell-has-rdv {
+    background: rgba($success-lt, 0.3);
+  }
+  &.cell-today.cell-has-rdv {
+    background: $primary-lt;
+  }
+}
+
+// Numéro du jour
+.cell-numero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+
+  span {
+    font-size: 13px;
+    font-weight: 500;
+    color: $text;
+  }
+
+  .numero-today {
+    background: $primary;
+    color: #fff;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+}
+
+.rdv-count-dot {
+  font-size: 10px;
+  background: $primary;
+  color: #fff;
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-weight: 500;
+}
+
+// RDV dans la cellule
+.cell-rdv {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  margin-bottom: 2px;
+  overflow: hidden;
+  white-space: nowrap;
+
+  &.rdv-confirme {
+    background: $success-lt;
+    color: $success;
+  }
+  &.rdv-planifie {
+    background: $primary-lt;
+    color: $primary;
+  }
+  &.rdv-annule {
+    background: $danger-lt;
+    color: $danger;
+    text-decoration: line-through;
+  }
+  &.rdv-termine {
+    background: $bg-light;
+    color: $text-muted;
+  }
+  &.rdv-absent {
+    background: $warning-lt;
+    color: $warning;
+  }
+
+  &:hover {
+    filter: brightness(0.92);
+  }
+}
+
+.cell-rdv-heure {
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.cell-rdv-nom {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cell-rdv-more {
+  font-size: 10px;
+  color: $text-muted;
+  padding: 1px 4px;
+}
+
+// Bouton + au survol
+.cell-add-btn {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: none;
+  background: $primary;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+  .pi {
+    font-size: 10px;
+  }
+}
+
+// ══════════════════════════════════════
+// PANNEAU JOUR SÉLECTIONNÉ
+// ══════════════════════════════════════
+.jour-panel {
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+
+.jour-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: $bg-light;
+  border-bottom: 0.5px solid $border;
+
+  h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: $text;
+    margin: 0;
+    .pi {
+      font-size: 16px;
+      color: $primary;
+    }
+  }
+}
+
+.jour-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 1.5rem;
+  color: $text-muted;
+  font-size: 14px;
+
+  .pi {
+    font-size: 20px;
+    opacity: 0.4;
+  }
+}
+
+// Liste RDV du jour
+.rdv-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.rdv-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid $bg-light;
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:last-child {
+    border-bottom: none;
+  }
+  &:hover {
+    background: rgba($primary-lt, 0.4);
+  }
+}
+
+.rdv-heure-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 44px;
+  padding-top: 2px;
+}
+
+.rdv-heure {
+  font-weight: 500;
+  font-size: 14px;
+  color: $text;
+}
+
+.rdv-duree {
+  font-size: 11px;
+  color: $text-muted;
+  margin-top: 2px;
+}
+
+// Barre colorée statut
+.rdv-barre {
+  width: 3px;
+  border-radius: 3px;
+  align-self: stretch;
+  min-height: 40px;
+  flex-shrink: 0;
+
+  &.barre-confirme {
+    background: $success;
+  }
+  &.barre-planifie {
+    background: $primary;
+  }
+  &.barre-annule {
+    background: $danger;
+  }
+  &.barre-termine {
+    background: $border;
+  }
+  &.barre-absent {
+    background: $warning;
+  }
+}
+
+.rdv-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.rdv-patient {
+  font-weight: 500;
+  font-size: 14px;
+  color: $text;
+  margin-bottom: 3px;
+}
+
+.rdv-motif,
+.rdv-medecin {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: $text-muted;
+  .pi {
+    font-size: 12px;
+  }
+}
+
+.rdv-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.rdv-btns {
+  display: flex;
+  gap: 2px;
+}
+
+// ══════════════════════════════════════
+// FORMULAIRE DIALOG
+// ══════════════════════════════════════
+.rdv-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0 0;
+}
+
+.f-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.f-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.f-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: $text-muted;
+  .pi {
+    font-size: 14px;
+  }
+  .req {
+    color: $danger;
+  }
+}
+
+.f-input {
+  padding: 9px 12px;
+  border: 0.5px solid $border;
+  border-radius: $radius;
+  font-size: 14px;
+  color: $text;
+  background: $bg;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.1);
+  }
+
+  .f-err & {
+    border-color: $danger;
+  }
+}
+
+.f-textarea {
+  resize: vertical;
+  min-height: 72px;
+  font-family: inherit;
+}
+
+.f-err-msg {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: $danger;
+  .pi {
+    font-size: 12px;
+  }
+}
+
+.f-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 0.75rem;
+  border-top: 0.5px solid $border;
+  margin-top: 0.5rem;
+}
+
+// ══════════════════════════════════════
+// DIALOG DÉTAIL RDV
+// ══════════════════════════════════════
+.rdv-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-top: 0.5rem;
+}
+
+.detail-patient {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 1rem;
+  border-bottom: 0.5px solid $border;
+}
+
+.detail-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: $primary-lt;
+  color: $primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.detail-nom {
+  font-weight: 500;
+  font-size: 16px;
+  color: $text;
+  margin-bottom: 3px;
+}
+
+.detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: $text-muted;
+  .pi {
+    font-size: 13px;
+  }
+}
+
+.detail-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 0.5px solid $border;
+  border-radius: $radius;
+  overflow: hidden;
+}
+
+.detail-row {
+  display: flex;
+  gap: 12px;
+  padding: 9px 14px;
+  border-bottom: 0.5px solid $bg-light;
+  font-size: 14px;
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.detail-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 90px;
+  color: $text-muted;
+  font-size: 13px;
+  .pi {
+    font-size: 14px;
+  }
+}
+
+.detail-val {
+  color: $text;
+  font-weight: 500;
+}
+
+.detail-statuts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-statut-label {
+  font-size: 12px;
+  color: $text-muted;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.statut-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 0.75rem;
+  border-top: 0.5px solid $border;
+}

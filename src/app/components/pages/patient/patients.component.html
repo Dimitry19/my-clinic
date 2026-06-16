@@ -17,7 +17,7 @@
 
   <!-- Barre de recherche -->
   <div class="search-bar">
-    <i class="pi pi-search search-icon"></i>
+    <i class="pi pi-search search-icon-all-patients"></i>
     <input
       pInputText
       [(ngModel)]="searchQuery"
@@ -134,7 +134,7 @@
                 severity="danger"
                 pTooltip="Supprimer"
                 tooltipPosition="top"
-                (onClick)="confirmerSuppression(patient)"
+                (onClick)="confirmDelete(patient)"
               />
             </div>
           </td>

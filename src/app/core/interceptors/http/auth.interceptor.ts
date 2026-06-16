@@ -8,14 +8,21 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
 const EXCLUDED_URLS = [
-  environment.mobileFeatureUrl, // ou ton env variable pattern
+  environment.mobileFeatureUrl,
+  '/assets',
+  '/favicon',
+  '/site.webmanifest',
+  '.png',
+  '.ico',
 ];
 
 export const authInterceptor: HttpInterceptorFn = (
   request: HttpRequest<unknown>,
   next: HttpHandlerFn,
 ): Observable<HttpEvent<unknown>> => {
-  const isExcluded = EXCLUDED_URLS.some((url) => request.url.startsWith(url));
+  const isExcluded = EXCLUDED_URLS.some(
+    (url) => request.url.startsWith(url) || request.url.endsWith(url),
+  );
 
   if (isExcluded) {
     return next(request);

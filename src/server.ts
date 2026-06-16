@@ -6,7 +6,7 @@ import {
 } from '@angular/ssr/node';
 
 import express from 'express';
-import { dirname, resolve } from 'node:path';
+import path, { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
@@ -45,7 +45,7 @@ app.use((req, _, next) => {
 app.use(
   express.static(browserDistFolder, {
     maxAge: '1y',
-    index: false,
+    index: false, // Empêche Express de servir index.html pour les sous-dossiers
     redirect: false,
   }),
 );

@@ -14,9 +14,10 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 import { PatientService } from '../../../core/services/patient/patient.service';
-import { Patient, Page } from '../../../core/models/all/all.model';
+import { Page } from '../../../core/models/all/all.model';
 import { TooltipModule } from 'primeng/tooltip';
 import { Configuration } from '../../../core/models/configuration/configuration.model';
+import { Patient } from '../../../core/models/patient/patient.model';
 
 @Component({
   selector: 'clnt-patients',
@@ -89,7 +90,7 @@ export class PatientsComponent implements OnInit {
     this.load(0);
   }
 
-  confirmerSuppression(patient: Patient) {
+  confirmDelete(patient: Patient) {
     this.confirmService.confirm({
       message: `Supprimer le patient ${patient.prenom} ${patient.nom} ?`,
       header: 'Confirmation',

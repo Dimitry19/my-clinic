@@ -1,4 +1,4 @@
-﻿import { Component, inject, output } from '@angular/core';
+﻿import { Component, inject, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { BadgeModule } from 'primeng/badge';
@@ -7,6 +7,8 @@ import { MenuItem } from 'primeng/api';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { TooltipModule } from 'primeng/tooltip';
 import { CommonService } from '../../../core/services/common.services';
+import { ApiResponse } from '../../../core/models/response/api-response.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'clnt-topbar',
@@ -22,7 +24,7 @@ import { CommonService } from '../../../core/services/common.services';
           severity="secondary"
         />
         <div class="breadcrumb">
-          <span class="clinic-name">Clinique Trinité</span>
+          <span class="clinic-name">Centre Médical la Trinité</span>
         </div>
       </div>
       <div class="topbar-right">
@@ -136,6 +138,8 @@ export class TopbarComponent {
   auth = inject(AuthService);
   commonService = inject(CommonService);
 
+  router = inject(Router);
+
   darkMode = false;
 
   get initiales() {
@@ -155,7 +159,18 @@ export class TopbarComponent {
     {
       label: 'Déconnexion',
       icon: 'pi pi-sign-out',
-      command: () => this.auth.logout(),
+      command: () => this.logout(),
     },
   ];
+
+  logout() {
+    this.auth.logout().subscribe({
+      next: (response: ApiResponse<boolean>) => {
+        if (this.commonService.isSuccessResponse(response)) {
+          setTimeout(() => this.router.navigate(['/login']), 800);
+        }
+      },
+      error: (err) => {},
+    });
+  }
 }

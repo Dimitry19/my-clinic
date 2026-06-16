@@ -10,8 +10,8 @@ import {
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { Patient } from '../../../../core/models/all/all.model';
 import { PatientService } from '../../../../core/services/patient/patient.service';
+import { Patient } from '../../../../core/models/patient/patient.model';
 
 @Component({
   selector: 'clnt-patient-add-edit',
@@ -61,11 +61,10 @@ export class PatientAddEditComponent implements OnInit, OnDestroy {
     // Mode modification si un ID est dans l'URL
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       const id = params.get('id');
-      console.log(id);
       if (id) {
         this.mode = 'modification';
         this.patientId = id;
-        this.chargerPatient(id);
+        this.loadPatient(id);
       }
     });
   }
@@ -132,7 +131,7 @@ export class PatientAddEditComponent implements OnInit, OnDestroy {
     });
   }
 
-  selectionnerPatient(patient: any): void {
+  selectPatient(patient: any): void {
     this.loading = true;
     this.showSearchResults = false;
     this.patientService.findById(patient.id).subscribe({
@@ -196,8 +195,7 @@ export class PatientAddEditComponent implements OnInit, OnDestroy {
     });
   }
 
-  private chargerPatient(id: string): void {
-    console.log('CHARGEMENT DU PATIENT:', id);
+  private loadPatient(id: string): void {
     this.loading = true;
     this.patientService.findById(id).subscribe({
       next: (p) => {
@@ -212,17 +210,17 @@ export class PatientAddEditComponent implements OnInit, OnDestroy {
   }
 
   // Navigation entre étapes
-  stepSuivant(): void {
-    if (this.currentStep < this.totalSteps && this.etapeValide()) {
+  nextStep(): void {
+    if (this.currentStep < this.totalSteps && this.validStep()) {
       this.currentStep++;
     }
   }
 
-  stepPrecedent(): void {
+  previousStep(): void {
     if (this.currentStep > 1) this.currentStep--;
   }
 
-  etapeValide(): boolean {
+  validStep(): boolean {
     if (this.currentStep === 1) {
       return ['nom', 'prenom', 'dateNaissance', 'sexe'].every(
         (field) => this.form.get(field)?.valid,
@@ -256,7 +254,7 @@ export class PatientAddEditComponent implements OnInit, OnDestroy {
     return this.form.get('email')?.invalid && this.form.get('email')?.touched;
   }
 
-  soumettre(): void {
+  submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

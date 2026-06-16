@@ -8,10 +8,11 @@ import { ButtonModule } from 'primeng/button';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ChartModule } from 'primeng/chart';
 import { AvatarModule } from 'primeng/avatar';
-import { StatDashboard, RendezVous } from '../../../core/models/all/all.model';
+import { StatDashboard } from '../../../core/models/all/all.model';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { DashboardService } from '../../../core/services/dashboard/dashboard.service';
 import { TooltipModule } from 'primeng/tooltip';
+import { RendezVous } from '../../../core/models/agenda/agenda.model';
 
 @Component({
   selector: 'clnt-dashboard',
