@@ -219,17 +219,6 @@ export class AgendaComponent implements OnInit {
     notes: [''],
   });
 
-  // Données mock pour les selects — à remplacer par de vrais appels API
-  patients = [
-    { label: 'Marie Kouassi', value: '1' },
-    { label: 'Paul Dupont', value: '2' },
-    { label: 'Awa Ly', value: '3' },
-  ];
-  medecins = [
-    { label: 'Dr. Martin', value: '1' },
-    { label: 'Dr. Dupont', value: '2' },
-  ];
-
   // ── Données mock pour la démo ─────────────────────────
   private mockRdvs: RendezVous[] = (() => {
     const now = new Date();
@@ -349,12 +338,6 @@ export class AgendaComponent implements OnInit {
           this.loadError.set(err.message);
         },
       });
-
-    // Simulation — remplacer par this.svc.findByMonth(...)
-    /*setTimeout(() => {
-      this.rdvs.set(this.mockRdvs);
-      this.loading.set(false);
-    }, 600);*/
   }
 
   // ── Navigation ────────────────────────────────────────
@@ -472,18 +455,6 @@ export class AgendaComponent implements OnInit {
         },
       });
     }
-
-    // Simulation
-    /*    setTimeout(() => {
-      this.saving.set(false);
-      this.showDialog.set(false);
-      this.msg.add({
-        severity: 'success',
-        summary: this.editMode() ? 'RDV modifié' : 'RDV créé',
-        detail: 'Rendez-vous enregistré avec succès.',
-      });
-      this.load();
-    }, 800); */
   }
 
   changeStatus(rdv: RendezVous, statut: StatutRendezVous) {

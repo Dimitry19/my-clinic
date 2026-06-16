@@ -1,0 +1,565 @@
+﻿import {
+  Component,
+  inject,
+  OnInit,
+  OnDestroy,
+  signal,
+  computed,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { ActivatedRoute } from '@angular/router';
+
+import { StepperModule } from 'primeng/stepper';
+import { SelectLazyLoadEvent, SelectModule } from 'primeng/select';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { TagModule } from 'primeng/tag';
+import { AvatarModule } from 'primeng/avatar';
+import { CardModule } from 'primeng/card';
+import { MessageModule } from 'primeng/message';
+import { SkeletonModule } from 'primeng/skeleton';
+import { ToastModule } from 'primeng/toast';
+import { DividerModule } from 'primeng/divider';
+import { TooltipModule } from 'primeng/tooltip';
+import { MessageService } from 'primeng/api';
+import {
+  PatientLight,
+  MedecinLight,
+  RendezVousLight,
+  TYPES_CONSULTATION,
+  CONS_DEPARTEMENTS,
+} from '../../../../core/models/patient/consultation.model';
+import { PatientService } from '../../../../core/services/patient/patient.service';
+import { Patient } from '../../../../core/models/patient/patient.model';
+import { EmployeService } from '../../../../core/services/employe/employe.service';
+import { Configuration } from '../../../../core/models/configuration/configuration.model';
+import {
+  Employe,
+  EmployePage,
+} from '../../../../core/models/employe/employe.model';
+
+// ── Mock data (remplacer par vrais services) ─────────────
+const MOCK_PATIENTS: PatientLight[] = [
+  {
+    id: '1',
+    nom: 'Kouassi',
+    prenom: 'Marie',
+    dateNaissance: '1990-05-12',
+    telephone: '47821234',
+    groupeSanguin: 'A+',
+    age: 35,
+  },
+  {
+    id: '2',
+    nom: 'Dupont',
+    prenom: 'Paul',
+    dateNaissance: '1978-11-03',
+    telephone: '47856789',
+    groupeSanguin: 'O-',
+    age: 47,
+  },
+  {
+    id: '3',
+    nom: 'Ly',
+    prenom: 'Awa',
+    dateNaissance: '2001-07-22',
+    telephone: '47812345',
+    groupeSanguin: 'B+',
+    age: 24,
+  },
+  {
+    id: '4',
+    nom: 'Bernard',
+    prenom: 'Jean',
+    dateNaissance: '1965-02-14',
+    telephone: '47898765',
+    groupeSanguin: 'AB+',
+    age: 60,
+  },
+];
+const MOCK_MEDECINS: MedecinLight[] = [
+  {
+    id: '1',
+    nom: 'Martin',
+    prenom: 'Dr.',
+    poste: 'Médecin généraliste',
+    departement: 'MEDECINE',
+  },
+  {
+    id: '2',
+    nom: 'Dupont',
+    prenom: 'Dr.',
+    poste: 'Chirurgien',
+    departement: 'CHIRURGIE',
+  },
+  {
+    id: '3',
+    nom: 'Lambert',
+    prenom: 'Dr.',
+    poste: 'Cardiologue',
+    departement: 'MEDECINE',
+  },
+];
+const MOCK_RDV: RendezVousLight[] = [
+  {
+    id: '1',
+    dateHeure: '2026-06-16T09:00',
+    dureeMinutes: 30,
+    motif: 'Fièvre persistante',
+    statut: 'CONFIRME',
+    patientNom: 'Kouassi',
+    patientPrenom: 'Marie',
+    medecinNom: 'Dr. Martin',
+  },
+  {
+    id: '2',
+    dateHeure: '2026-06-16T10:30',
+    dureeMinutes: 30,
+    motif: 'Bilan annuel',
+    statut: 'PLANIFIE',
+    patientNom: 'Kouassi',
+    patientPrenom: 'Marie',
+    medecinNom: 'Dr. Martin',
+  },
+  {
+    id: '3',
+    dateHeure: '2026-06-17T14:00',
+    dureeMinutes: 45,
+    motif: 'Suivi tension',
+    statut: 'CONFIRME',
+    patientNom: 'Dupont',
+    patientPrenom: 'Paul',
+    medecinNom: 'Dr. Martin',
+  },
+  {
+    id: '4',
+    dateHeure: '2026-06-18T09:30',
+    dureeMinutes: 30,
+    motif: 'Douleur abdominale',
+    statut: 'CONFIRME',
+    patientNom: 'Ly',
+    patientPrenom: 'Awa',
+    medecinNom: 'Dr. Dupont',
+  },
+  {
+    id: '5',
+    dateHeure: '2026-06-19T11:00',
+    dureeMinutes: 30,
+    motif: 'Consultation urgente',
+    statut: 'PLANIFIE',
+    patientNom: 'Bernard',
+    patientPrenom: 'Jean',
+    medecinNom: 'Dr. Lambert',
+  },
+];
+
+@Component({
+  selector: 'clnt-consultation-create',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterLink,
+    ReactiveFormsModule,
+    StepperModule,
+    SelectModule,
+    ButtonModule,
+    InputTextModule,
+    TextareaModule,
+    InputNumberModule,
+    TagModule,
+    AvatarModule,
+    CardModule,
+    MessageModule,
+    SkeletonModule,
+    ToastModule,
+    DividerModule,
+    TooltipModule,
+  ],
+  providers: [MessageService],
+  templateUrl: './consultation-create.component.html',
+  styleUrls: ['./consultation-create.component.scss'],
+})
+export class ConsultationCreateComponent implements OnInit, OnDestroy {
+  private fb = inject(FormBuilder);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private msg = inject(MessageService);
+  private patientSvc = inject(PatientService);
+  private employeSvc = inject(EmployeService);
+  private destroy$ = new Subject<void>();
+
+  items: any[] = [];
+  selectedItem: Employe | null = null;
+
+  // ── Étapes ────────────────────────────────────────────
+  activeStep = signal(0);
+  readonly STEPS = [
+    { label: 'Médecin & Patient', icon: 'pi-users' },
+    { label: 'Rendez-vous', icon: 'pi-calendar' },
+    { label: 'Examen clinique', icon: 'pi-heart-rate-monitor' },
+    { label: 'Diagnostic', icon: 'pi-clipboard' },
+    { label: 'Récapitulatif', icon: 'pi-list-check' },
+  ];
+
+  departementOptions = [
+    { label: 'Tous les départements de médecine', value: '' },
+    ...CONS_DEPARTEMENTS,
+  ];
+
+  patient = signal<Patient | null>(null);
+  loading = signal(true);
+  // ── Données ────────────────────────────────────────────
+  patients = signal<PatientLight[]>([]);
+  medecins = signal<Employe[]>([]);
+  rdvDisponibles = signal<RendezVousLight[]>([]);
+  loadingRdv = signal(false);
+  loadingMeta = signal(true);
+  globalError = signal<string | null>(null);
+  saving = signal(false);
+  filterDept = signal<string>('');
+
+  // Sélections
+  selectedPatient = signal<PatientLight | null>(null);
+  selectedMedecin = signal<MedecinLight | null>(null);
+  selectedRdv = signal<RendezVousLight | null>(null);
+
+  // Options pour les selects
+  typesConsultation = TYPES_CONSULTATION;
+  patientOptions = computed(() =>
+    this.patients().map((p) => ({
+      label: `${p.prenom} ${p.nom}`,
+      value: p.id,
+      data: p,
+    })),
+  );
+  medecinOptions = computed(() =>
+    this.medecins().map((m) => ({
+      label: `${m.prenom} ${m.nom} — ${m.poste}`,
+      value: m.id,
+      data: m,
+    })),
+  );
+
+  // ── Formulaire ────────────────────────────────────────
+  form = this.fb.group({
+    // Étape 1
+    patientId: ['', Validators.required],
+    medecinId: ['', Validators.required],
+    // Étape 2
+    rendezVousId: ['', Validators.required],
+    // Étape 3 — Examen clinique
+    type: ['GENERALE', Validators.required],
+    tension: ['', [Validators.pattern(/^\d{2,3}\/\d{2,3}$/)]],
+    temperature: [
+      null as number | null,
+      [Validators.min(34), Validators.max(43)],
+    ],
+    poids: [null as number | null, [Validators.min(1), Validators.max(300)]],
+    taille: [null as number | null, [Validators.min(30), Validators.max(250)]],
+    symptomes: [''],
+    // Étape 4 — Diagnostic
+    motif: ['', [Validators.required, Validators.minLength(3)]],
+    diagnostic: [''],
+    traitement: [''],
+    notes: [''],
+    dureeMinutes: [30, [Validators.min(5)]],
+  });
+
+  // ── IMC calculé ───────────────────────────────────────
+  imc = computed(() => {
+    const p = this.form.get('poids')?.value;
+    const t = this.form.get('taille')?.value;
+    if (!p || !t || t === 0) return null;
+    const tM = t / 100;
+    return (p / (tM * tM)).toFixed(1);
+  });
+
+  imcLabel = computed(() => {
+    const v = parseFloat(this.imc() ?? '0');
+    if (!v) return null;
+    if (v < 18.5) return { label: 'Insuffisance pondérale', severity: 'warn' };
+    if (v < 25) return { label: 'Poids normal', severity: 'success' };
+    if (v < 30) return { label: 'Surpoids', severity: 'warn' };
+    return { label: 'Obésité', severity: 'danger' };
+  });
+
+  ngOnInit() {
+    this.recuperationPatient();
+
+    // Charger patients et médecins (mock)
+    setTimeout(() => {
+      this.patients.set(MOCK_PATIENTS);
+      //this.medecins.set(MOCK_MEDECINS);
+      this.loadingMeta.set(false);
+    }, 500);
+
+    // Réagir aux changements patient/médecin pour charger les RDV
+    this.form
+      .get('patientId')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((id) => {
+        this.selectedPatient.set(
+          this.patients().find((p) => p.id === id) ?? null,
+        );
+        this.form.patchValue({ rendezVousId: '' });
+        this.selectedRdv.set(null);
+        this.chargerRdv();
+      });
+
+    this.form
+      .get('medecinId')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((id) => {
+        this.selectedMedecin.set(
+          this.medecins().find((m) => m.id === id) ?? null,
+        );
+        this.form.patchValue({ rendezVousId: '' });
+        this.selectedRdv.set(null);
+        this.chargerRdv();
+      });
+  }
+
+  // ── Chargement RDV filtrés ────────────────────────────
+  chargerRdv() {
+    const pid = this.form.get('patientId')?.value;
+    const mid = this.form.get('medecinId')?.value;
+    if (!pid || !mid) {
+      this.rdvDisponibles.set([]);
+      return;
+    }
+
+    this.loadingRdv.set(true);
+    // Simulation — filtrer par patient ET médecin
+    setTimeout(() => {
+      const patient = this.patients().find((p) => p.id === pid);
+      const medecin = this.medecins().find((m) => m.id === mid);
+      const filtered = MOCK_RDV.filter(
+        (r) =>
+          r.patientNom === patient?.nom &&
+          r.patientPrenom === patient?.prenom &&
+          r.medecinNom === `${medecin?.prenom} ${medecin?.nom}`,
+      );
+      this.rdvDisponibles.set(filtered);
+      this.loadingRdv.set(false);
+    }, 400);
+  }
+
+  // ── Navigation étapes ─────────────────────────────────
+  etapeSuivante() {
+    if (!this.etapeValide(this.activeStep())) {
+      this.marquerEtapeTouchee(this.activeStep());
+      return;
+    }
+    if (this.activeStep() < this.STEPS.length - 1) {
+      this.activeStep.update((s) => s + 1);
+    }
+  }
+
+  etapePrecedente() {
+    if (this.activeStep() > 0) this.activeStep.update((s) => s - 1);
+  }
+
+  allerEtape(index: number) {
+    // Ne permet d'aller qu'aux étapes déjà validées
+    if (index < this.activeStep()) {
+      this.activeStep.set(index);
+    }
+  }
+
+  etapeValide(step: number): boolean {
+    switch (step) {
+      case 0:
+        return ['patientId', 'medecinId'].every((f) => this.form.get(f)?.valid);
+      case 1:
+        return this.form.get('rendezVousId')?.valid ?? false;
+      case 2:
+        return (
+          ['type'].every((f) => this.form.get(f)?.valid) &&
+          !this.form.get('tension')?.errors &&
+          !this.form.get('temperature')?.errors &&
+          !this.form.get('poids')?.errors &&
+          !this.form.get('taille')?.errors
+        );
+      case 3:
+        return this.form.get('motif')?.valid ?? false;
+      default:
+        return true;
+    }
+  }
+
+  etapeComplete(step: number): boolean {
+    return this.activeStep() > step;
+  }
+
+  marquerEtapeTouchee(step: number) {
+    const champs: Record<number, string[]> = {
+      0: ['patientId', 'medecinId'],
+      1: ['rendezVousId'],
+      2: ['type', 'tension', 'temperature', 'poids', 'taille'],
+      3: ['motif', 'diagnostic'],
+    };
+    (champs[step] ?? []).forEach((f) => this.form.get(f)?.markAsTouched());
+  }
+
+  // ── Sélection RDV ─────────────────────────────────────
+  selectionnerRdv(rdv: RendezVousLight) {
+    this.selectedRdv.set(rdv);
+    this.form.patchValue({ rendezVousId: rdv.id });
+    // Préremplir motif si vide
+    if (!this.form.get('motif')?.value) {
+      this.form.patchValue({ motif: rdv.motif });
+    }
+  }
+
+  // ── Soumission ────────────────────────────────────────
+  soumettre() {
+    this.form.markAllAsTouched();
+    if (this.form.invalid) {
+      // Trouver la première étape invalide
+      for (let i = 0; i < 4; i++) {
+        if (!this.etapeValide(i)) {
+          this.activeStep.set(i);
+          return;
+        }
+      }
+      return;
+    }
+    this.saving.set(true);
+    this.globalError.set(null);
+
+    // Simulation sauvegarde
+    setTimeout(() => {
+      this.saving.set(false);
+      this.msg.add({
+        severity: 'success',
+        summary: 'Consultation créée',
+        detail: `Consultation de ${this.selectedPatient()?.prenom} ${this.selectedPatient()?.nom} enregistrée.`,
+      });
+      setTimeout(() => this.router.navigate(['/consultations']), 1200);
+    }, 900);
+  }
+
+  // ── Helpers ───────────────────────────────────────────
+  getInitiales(prenom: string, nom: string) {
+    return `${prenom[0]}${nom[0]}`.toUpperCase();
+  }
+
+  getRdvSeverity(statut: string) {
+    return (
+      {
+        CONFIRME: 'success',
+        PLANIFIE: 'info',
+        ANNULE: 'danger',
+        TERMINE: 'secondary',
+      }[statut] ?? 'secondary'
+    );
+  }
+
+  formatDate(iso: string) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+  }
+
+  formatHeure(iso: string) {
+    const d = new Date(iso);
+    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+  }
+
+  hasError(name: string) {
+    const c = this.form.get(name);
+    return c && (c.dirty || c.touched) && c.invalid;
+  }
+
+  fieldError(name: string): string {
+    const c = this.form.get(name);
+    if (!c || (!c.dirty && !c.touched)) return '';
+    if (c.errors?.['required']) return 'Ce champ est obligatoire.';
+    if (c.errors?.['minlength'])
+      return `Minimum ${c.errors['minlength'].requiredLength} caractères.`;
+    if (c.errors?.['min']) return `Valeur minimale : ${c.errors['min'].min}.`;
+    if (c.errors?.['max']) return `Valeur maximale : ${c.errors['max'].max}.`;
+    if (c.errors?.['pattern']) return 'Format invalide (ex: 120/80).';
+    return '';
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private recuperationPatient(): void {
+    const patientId = this.route.snapshot.paramMap.get('patientId')!;
+    console.log(patientId);
+    if (!patientId) {
+      this.handleMissingPatient();
+    }
+    this.patientSvc.findById(patientId).subscribe({
+      next: (p) => {
+        this.patient.set(p);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.msg.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Patient introuvable.',
+        });
+      },
+    });
+  }
+
+  private handleMissingPatient(): void {
+    this.loading.set(false);
+
+    this.msg.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Patient introuvable.',
+    });
+    this.router.navigate(['/patients']);
+  }
+
+  onMedecinsLazyLoad(event: SelectLazyLoadEvent) {
+    // Extract `event.first` (start index) and `event.rows` (chunk size)
+    // to query your backend API.
+    const startIndex = event.first ?? 0;
+    this.loading.set(true);
+
+    this.employeSvc
+      .findAll(startIndex, Configuration.pageSize, '', this.filterDept())
+      .subscribe({
+        next: (data: EmployePage) => {
+          this.medecins.update((items) => {
+            const updated = [...items];
+
+            data.content.forEach((item, i) => {
+              updated[startIndex + i] = item;
+            });
+
+            return updated;
+          });
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+          this.msg.add({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: 'Aucun medecin trouvé.',
+          });
+        },
+      });
+  }
+}

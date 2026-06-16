@@ -1,6 +1,6 @@
 ﻿import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { TabsModule } from 'primeng/tabs';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -56,6 +56,7 @@ export class PatientDetailComponent implements OnInit {
   private patientSvc = inject(PatientService);
   private commonService = inject(CommonService);
   private msgSvc = inject(MessageService);
+  private router = inject(Router);
 
   patient = signal<Patient | null>(null);
   loading = signal(true);
@@ -160,22 +161,7 @@ export class PatientDetailComponent implements OnInit {
   timeline = signal<any[]>([]);
 
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id')!;
-    this.patientSvc.findById(id).subscribe({
-      next: (p) => {
-        this.patient.set(p);
-        this.loading.set(false);
-        this.buildTimeline();
-      },
-      error: () => {
-        this.loading.set(false);
-        this.msgSvc.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Patient introuvable.',
-        });
-      },
-    });
+    this.recuperationPatient();
   }
 
   private buildTimeline() {
@@ -248,5 +234,39 @@ export class PatientDetailComponent implements OnInit {
 
   imprimerFiche() {
     window.print();
+  }
+
+  private recuperationPatient(): void {
+    const patientId = this.route.snapshot.paramMap.get('id')!;
+    if (!patientId) {
+      this.handleMissingPatient();
+    }
+    this.patientSvc.findById(patientId).subscribe({
+      next: (p) => {
+        this.patient.set(p);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.msgSvc.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Patient introuvable.',
+        });
+      },
+    });
+
+    console.log(patientId);
+  }
+
+  private handleMissingPatient(): void {
+    this.loading.set(false);
+
+    this.msgSvc.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Patient introuvable.',
+    });
+    this.router.navigate(['/patients']);
   }
 }

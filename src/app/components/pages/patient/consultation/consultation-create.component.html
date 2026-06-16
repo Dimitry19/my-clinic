@@ -1,0 +1,897 @@
+﻿<p-toast position="top-right" />
+
+<div class="consultation-create">
+  <!-- ── Breadcrumb ── -->
+  <nav class="breadcrumb" aria-label="Navigation">
+    <a [routerLink]="['/patients', patient()!.id]" class="bc-link">
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+      {{ patient()!.prenom }} {{ patient()!.nom }}
+    </a>
+    <span class="bc-sep" aria-hidden="true">/</span>
+    <span class="bc-current">Nouvelle consultation</span>
+  </nav>
+
+  <!-- ── En-tête ── -->
+  <div class="page-header">
+    <div>
+      <h2>
+        <i class="pi pi-stethoscope" aria-hidden="true"></i>
+        Nouvelle consultation
+      </h2>
+      <p>Complétez les étapes pour enregistrer la consultation</p>
+    </div>
+  </div>
+
+  <!-- ── Erreur globale ── -->
+  @if (globalError()) {
+    <p-message severity="error" [text]="globalError()!" styleClass="w-full" />
+  }
+
+  <!-- ── Indicateur d'étapes custom ── -->
+  <div class="steps-nav" role="tablist" aria-label="Étapes de création">
+    @for (step of STEPS; track $index) {
+      <div class="step-wrapper">
+        <button
+          class="step-btn"
+          [class.step-active]="activeStep() === $index"
+          [class.step-done]="etapeComplete($index)"
+          [class.step-disabled]="$index > activeStep()"
+          (click)="allerEtape($index)"
+          role="tab"
+          [attr.aria-selected]="activeStep() === $index"
+          [attr.aria-label]="'Étape ' + ($index + 1) + ' : ' + step.label"
+          [disabled]="$index > activeStep()"
+        >
+          <div class="step-circle">
+            @if (etapeComplete($index)) {
+              <i class="pi pi-check" aria-hidden="true"></i>
+            } @else {
+              <span>{{ $index + 1 }}</span>
+            }
+          </div>
+          <div class="step-info">
+            <span class="step-num">Étape {{ $index + 1 }}</span>
+            <span class="step-label">{{ step.label }}</span>
+          </div>
+        </button>
+        @if ($index < STEPS.length - 1) {
+          <div
+            class="step-connector"
+            [class.connector-done]="etapeComplete($index)"
+            aria-hidden="true"
+          ></div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 0 — Médecin & Patient
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 0) {
+    <div
+      class="step-panel"
+      role="tabpanel"
+      aria-label="Sélection médecin et patient"
+    >
+      <div class="step-panel-header">
+        <div class="step-panel-icon">
+          <i class="pi pi-users" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Sélection du médecin et du patient</h3>
+          <p>
+            Choisissez le médecin traitant et le patient concerné par cette
+            consultation
+          </p>
+        </div>
+      </div>
+
+      @if (loadingMeta()) {
+        <div class="loading-grid">
+          <p-skeleton height="56px" borderRadius="8px" />
+          <p-skeleton height="56px" borderRadius="8px" />
+        </div>
+      } @else {
+        <form [formGroup]="form" class="step-form">
+          <div class="form-row-2">
+            <!-- Médecin -->
+            <div class="f-field" [class.f-err]="hasError('medecinId')">
+              <label class="f-label">
+                <i class="pi pi-user-plus" aria-hidden="true"></i>
+                Médecin traitant
+                <span class="req" aria-hidden="true">*</span>
+              </label>
+
+              <p-select
+                formControlName="medecinId"
+                [options]="medecinOptions()"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Sélectionner un médecin"
+                styleClass="w-full"
+                [filter]="true"
+                filterPlaceholder="Rechercher..."
+                [showClear]="true"
+                [virtualScroll]="true"
+                [virtualScrollItemSize]="38"
+                [lazy]="true"
+                (onLazyLoad)="onMedecinsLazyLoad($event)"
+              >
+              </p-select>
+              @if (fieldError("medecinId")) {
+                <span class="f-err-msg" role="alert">
+                  <i class="pi pi-info-circle" aria-hidden="true"></i>
+                  {{ fieldError("medecinId") }}
+                </span>
+              }
+              <!-- Carte médecin sélectionné -->
+              @if (selectedMedecin()) {
+                <div class="selection-card selection-card-medecin">
+                  <div class="selection-avatar">
+                    {{
+                      getInitiales(
+                        selectedMedecin()!.prenom,
+                        selectedMedecin()!.nom
+                      )
+                    }}
+                  </div>
+                  <div class="selection-info">
+                    <span class="selection-nom"
+                      >{{ selectedMedecin()!.prenom }}
+                      {{ selectedMedecin()!.nom }}</span
+                    >
+                    <span class="selection-sub">{{
+                      selectedMedecin()!.poste
+                    }}</span>
+                  </div>
+                  <i
+                    class="pi pi-check-circle selection-check"
+                    aria-hidden="true"
+                  ></i>
+                </div>
+              }
+            </div>
+
+            <!-- Patient -->
+            <div class="f-field" [class.f-err]="hasError('patientId')">
+              <label class="f-label">
+                <i class="pi pi-user" aria-hidden="true"></i>
+                Patient
+                <span class="req" aria-hidden="true">*</span>
+              </label>
+              <p-select
+                formControlName="patientId"
+                [options]="patientOptions()"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Sélectionner un patient"
+                styleClass="w-full"
+                [filter]="true"
+                filterPlaceholder="Rechercher..."
+                [showClear]="true"
+              />
+              @if (fieldError("patientId")) {
+                <span class="f-err-msg" role="alert">
+                  <i class="pi pi-info-circle" aria-hidden="true"></i>
+                  {{ fieldError("patientId") }}
+                </span>
+              }
+              <!-- Carte patient sélectionné -->
+              @if (selectedPatient()) {
+                <div class="selection-card selection-card-patient">
+                  <div class="selection-avatar avatar-patient">
+                    {{
+                      getInitiales(
+                        selectedPatient()!.prenom,
+                        selectedPatient()!.nom
+                      )
+                    }}
+                  </div>
+                  <div class="selection-info">
+                    <span class="selection-nom"
+                      >{{ selectedPatient()!.prenom }}
+                      {{ selectedPatient()!.nom }}</span
+                    >
+                    <span class="selection-sub">
+                      {{ selectedPatient()!.age }} ans
+                      @if (selectedPatient()!.groupeSanguin) {
+                        ·
+                        <span class="blood-tag">{{
+                          selectedPatient()!.groupeSanguin
+                        }}</span>
+                      }
+                    </span>
+                  </div>
+                  <i
+                    class="pi pi-check-circle selection-check"
+                    aria-hidden="true"
+                  ></i>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Indication -->
+          @if (!selectedMedecin() || !selectedPatient()) {
+            <div class="info-hint">
+              <i class="pi pi-info-circle" aria-hidden="true"></i>
+              Sélectionnez un médecin et un patient pour voir les rendez-vous
+              disponibles à l'étape suivante.
+            </div>
+          }
+        </form>
+      }
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 1 — Rendez-vous
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 1) {
+    <div
+      class="step-panel"
+      role="tabpanel"
+      aria-label="Sélection du rendez-vous"
+    >
+      <div class="step-panel-header">
+        <div class="step-panel-icon">
+          <i class="pi pi-calendar" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Sélection du rendez-vous</h3>
+          <p>
+            Rendez-vous de
+            <strong
+              >{{ selectedPatient()?.prenom }}
+              {{ selectedPatient()?.nom }}</strong
+            >
+            avec
+            <strong
+              >{{ selectedMedecin()?.prenom }}
+              {{ selectedMedecin()?.nom }}</strong
+            >
+          </p>
+        </div>
+      </div>
+
+      <!-- Chargement RDV -->
+      @if (loadingRdv()) {
+        <div class="rdv-grid">
+          @for (i of [1, 2, 3]; track i) {
+            <p-skeleton height="90px" borderRadius="12px" />
+          }
+        </div>
+      }
+
+      <!-- Aucun rendez-vous -->
+      @if (!loadingRdv() && rdvDisponibles().length === 0) {
+        <div class="no-rdv-card">
+          <div class="no-rdv-icon">
+            <i class="pi pi-calendar-times" aria-hidden="true"></i>
+          </div>
+          <div class="no-rdv-body">
+            <h4>Aucun rendez-vous trouvé</h4>
+            <p>
+              Il n'existe pas de rendez-vous entre
+              <strong
+                >{{ selectedPatient()?.prenom }}
+                {{ selectedPatient()?.nom }}</strong
+              >
+              et
+              <strong
+                >{{ selectedMedecin()?.prenom }}
+                {{ selectedMedecin()?.nom }}</strong
+              >.
+            </p>
+            <p class="no-rdv-hint">
+              Un rendez-vous est nécessaire avant de créer une consultation.
+              Veuillez d'abord planifier un rendez-vous.
+            </p>
+          </div>
+          <div class="no-rdv-actions">
+            <a routerLink="/agenda" class="btn-create-rdv">
+              <i class="pi pi-plus" aria-hidden="true"></i>
+              Créer un rendez-vous
+            </a>
+            <button class="btn-back-step" (click)="etapePrecedente()">
+              <i class="pi pi-arrow-left" aria-hidden="true"></i>
+              Changer de sélection
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- Liste des rendez-vous -->
+      @if (!loadingRdv() && rdvDisponibles().length > 0) {
+        <div class="rdv-count-label">
+          <i class="pi pi-list" aria-hidden="true"></i>
+          {{ rdvDisponibles().length }} rendez-vous disponible(s)
+        </div>
+
+        <div class="rdv-grid" [formGroup]="form">
+          @for (rdv of rdvDisponibles(); track rdv.id) {
+            <div
+              class="rdv-card"
+              [class.rdv-card-selected]="selectedRdv()?.id === rdv.id"
+              [class.rdv-card-disabled]="
+                rdv.statut === 'ANNULE' || rdv.statut === 'TERMINE'
+              "
+              (click)="
+                rdv.statut !== 'ANNULE' &&
+                  rdv.statut !== 'TERMINE' &&
+                  selectionnerRdv(rdv)
+              "
+              role="radio"
+              [attr.aria-checked]="selectedRdv()?.id === rdv.id"
+              [attr.aria-label]="'Rendez-vous du ' + formatDate(rdv.dateHeure)"
+              tabindex="0"
+              (keydown.enter)="selectionnerRdv(rdv)"
+              (keydown.space)="selectionnerRdv(rdv)"
+            >
+              <!-- Indicateur sélection -->
+              <div class="rdv-radio">
+                @if (selectedRdv()?.id === rdv.id) {
+                  <i
+                    class="pi pi-check-circle rdv-radio-checked"
+                    aria-hidden="true"
+                  ></i>
+                } @else {
+                  <div class="rdv-radio-empty" aria-hidden="true"></div>
+                }
+              </div>
+
+              <!-- Contenu -->
+              <div class="rdv-card-body">
+                <div class="rdv-card-date">
+                  <div class="rdv-date-icon">
+                    <i class="pi pi-calendar" aria-hidden="true"></i>
+                  </div>
+                  <div>
+                    <span class="rdv-date-label">{{
+                      formatDate(rdv.dateHeure)
+                    }}</span>
+                    <span class="rdv-heure-label">
+                      <i class="pi pi-clock" aria-hidden="true"></i>
+                      {{ formatHeure(rdv.dateHeure) }} ·
+                      {{ rdv.dureeMinutes }} min
+                    </span>
+                  </div>
+                </div>
+
+                <div class="rdv-card-motif">
+                  <i class="pi pi-clipboard" aria-hidden="true"></i>
+                  {{ rdv.motif }}
+                </div>
+              </div>
+
+              <!-- Statut -->
+              <div class="rdv-card-statut">
+                <p-tag
+                  [value]="rdv.statut"
+                  [severity]="getRdvSeverity(rdv.statut)"
+                />
+                @if (rdv.statut === "ANNULE" || rdv.statut === "TERMINE") {
+                  <span class="rdv-indisponible">Non disponible</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (hasError("rendezVousId")) {
+          <span class="f-err-msg mt-2" role="alert">
+            <i class="pi pi-info-circle" aria-hidden="true"></i>
+            Veuillez sélectionner un rendez-vous.
+          </span>
+        }
+      }
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 2 — Examen clinique
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 2) {
+    <div class="step-panel" role="tabpanel" aria-label="Examen clinique">
+      <div class="step-panel-header">
+        <div class="step-panel-icon">
+          <i class="pi pi-heart-rate-monitor" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Examen clinique</h3>
+          <p>Saisissez les constantes vitales et les symptômes observés</p>
+        </div>
+      </div>
+
+      <form [formGroup]="form" class="step-form">
+        <!-- Type de consultation -->
+        <div class="f-field" [class.f-err]="hasError('type')">
+          <label class="f-label">
+            <i class="pi pi-tag" aria-hidden="true"></i>
+            Type de consultation
+            <span class="req" aria-hidden="true">*</span>
+          </label>
+          <div class="type-options" role="radiogroup">
+            @for (t of typesConsultation; track t.value) {
+              <label
+                class="type-option"
+                [class.type-selected]="form.get('type')?.value === t.value"
+              >
+                <input
+                  type="radio"
+                  formControlName="type"
+                  [value]="t.value"
+                  class="sr-only"
+                />
+                {{ t.label }}
+              </label>
+            }
+          </div>
+        </div>
+
+        <!-- Constantes vitales -->
+        <div class="section-label">
+          <i class="pi pi-heart-rate-monitor" aria-hidden="true"></i>
+          Constantes vitales
+          <span class="optional-hint">(optionnel)</span>
+        </div>
+
+        <div class="form-row-4">
+          <!-- Tension -->
+          <div class="f-field" [class.f-err]="hasError('tension')">
+            <label class="f-label">
+              <i class="pi pi-gauge" aria-hidden="true"></i>
+              Tension (mmHg)
+            </label>
+            <input
+              pInputText
+              formControlName="tension"
+              placeholder="120/80"
+              class="f-input"
+              [attr.aria-describedby]="
+                hasError('tension') ? 'tension-err' : null
+              "
+            />
+            @if (fieldError("tension")) {
+              <span id="tension-err" class="f-err-msg" role="alert">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                {{ fieldError("tension") }}
+              </span>
+            }
+          </div>
+
+          <!-- Température -->
+          <div class="f-field" [class.f-err]="hasError('temperature')">
+            <label class="f-label">
+              <i class="pi pi-sun" aria-hidden="true"></i>
+              Température (°C)
+            </label>
+            <p-inputNumber
+              formControlName="temperature"
+              [min]="34"
+              [max]="43"
+              [minFractionDigits]="1"
+              [maxFractionDigits]="1"
+              placeholder="37.0"
+              styleClass="w-full"
+              suffix=" °C"
+            />
+            @if (fieldError("temperature")) {
+              <span class="f-err-msg" role="alert">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                {{ fieldError("temperature") }}
+              </span>
+            }
+          </div>
+
+          <!-- Poids -->
+          <div class="f-field" [class.f-err]="hasError('poids')">
+            <label class="f-label">
+              <i class="pi pi-arrows-v" aria-hidden="true"></i>
+              Poids (kg)
+            </label>
+            <p-inputNumber
+              formControlName="poids"
+              [min]="1"
+              [max]="300"
+              placeholder="70"
+              styleClass="w-full"
+              suffix=" kg"
+            />
+            @if (fieldError("poids")) {
+              <span class="f-err-msg" role="alert">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                {{ fieldError("poids") }}
+              </span>
+            }
+          </div>
+
+          <!-- Taille -->
+          <div class="f-field" [class.f-err]="hasError('taille')">
+            <label class="f-label">
+              <i class="pi pi-sort-alt" aria-hidden="true"></i>
+              Taille (cm)
+            </label>
+            <p-inputNumber
+              formControlName="taille"
+              [min]="30"
+              [max]="250"
+              placeholder="170"
+              styleClass="w-full"
+              suffix=" cm"
+            />
+            @if (fieldError("taille")) {
+              <span class="f-err-msg" role="alert">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                {{ fieldError("taille") }}
+              </span>
+            }
+          </div>
+        </div>
+
+        <!-- IMC calculé -->
+        @if (imc()) {
+          <div class="imc-result">
+            <span class="imc-label">
+              <i class="pi pi-calculator" aria-hidden="true"></i>
+              IMC calculé :
+            </span>
+            <strong class="imc-val">{{ imc() }}</strong>
+            <p-tag
+              [value]="imcLabel()!.label"
+              [severity]="imcLabel()!.severity"
+            />
+          </div>
+        }
+
+        <!-- Symptômes -->
+        <div class="f-field">
+          <label class="f-label">
+            <i class="pi pi-list" aria-hidden="true"></i>
+            Symptômes observés
+          </label>
+          <textarea
+            pTextarea
+            formControlName="symptomes"
+            rows="4"
+            placeholder="Décrivez les symptômes présentés par le patient..."
+            class="f-input f-textarea"
+          ></textarea>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 3 — Diagnostic & Traitement
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 3) {
+    <div
+      class="step-panel"
+      role="tabpanel"
+      aria-label="Diagnostic et traitement"
+    >
+      <div class="step-panel-header">
+        <div class="step-panel-icon">
+          <i class="pi pi-clipboard" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Diagnostic & Traitement</h3>
+          <p>
+            Saisissez le motif, le diagnostic établi et le traitement prescrit
+          </p>
+        </div>
+      </div>
+
+      <form [formGroup]="form" class="step-form">
+        <!-- Motif -->
+        <div class="f-field" [class.f-err]="hasError('motif')">
+          <label class="f-label">
+            <i class="pi pi-question-circle" aria-hidden="true"></i>
+            Motif de consultation
+            <span class="req" aria-hidden="true">*</span>
+          </label>
+          <input
+            pInputText
+            formControlName="motif"
+            placeholder="Ex: Fièvre persistante depuis 3 jours..."
+            class="f-input"
+          />
+          @if (fieldError("motif")) {
+            <span class="f-err-msg" role="alert">
+              <i class="pi pi-info-circle" aria-hidden="true"></i>
+              {{ fieldError("motif") }}
+            </span>
+          }
+        </div>
+
+        <!-- Diagnostic -->
+        <div class="f-field">
+          <label class="f-label">
+            <i class="pi pi-search" aria-hidden="true"></i>
+            Diagnostic
+          </label>
+          <textarea
+            pTextarea
+            formControlName="diagnostic"
+            rows="3"
+            placeholder="Diagnostic établi après examen..."
+            class="f-input f-textarea"
+          ></textarea>
+        </div>
+
+        <!-- Traitement -->
+        <div class="f-field">
+          <label class="f-label">
+            <i class="pi pi-pill" aria-hidden="true"></i>
+            Traitement prescrit
+          </label>
+          <textarea
+            pTextarea
+            formControlName="traitement"
+            rows="3"
+            placeholder="Médicaments, posologie, durée du traitement..."
+            class="f-input f-textarea"
+          ></textarea>
+        </div>
+
+        <div class="form-row-2">
+          <!-- Notes -->
+          <div class="f-field">
+            <label class="f-label">
+              <i class="pi pi-pencil" aria-hidden="true"></i>
+              Notes complémentaires
+            </label>
+            <textarea
+              pTextarea
+              formControlName="notes"
+              rows="3"
+              placeholder="Observations, recommandations..."
+              class="f-input f-textarea"
+            ></textarea>
+          </div>
+
+          <!-- Durée -->
+          <div class="f-field">
+            <label class="f-label">
+              <i class="pi pi-clock" aria-hidden="true"></i>
+              Durée de la consultation (min)
+            </label>
+            <p-inputNumber
+              formControlName="dureeMinutes"
+              [min]="5"
+              [max]="240"
+              [step]="5"
+              styleClass="w-full"
+              suffix=" min"
+            />
+          </div>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 4 — Récapitulatif
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 4) {
+    <div class="step-panel" role="tabpanel" aria-label="Récapitulatif">
+      <div class="step-panel-header">
+        <div class="step-panel-icon step-icon-success">
+          <i class="pi pi-list-check" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Récapitulatif</h3>
+          <p>Vérifiez les informations avant d'enregistrer la consultation</p>
+        </div>
+      </div>
+
+      <div class="recap-grid">
+        <!-- Médecin & Patient -->
+        <div class="recap-card">
+          <div class="recap-card-title">
+            <i class="pi pi-users" aria-hidden="true"></i>
+            Intervenants
+          </div>
+          <div class="recap-rows">
+            <div class="recap-row">
+              <span class="recap-label">Médecin</span>
+              <span class="recap-val">
+                {{ selectedMedecin()?.prenom }} {{ selectedMedecin()?.nom }}
+                <span class="recap-sub">{{ selectedMedecin()?.poste }}</span>
+              </span>
+            </div>
+            <div class="recap-row">
+              <span class="recap-label">Patient</span>
+              <span class="recap-val">
+                {{ selectedPatient()?.prenom }} {{ selectedPatient()?.nom }}
+                <span class="recap-sub">{{ selectedPatient()?.age }} ans</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rendez-vous -->
+        <div class="recap-card">
+          <div class="recap-card-title">
+            <i class="pi pi-calendar" aria-hidden="true"></i>
+            Rendez-vous
+          </div>
+          <div class="recap-rows">
+            <div class="recap-row">
+              <span class="recap-label">Date</span>
+              <span class="recap-val">{{
+                formatDate(selectedRdv()!.dateHeure)
+              }}</span>
+            </div>
+            <div class="recap-row">
+              <span class="recap-label">Heure</span>
+              <span class="recap-val"
+                >{{ formatHeure(selectedRdv()!.dateHeure) }} ·
+                {{ selectedRdv()!.dureeMinutes }} min</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Examen clinique -->
+        <div class="recap-card">
+          <div class="recap-card-title">
+            <i class="pi pi-heart-rate-monitor" aria-hidden="true"></i>
+            Examen clinique
+          </div>
+          <div class="recap-rows">
+            <div class="recap-row">
+              <span class="recap-label">Type</span>
+              <span class="recap-val">{{ form.get("type")?.value }}</span>
+            </div>
+            @if (form.get("tension")?.value) {
+              <div class="recap-row">
+                <span class="recap-label">Tension</span>
+                <span class="recap-val"
+                  >{{ form.get("tension")?.value }} mmHg</span
+                >
+              </div>
+            }
+            @if (form.get("temperature")?.value) {
+              <div class="recap-row">
+                <span class="recap-label">Température</span>
+                <span class="recap-val"
+                  >{{ form.get("temperature")?.value }} °C</span
+                >
+              </div>
+            }
+            @if (imc()) {
+              <div class="recap-row">
+                <span class="recap-label">IMC</span>
+                <span class="recap-val"
+                  >{{ imc() }} — {{ imcLabel()?.label }}</span
+                >
+              </div>
+            }
+            @if (
+              !form.get("tension")?.value &&
+              !form.get("temperature")?.value &&
+              !imc()
+            ) {
+              <div class="recap-row">
+                <span class="recap-val recap-empty"
+                  >Aucune constante saisie</span
+                >
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Diagnostic -->
+        <div class="recap-card">
+          <div class="recap-card-title">
+            <i class="pi pi-clipboard" aria-hidden="true"></i>
+            Diagnostic & Traitement
+          </div>
+          <div class="recap-rows">
+            <div class="recap-row">
+              <span class="recap-label">Motif</span>
+              <span class="recap-val">{{
+                form.get("motif")?.value || "—"
+              }}</span>
+            </div>
+            <div class="recap-row">
+              <span class="recap-label">Diagnostic</span>
+              <span class="recap-val">{{
+                form.get("diagnostic")?.value || "—"
+              }}</span>
+            </div>
+            <div class="recap-row">
+              <span class="recap-label">Traitement</span>
+              <span class="recap-val">{{
+                form.get("traitement")?.value || "—"
+              }}</span>
+            </div>
+            <div class="recap-row">
+              <span class="recap-label">Durée</span>
+              <span class="recap-val"
+                >{{ form.get("dureeMinutes")?.value }} min</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Navigation ── -->
+  <div class="step-footer">
+    <div class="footer-left">
+      @if (activeStep() > 0) {
+        <button
+          class="btn-prev"
+          (click)="etapePrecedente()"
+          [disabled]="saving()"
+        >
+          <i class="pi pi-chevron-left" aria-hidden="true"></i>
+          Précédent
+        </button>
+      }
+    </div>
+
+    <div class="footer-progress">
+      <span class="progress-label"
+        >Étape {{ activeStep() + 1 }} / {{ STEPS.length }}</span
+      >
+      <div
+        class="progress-bar"
+        role="progressbar"
+        [attr.aria-valuenow]="activeStep() + 1"
+        [attr.aria-valuemin]="1"
+        [attr.aria-valuemax]="STEPS.length"
+      >
+        <div
+          class="progress-fill"
+          [style.width.%]="((activeStep() + 1) / STEPS.length) * 100"
+        ></div>
+      </div>
+    </div>
+
+    <div class="footer-right">
+      <!-- Bouton annuler -->
+      <a
+        routerLink="/consultations"
+        class="btn-cancel"
+        [class.disabled]="saving()"
+      >
+        <i class="pi pi-times" aria-hidden="true"></i>
+        Annuler
+      </a>
+
+      <!-- Suivant ou Soumettre -->
+      @if (activeStep() < STEPS.length - 1) {
+        <button
+          class="btn-next"
+          (click)="etapeSuivante()"
+          [disabled]="activeStep() === 1 && rdvDisponibles().length === 0"
+        >
+          Suivant
+          <i class="pi pi-chevron-right" aria-hidden="true"></i>
+        </button>
+      } @else {
+        <button
+          class="btn-submit"
+          (click)="soumettre()"
+          [disabled]="saving()"
+          [attr.aria-busy]="saving()"
+        >
+          @if (saving()) {
+            <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+            Enregistrement...
+          } @else {
+            <i class="pi pi-check" aria-hidden="true"></i>
+            Enregistrer la consultation
+          }
+        </button>
+      }
+    </div>
+  </div>
+</div>
+EOF echo "HTML OK" Sortie HTML OK Terminé

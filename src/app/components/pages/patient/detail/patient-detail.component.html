@@ -65,7 +65,14 @@
 
     <!-- Actions -->
     <div class="hero-actions">
-      <p-button label="Nouvelle consultation" styleClass="hero-btn-primary">
+      <p-button
+        [disabled]="!patient()"
+        [routerLink]="
+          patient() ? ['/consultation/create', patient()!.id] : null
+        "
+        label="Nouvelle consultation"
+        styleClass="hero-btn-primary"
+      >
         <ng-template pTemplate="icon">
           <i class="fa-solid fa-stethoscope"></i>
         </ng-template>
@@ -285,11 +292,20 @@
       <p-tabpanel [value]="1">
         <div class="tab-panel-header">
           <span>{{ consultations().length }} consultation(s)</span>
+
           <p-button
+            [disabled]="!patient()"
+            [routerLink]="
+              patient() ? ['/consultation/create', patient()!.id] : null
+            "
             label="Nouvelle consultation"
-            icon="pi pi-plus"
+            styleClass="hero-btn-primary"
             size="small"
-          />
+          >
+            <ng-template pTemplate="icon">
+              <i class="fa-solid fa-stethoscope"></i>
+            </ng-template>
+          </p-button>
         </div>
         <p-table
           [value]="consultations()"
