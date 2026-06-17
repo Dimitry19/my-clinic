@@ -7,10 +7,8 @@ import it.solutions.services.trinity.agenda.helpers.AgendaHelper;
 import it.solutions.services.trinity.core.shared.entities.User;
 import it.solutions.services.trinity.core.shared.entities.UserLight;
 import it.solutions.services.trinity.core.shared.enums.Role;
-import it.solutions.services.trinity.core.shared.enums.Statut;
 import it.solutions.services.trinity.core.shared.enums.StatutRendezVous;
-import it.solutions.services.trinity.patient.dto.PatientDto;
-import it.solutions.services.trinity.patient.entities.Patient;
+import it.solutions.services.trinity.core.shared.utils.GenericUtils;
 import it.solutions.services.trinity.patient.entities.PatientLight;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -27,19 +25,27 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AgendaService {
 
-   private final AgendaDao dao;
+    private final AgendaDao dao;
     private final AgendaHelper helper;
 
 
     public List<AgendaDto.Response> findAgendaByPeriode(String  email, int annee, int mois){
-
+        User user=helper.findUserByEmail(email);
         LocalDateTime debut = LocalDate.of(annee, mois, 1).atStartOfDay().plusMonths(1);
         LocalDateTime fin = debut.plusMonths(1);
-        User user=helper.findUserByEmail(email);
+
         if(user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.SUPER_ADMIN)){
             return dao.findAgendaByPeriode(debut, fin).stream().map(this::toResponse).toList();
         }
-        return dao.findAgendaByPeriode(user.getId(),debut, fin).stream().map(this::toResponse).toList();
+        return dao.findAgendaByDoctor(user.getId(),debut, fin).stream().map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AgendaDto.Response> findAgendaByDoctorAndPatient(UUID medecinId,UUID patientId, int annee, int mois){
+
+        LocalDateTime debut = LocalDate.of(annee, mois, 1).atStartOfDay().plusMonths(1);
+        LocalDateTime fin = debut.plusMonths(1);
+        return dao.findAgendaByDoctorAndPatient(medecinId,patientId,debut, fin).stream().map(this::toResponse).toList();
     }
 
 
@@ -80,10 +86,10 @@ public class AgendaService {
 
     @Transactional
     //@CacheEvict(value = "agendas", key = "#id")
-    public AgendaDto.Response changeStatus(UUID id, StatutRendezVous statutRendezVous) {
+    public AgendaDto.Response changeStatus(UUID id, AgendaDto.StatusRequest statut) {
         Agenda agenda = dao.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Agenda introuvable : " + id));
-        agenda.setStatut(statutRendezVous);
+        agenda.setStatut(statut.getStatut());
         return toResponse(dao.save(agenda));
     }
 
@@ -99,13 +105,15 @@ public class AgendaService {
 
         PatientLight p=a.getPatient();
         UserLight m=a.getMedecin();
+        String nom = GenericUtils.normalizeUpper(m.getNom());
+        String prenom = GenericUtils.normalize(m.getPrenom());
         return AgendaDto.Response.builder()
                 .id(a.getId())
                 .patientId(p.getId())
                 .patientNom(p.getNom())
                 .patientPrenom(p.getPrenom())
                 .medecinId(m.getId())
-                .medecinNom(m.getNom() + " " + m.getPrenom())
+                .medecinNom(GenericUtils.formatMedecinNom(nom,prenom))
                 .dateHeure(a.getDateHeure())
                 .dureeMinutes(a.getDureeMinutes())
                 .motif(a.getMotif())

@@ -31,7 +31,7 @@ public class AgendaHelper {
         UUID utilisateurId=medecinId;
         if(!isEdit){
             Employe employe=employeDao.findById(medecinId).orElseThrow(() -> new EntityNotFoundException("Employé introuvable " ));
-            utilisateurId=employe.getUtilisateurId();
+            utilisateurId=employe.getUtilisateur().getId();
         }
 
          return userDao.findUserLight(utilisateurId).orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable " ));

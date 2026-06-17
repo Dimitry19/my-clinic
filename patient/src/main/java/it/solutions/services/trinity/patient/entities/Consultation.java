@@ -2,6 +2,8 @@ package it.solutions.services.trinity.patient.entities;
 
 
 import it.solutions.services.trinity.core.shared.entities.BaseEntity;
+import it.solutions.services.trinity.core.shared.enums.StatutConsultation;
+import it.solutions.services.trinity.core.shared.enums.TypeConsultation;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,6 +33,14 @@ public class Consultation extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime dateHeure;
 
+    @Enumerated(value = EnumType.STRING)
+    @Column(nullable = false)
+    private TypeConsultation type;
+
+    @Enumerated(value = EnumType.STRING)
+    @Column(nullable = false)
+    private StatutConsultation statut;
+
     @Column(columnDefinition = "TEXT")
     private String motif;
 
@@ -46,16 +56,18 @@ public class Consultation extends BaseEntity {
     @Column(length =20)
     private String tension;
 
-    @Column(nullable = false, precision = 4, scale = 1)
+    @Column( precision = 4, scale = 1)
     private BigDecimal temperature ;
 
-    @Column(nullable = false, precision = 5, scale = 2)
+    @Column( precision = 5, scale = 2)
     private BigDecimal poids ;
 
-    @Column(nullable = false, precision = 5, scale = 2)
+    @Column(precision = 5, scale = 2)
     private BigDecimal taille;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
+    @Column
+    private Integer dureeMinutes;
 
 }

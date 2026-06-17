@@ -3,6 +3,7 @@ package it.solutions.services.trinity.core.shared.exception;
 
 import io.sentry.Sentry;
 import io.sentry.SentryLevel;
+import it.solutions.services.trinity.core.exception.ValidationException;
 import it.solutions.services.trinity.core.shared.api.ApiResponse;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
@@ -70,6 +71,14 @@ public class GlobalExceptionHandler {
         writeLog(ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Erreur interne : " + ex.getMessage()));
+    }
+
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleValidation(ValidationException ex) {
+        writeLog(ex);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(ex.getMessage()));
     }
 
 

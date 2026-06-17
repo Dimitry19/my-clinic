@@ -1,10 +1,7 @@
 package it.solutions.services.trinity.employe.dto;
 
 
-import it.solutions.services.trinity.core.shared.enums.Departement;
-import it.solutions.services.trinity.core.shared.enums.Role;
-import it.solutions.services.trinity.core.shared.enums.Statut;
-import it.solutions.services.trinity.core.shared.enums.TypeContrat;
+import it.solutions.services.trinity.core.shared.enums.*;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;
@@ -21,6 +18,11 @@ import java.util.UUID;
 
 public class EmployeDto {
 
+
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    public static class StatusRequest {
+        private String statut;
+    }
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class Request {
         @NotBlank(message = "Le nom est obligatoire")
@@ -43,7 +45,7 @@ public class EmployeDto {
         private String numeroCnss;
         private String rib;
         @Enumerated(EnumType.STRING)
-        private Statut statut;
+        private StatutEmploye statut;
 
         @Enumerated(EnumType.STRING)
         private Role role;

@@ -62,15 +62,7 @@ public class AuthController {
         return successLogin(user);
     }
 
-    @Operation(summary = "Logout",
-            responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successful Logout",
-                            content = @Content(schema = @Schema(implementation = ApiResponse.class))),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "You are not authorized to view the resource"),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "The resource you were trying to reach is not found"),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error")
-            })
+
     @GetMapping(value = "/logout")
     public  ResponseEntity<ApiResponse<Boolean>> logout() throws Exception {
 

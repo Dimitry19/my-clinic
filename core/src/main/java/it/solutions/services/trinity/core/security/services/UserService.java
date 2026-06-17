@@ -40,7 +40,7 @@ public class UserService{
         Role r= Role.valueOf(role);
         User user= new User();
         user.setEmail(email);
-        user.setNom(name);
+        user.setNom(name.toUpperCase());
         user.setPrenom(surname);
         user.setRole(r);
         user.setMotDePasse(passwrd);
@@ -55,5 +55,9 @@ public class UserService{
 
     public   User findById(UUID id) throws UsernameNotFoundException {
         return detailsService.findById(id);
+    }
+
+    public   void save(User user) throws UsernameNotFoundException {
+          detailsService.save(user);
     }
 }

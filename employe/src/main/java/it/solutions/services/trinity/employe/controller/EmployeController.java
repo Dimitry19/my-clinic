@@ -2,6 +2,7 @@ package it.solutions.services.trinity.employe.controller;
 
 import it.solutions.services.trinity.core.shared.api.ApiResponse;
 
+import it.solutions.services.trinity.core.shared.enums.Departement;
 import it.solutions.services.trinity.employe.dto.CongeDto;
 import it.solutions.services.trinity.employe.dto.EmployeDto;
 import it.solutions.services.trinity.employe.dto.FicheDePaieDto;
@@ -46,6 +47,25 @@ public class EmployeController {
         return ResponseEntity.ok(ApiResponse.ok(service.search(q,departement, page, size)));
     }
 
+
+    @GetMapping("/departement")
+    @PreAuthorize("hasAnyRole('ADMIN','MEDECIN')")
+    public ResponseEntity<ApiResponse<Page<EmployeDto.Response>>> findEmployesByDepartement(
+            @RequestParam(required = false) Departement departement,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(ApiResponse.ok(service.findEmployesByDepartement(departement, page, size)));
+    }
+
+    @GetMapping("/consultation/departement")
+    @PreAuthorize("hasAnyRole('ADMIN','MEDECIN')")
+    public ResponseEntity<ApiResponse<Page<EmployeDto.Response>>> findEmployesByDepartementConsultation(
+            @RequestParam(required = false) Departement departement,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(ApiResponse.ok(service.findEmployesByDepartementConsultation(departement, page, size)));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MEDECIN','INFIRMIER')")
     public ResponseEntity<ApiResponse<EmployeDto.Response>> findById(@PathVariable UUID id) {
@@ -64,6 +84,13 @@ public class EmployeController {
             @PathVariable UUID id, @Valid @RequestBody EmployeDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok("Employé modifié", service.edit(id, req)));
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<EmployeDto.Response>> changeStatus(@PathVariable UUID id, @RequestBody EmployeDto.StatusRequest statut) {
+
+        return ResponseEntity.ok(ApiResponse.ok("Statut de l'employé modifié", service.changeStatus(id, statut)));
+    }
+
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")

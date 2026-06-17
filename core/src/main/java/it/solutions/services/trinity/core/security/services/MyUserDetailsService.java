@@ -37,7 +37,7 @@ public class MyUserDetailsService implements UserDetailsService {
     public void exists(String email) throws ValidationException {
         Optional<User> optional = dao.findByEmail(email);
         if(optional.isPresent()){
-            throw new ValidationException("Utilisateur deja existant");
+            throw new ValidationException(MessageFormat.format("Utilisateur deja existant avec  adresse email [{0}]",email));
         }
     }
 

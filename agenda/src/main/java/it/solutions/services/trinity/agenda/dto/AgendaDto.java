@@ -2,6 +2,7 @@ package it.solutions.services.trinity.agenda.dto;
 
 
 
+import it.solutions.services.trinity.core.shared.enums.StatutRendezVous;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,6 +11,13 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class AgendaDto {
+
+
+
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    public static class StatusRequest {
+        private StatutRendezVous statut;
+    }
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class Request {

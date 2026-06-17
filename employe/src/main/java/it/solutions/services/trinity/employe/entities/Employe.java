@@ -1,6 +1,7 @@
 package it.solutions.services.trinity.employe.entities;
 
 import it.solutions.services.trinity.core.shared.entities.BaseEntity;
+import it.solutions.services.trinity.core.shared.entities.User;
 import it.solutions.services.trinity.core.shared.enums.Departement;
 import it.solutions.services.trinity.core.shared.enums.TypeContrat;
 import jakarta.persistence.*;
@@ -12,19 +13,25 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "employes")
 @Getter
-@Setter @Builder @NoArgsConstructor @AllArgsConstructor
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Employe extends BaseEntity {
 
+    // FetchType.LAZY conservé, mais cascade restreint : on ne veut PAS
+    // qu'une suppression d'Employe entraîne la suppression du User.
+    // PERSIST/MERGE suffisent pour la création/édition.
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "utilisateur_id", unique = true)
+    private User utilisateur;
 
-    @Column(updatable = false)
-    private UUID utilisateurId;
-
-    @NotBlank @Column(nullable = false)
+    @NotBlank
+    @Column(nullable = false)
     private String nom;
 
     @NotBlank
@@ -36,6 +43,7 @@ public class Employe extends BaseEntity {
     private String poste;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Departement departement;
 
     private String telephone;
@@ -55,10 +63,11 @@ public class Employe extends BaseEntity {
 
     private String numeroCnss;
     private String rib;
+
+    @Column(nullable = false)
     private boolean actif;
 
-
-    @OneToMany(mappedBy = "employe")
+    @Builder.Default
+    @OneToMany(mappedBy = "employe", cascade = CascadeType.ALL, orphanRemoval = false)
     private List<FicheDePaie> fichesDePaie = new ArrayList<>();
-
 }

@@ -1,15 +1,11 @@
 package it.solutions.services.trinity.employe.services;
 
-
-import it.solutions.services.trinity.core.security.services.UserService;
-import it.solutions.services.trinity.core.shared.entities.User;
-import it.solutions.services.trinity.core.shared.enums.Statut;
+import it.solutions.services.trinity.core.shared.enums.Departement;
+import it.solutions.services.trinity.core.shared.enums.StatutEmploye;
 import it.solutions.services.trinity.employe.dao.EmployeDao;
-import it.solutions.services.trinity.employe.dao.FicheDePaieDao;
 import it.solutions.services.trinity.employe.dto.EmployeDto;
-
 import it.solutions.services.trinity.employe.entities.Employe;
-import jakarta.persistence.EntityNotFoundException;
+import it.solutions.services.trinity.employe.helpers.EmployeHelper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
@@ -27,104 +23,92 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EmployeService {
 
-    private final UserService userService;
+    private static final Sort SORT_BY_NOM = Sort.by("nom").ascending();
+
     private final EmployeDao dao;
+    private final EmployeHelper helper;
 
-
+    @Transactional(readOnly = true)
     @Cacheable(value = "employes", key = "#id")
     public EmployeDto.Response findById(UUID id) {
-        return toResponse(dao.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Employé introuvable : " + id)));
+        return helper.toResponse(helper.findEmployeOrThrow(id));
     }
 
+    // readOnly = true garde la session Hibernate ouverte pendant tout le mapping
+    // .map(helper::toResponse), ce qui évite le LazyInitializationException
+    // sur le proxy `User` (relation @OneToOne LAZY). Combiné aux requêtes
+    // *FetchUser ci-dessous (JOIN FETCH), on évite aussi le N+1 : sans elles,
+    // la transaction ouverte aurait suffi à éviter l'exception, mais aurait
+    // déclenché une requête SQL supplémentaire par employé de la page.
+    @Transactional(readOnly = true)
     public Page<EmployeDto.Response> search(String query, String departement, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("nom").ascending());
-        if(StringUtils.isEmpty(departement)){
-            return dao.findByNomContainingIgnoreCaseOrPrenomContainingIgnoreCase(
-                    query, query, pageable).map(this::toResponse);
+        Pageable pageable = PageRequest.of(page, size, SORT_BY_NOM);
+        if (StringUtils.isEmpty(departement)) {
+            return dao.findByNomContainingIgnoreCaseOrPrenomContainingIgnoreCaseFetchUser(query, pageable)
+                    .map(helper::toResponse);
         }
-        return dao.findByNomOrPrenomOrEmailAndDepartement( query, departement, pageable).map(this::toResponse);
-
+        return dao.findByNomOrPrenomOrEmailAndDepartementFetchUser(query, departement, pageable)
+                .map(helper::toResponse);
     }
 
+    @Transactional(readOnly = true)
+    public Page<EmployeDto.Response> findEmployesByDepartement(Departement departement, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, SORT_BY_NOM);
+        if (departement == null) {
+            return dao.findAllFetchUser(pageable).map(helper::toResponse);
+        }
+        return dao.findEmployesByDepartementFetchUser(departement, pageable).map(helper::toResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<EmployeDto.Response> findEmployesByDepartementConsultation(Departement departement, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, SORT_BY_NOM);
+        if (departement == null) {
+            return dao.findAllFetchUser(pageable).map(helper::toResponse);
+        }
+        return dao.findEmployesByDepartementConsultation(departement, pageable).map(helper::toResponse);
+    }
+
+    @Transactional(readOnly = true)
     public Page<EmployeDto.Response> findAll(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("nom").ascending());
-        return dao.findAll(pageable).map(this::toResponse);
+        Pageable pageable = PageRequest.of(page, size, SORT_BY_NOM);
+        return dao.findAllFetchUser(pageable).map(helper::toResponse);
     }
 
     @Transactional
-    public EmployeDto.Response create(EmployeDto.Request req)  {
-        User user=userService.create(req.getEmail(), req.getRole().name(), req.getNom(),req.getPrenom(),null);
-        Employe employe = Employe.builder()
-                .nom(req.getNom().toUpperCase())
-                .prenom(req.getPrenom())
-                .poste(req.getPoste())
-                .departement(req.getDepartement())
-                .telephone(req.getTelephone())
-                .email(req.getEmail())
-                .dateEmbauche(req.getDateEmbauche())
-                .salaireBase(req.getSalaireBase())
-                .typeContrat(req.getTypeContrat())
-                .numeroCnss(req.getNumeroCnss())
-                .rib(req.getRib())
-                .actif(true)
-                .utilisateurId(user.getId())
-                .build();
-        return toResponse(dao.save(employe));
+    public EmployeDto.Response create(EmployeDto.Request req) {
+        Employe employe = helper.buildNewEmploye(req);
+        return helper.toResponse(dao.save(employe));
     }
 
     @Transactional
     @CacheEvict(value = "employes", key = "#id")
     public EmployeDto.Response edit(UUID id, EmployeDto.Request req) {
-        Employe employe = dao.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Employé introuvable : " + id));
+        Employe employe = helper.findEmployeOrThrow(id);
 
-        if(employe.getUtilisateurId()==null){
-            User user=userService.create(req.getEmail(), req.getRole().name(), req.getNom(),req.getPrenom(),null);
-            employe.setUtilisateurId(user.getId());
+        String nom = it.solutions.services.trinity.core.shared.utils.GenericUtils.normalizeUpper(req.getNom());
+        String prenom = it.solutions.services.trinity.core.shared.utils.GenericUtils.normalize(req.getPrenom());
 
-        }
-        employe.setNom(req.getNom().toUpperCase());
-        employe.setPrenom(req.getPrenom());
-        employe.setPoste(req.getPoste());
-        employe.setDepartement(req.getDepartement());
-        employe.setTelephone(req.getTelephone());
-        employe.setEmail(req.getEmail());
-        employe.setDateEmbauche(req.getDateEmbauche());
-        employe.setSalaireBase(req.getSalaireBase());
-        employe.setTypeContrat(req.getTypeContrat());
-        employe.setNumeroCnss(req.getNumeroCnss());
-        employe.setRib(req.getRib());
-        employe.setActif(req.getStatut().equals(Statut.ACTIF));
+        helper.resolveOrCreateUser(employe, req, nom, prenom);
+        helper.applyEmployeUpdates(employe, req, nom, prenom);
 
-        return toResponse(dao.save(employe));
+        return helper.toResponse(dao.save(employe));
+    }
+
+    @Transactional
+    @CacheEvict(value = "employes", key = "#id")
+    public EmployeDto.Response changeStatus(UUID id, EmployeDto.StatusRequest statutEmploye) {
+        Employe employe = helper.findEmployeOrThrow(id);
+        employe.setActif(StatutEmploye.ACTIF.name().equals(statutEmploye.getStatut()));
+        return helper.toResponse(dao.save(employe));
     }
 
     @Transactional
     @CacheEvict(value = "employes", key = "#id")
     public void delete(UUID id) {
-        if (!dao.existsById(id)) throw new EntityNotFoundException("Employé introuvable : " + id);
+        if (!dao.existsById(id)) {
+            throw new jakarta.persistence.EntityNotFoundException("Employé introuvable : " + id);
+        }
         dao.deleteById(id);
-    }
-
-    private EmployeDto.Response toResponse(Employe e) {
-        User user=userService.findById(e.getUtilisateurId());
-        return EmployeDto.Response.builder()
-                .nom(e.getNom().toUpperCase())
-                .prenom(e.getPrenom())
-                .poste(e.getPoste())
-                .departement(e.getDepartement().name())
-                .telephone(e.getTelephone())
-                .email(e.getEmail())
-                .dateEmbauche(e.getDateEmbauche())
-                .salaireBase(e.getSalaireBase())
-                .typeContrat(e.getTypeContrat().name())
-                .numeroCnss(e.getNumeroCnss())
-                .rib(e.getRib())
-                .id(e.getId())
-                .utilisateurId(e.getUtilisateurId())
-                .statut(e.isActif() ? Statut.ACTIF.name():Statut.INACTIF.name())
-                .role(user.getRole().name())
-                .build();
     }
 }

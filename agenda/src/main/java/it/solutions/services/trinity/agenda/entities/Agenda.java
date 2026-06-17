@@ -37,7 +37,7 @@ public class Agenda extends BaseEntity {
     private LocalDateTime dateHeure;
 
     @Column(nullable = false)
-    private int dureeMinutes;
+    private Integer dureeMinutes;
 
     @Column(columnDefinition = "TEXT")
     private String motif;

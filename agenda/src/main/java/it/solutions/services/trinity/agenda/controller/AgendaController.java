@@ -5,7 +5,6 @@ import it.solutions.services.trinity.agenda.services.AgendaService;
 import it.solutions.services.trinity.core.security.services.CookieUtils;
 import it.solutions.services.trinity.core.security.services.JwtService;
 import it.solutions.services.trinity.core.shared.api.ApiResponse;
-import it.solutions.services.trinity.core.shared.enums.StatutRendezVous;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -54,7 +53,7 @@ public class AgendaController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<AgendaDto.Response>> changeStatus(@PathVariable UUID id, @RequestBody StatutRendezVous statut) {
+    public ResponseEntity<ApiResponse<AgendaDto.Response>> changeStatus(@PathVariable UUID id, @RequestBody AgendaDto.StatusRequest statut) {
 
         return ResponseEntity.ok(ApiResponse.ok("Statut du rendez-vous modifié", service.changeStatus(id, statut)));
     }
@@ -64,6 +63,17 @@ public class AgendaController {
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok("Rendez-vous supprimé", null));
+    }
+
+
+    @GetMapping("/medecin/{patientId}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE')")
+    public ResponseEntity<ApiResponse<List<AgendaDto.Response>>> findAgendaByDoctorAndPatient(@PathVariable UUID patientId,
+                                                                                              @RequestParam  UUID medecinId,
+                                                                                    @RequestParam  int annee,
+                                                                                    @RequestParam int mois ) {
+
+        return ResponseEntity.ok(ApiResponse.ok(service.findAgendaByDoctorAndPatient(medecinId,patientId,annee, mois)));
     }
 
 }

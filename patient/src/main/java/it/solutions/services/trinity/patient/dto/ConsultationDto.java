@@ -1,10 +1,9 @@
 package it.solutions.services.trinity.patient.dto;
 
-import it.solutions.services.trinity.core.shared.enums.Genre;
-import it.solutions.services.trinity.core.shared.enums.GroupeSanguin;
+import it.solutions.services.trinity.core.shared.enums.StatutConsultation;
+import it.solutions.services.trinity.core.shared.enums.TypeConsultation;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -28,7 +27,7 @@ public class ConsultationDto {
         @NotBlank(message = "Id patient est obligatoire")
         private UUID patientId;
 
-        @NotBlank(message = "Id medecin est obligatoire")
+        @NotBlank(message = "Id médecin est obligatoire")
         private UUID medecinId;
 
         @NotBlank(message = "Id rendez vous est obligatoire")
@@ -36,6 +35,12 @@ public class ConsultationDto {
 
         @NotNull(message = "Date et heures sont obligatoires")
         private LocalDateTime dateHeure;
+
+        @Enumerated(value = EnumType.STRING)
+        private TypeConsultation type;
+
+        @Enumerated(value = EnumType.STRING)
+        private StatutConsultation statut;
 
         private String motif;
         private String symptomes;
@@ -47,26 +52,42 @@ public class ConsultationDto {
         private BigDecimal poids;
         private BigDecimal taille;
         private String notes;
+        private Integer dureeMinutes;
     }
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class Response {
         private UUID id;
-        private String nom;
-        private String prenom;
-        private LocalDate dateNaissance;
-        private String sexe;
-        private String telephone;
-        private String email;
-        private String adresse;
-        private String groupeSanguin;
-        private String allergies;
-        private String antecedents;
-        private String mutuelle;
-        private String numeroMutuelle;
-        private String contactUrgenceNom;
-        private String contactUrgenceTel;
-        private String notesGenerales;
-        private int age;
+        private UUID patientId;
+        private UUID medecinId;
+        private UUID rendezVousId;
+        private String patientNom;
+        private String patientPrenom;
+        private String medecinNom;
+        private LocalDateTime  dateHeure;
+        private String type;
+        private String statut;
+        private String motif;
+        private String symptomes;
+        private String diagnostic;
+        private String traitement;
+        private String tension;
+        private BigDecimal temperature;
+        private BigDecimal poids;
+        private BigDecimal taille;
+        private String notes;
+        private Integer dureeMinutes;
+    }
+
+    public static class ResponseLight {
+        private UUID id;
+        private UUID patientId;
+        private UUID medecinId;
+        private String medecinNom;
+        private LocalDateTime  dateHeure;
+        private String statut;
+        private String motif;
+        private String diagnostic;
+        private Integer dureeMinutes;
     }
 }
