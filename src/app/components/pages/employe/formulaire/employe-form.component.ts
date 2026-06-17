@@ -1,4 +1,5 @@
-﻿import {
+﻿import { StatutEmploye } from './../../../../core/models/enums/enums.model';
+import {
   Component,
   input,
   output,
@@ -72,8 +73,8 @@ export class EmployeFormComponent implements OnInit {
   roles = ROLES;
 
   statutOptions = [
-    { label: 'Actif', value: 'ACTIF' },
-    { label: 'Inactif', value: 'INACTIF' },
+    { label: 'Actif', value: StatutEmploye.ACTIF },
+    { label: 'Inactif', value: StatutEmploye.INACTIF },
   ];
 
   form = this.fb.group({
@@ -106,7 +107,7 @@ export class EmployeFormComponent implements OnInit {
     numeroCnss: [''],
     rib: [''],
     adresse: [''],
-    statut: ['ACTIF'],
+    statut: [StatutEmploye.ACTIF],
     role: ['MEDECIN'],
   });
 

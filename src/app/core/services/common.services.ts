@@ -26,16 +26,11 @@ export class CommonService {
     public apiService: ApiResponseService,
   ) {}
 
-  public getInitiales(prenom: string, nom: string) {
-    return `${prenom[0]}${nom[0]}`.toUpperCase();
-  }
+  public getInitiales(prenom?: string | null, nom?: string | null): string {
+    const initialePrenom = prenom?.charAt(0) ?? '';
+    const initialeNom = nom?.charAt(0) ?? '';
 
-  getMenuRoles() {
-    //return this.httpClient.get(this.menuRoles).pipe(map((res: any) => res));
-  }
-
-  getRolesDisplay() {
-    //return this.httpClient.get(this.rolesDisplay).pipe(map((res: any) => res));
+    return `${initialePrenom}${initialeNom}`.toUpperCase();
   }
 
   public isSuccessResponse(response: ApiResponse): boolean {

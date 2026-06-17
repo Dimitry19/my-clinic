@@ -1,4 +1,5 @@
-﻿import { Component, inject, OnInit, signal, computed } from '@angular/core';
+﻿import { CommonService } from './../../../core/services/common.services';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import {
   FormsModule,
@@ -83,6 +84,7 @@ export class AgendaComponent implements OnInit {
   private patientService = inject(PatientService);
   private employeService = inject(EmployeService);
   private confirm = inject(ConfirmationService);
+  private commonService = inject(CommonService);
   private fb = inject(FormBuilder);
 
   patientSearchQuery = '';
@@ -218,87 +220,6 @@ export class AgendaComponent implements OnInit {
     motif: ['', [Validators.required, Validators.minLength(3)]],
     notes: [''],
   });
-
-  // ── Données mock pour la démo ─────────────────────────
-  private mockRdvs: RendezVous[] = (() => {
-    const now = new Date();
-    const y = now.getFullYear(),
-      m = now.getMonth();
-    return [
-      {
-        id: '1',
-        patientNom: 'Kouassi',
-        patientPrenom: 'Marie',
-        patientId: '1',
-        medecinNom: 'Dr. Martin',
-        medecinId: '1',
-        dateHeure: new Date(y, m, now.getDate(), 9, 0).toISOString(),
-        dureeMinutes: 30,
-        motif: 'Fièvre persistante',
-        statut: 'PLANIFIE' as any,
-      },
-      {
-        id: '2',
-        patientNom: 'Dupont',
-        patientPrenom: 'Paul',
-        patientId: '2',
-        medecinNom: 'Dr. Martin',
-        medecinId: '1',
-        dateHeure: new Date(y, m, now.getDate(), 10, 30).toISOString(),
-        dureeMinutes: 30,
-        motif: 'Bilan de santé',
-        statut: 'PLANIFIE',
-      },
-      {
-        id: '3',
-        patientNom: 'Ly',
-        patientPrenom: 'Awa',
-        patientId: '3',
-        medecinNom: 'Dr. Dupont',
-        medecinId: '2',
-        dateHeure: new Date(y, m, now.getDate(), 14, 0).toISOString(),
-        dureeMinutes: 45,
-        motif: 'Suivi diabète',
-        statut: 'CONFIRME',
-      },
-      {
-        id: '4',
-        patientNom: 'Bernard',
-        patientPrenom: 'Jean',
-        patientId: '4',
-        medecinNom: 'Dr. Martin',
-        medecinId: '1',
-        dateHeure: new Date(y, m, now.getDate() + 2, 9, 0).toISOString(),
-        dureeMinutes: 30,
-        motif: 'Contrôle tension',
-        statut: 'PLANIFIE',
-      },
-      {
-        id: '5',
-        patientNom: 'Louis',
-        patientPrenom: 'Anna',
-        patientId: '5',
-        medecinNom: 'Dr. Dupont',
-        medecinId: '2',
-        dateHeure: new Date(y, m, now.getDate() + 2, 11, 0).toISOString(),
-        dureeMinutes: 30,
-        motif: 'Consultation',
-        statut: 'CONFIRME',
-      },
-      {
-        id: '6',
-        patientNom: 'Moreau',
-        patientPrenom: 'Luc',
-        patientId: '6',
-        medecinNom: 'Dr. Martin',
-        medecinId: '1',
-        dateHeure: new Date(y, m, now.getDate() - 3, 10, 0).toISOString(),
-        dureeMinutes: 30,
-        motif: 'Grippe',
-        statut: 'TERMINE',
-      },
-    ];
-  })();
 
   ngOnInit() {
     this.load();
@@ -573,7 +494,7 @@ export class AgendaComponent implements OnInit {
       patientNom: `${patient.prenom} ${patient.nom}`,
     });
     this.showSearchResults = false;
-
+    this.patientSearchQuery = '';
     this.form.get('patientNom')?.disable();
   }
 
@@ -583,6 +504,7 @@ export class AgendaComponent implements OnInit {
       medecinNom: `${medecin.prenom} ${medecin.nom}`,
     });
     this.showSearchMedecinResults = false;
+    this.medecinSearchQuery = '';
     this.form.get('medecinNom')?.disable();
   }
   formatHeure(iso: string) {
@@ -596,7 +518,10 @@ export class AgendaComponent implements OnInit {
   }
 
   getInitiales(rdv: RendezVous) {
-    return `${rdv.patientPrenom[0]}${rdv.patientNom[0]}`.toUpperCase();
+    return this.commonService.getInitiales(
+      rdv.patientPrenom[0],
+      rdv.patientNom[0],
+    );
   }
 
   fieldError(name: string): string {

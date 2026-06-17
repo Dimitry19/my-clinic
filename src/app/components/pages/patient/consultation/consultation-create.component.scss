@@ -1,1 +1,1037 @@
-﻿
+﻿@use "sass:color";
+
+$primary: #185fa5;
+$primary-dk: #0c447c;
+$primary-lt: #e6f1fb;
+$success: #0f6e56;
+$success-lt: #e1f5ee;
+$danger: #a32d2d;
+$danger-lt: #fcebeb;
+$warning: #ba7517;
+$warning-lt: #faeeda;
+$border: #d3d1c7;
+$text: #2c2c2a;
+$text-muted: #5f5e5a;
+$bg: #ffffff;
+$bg-light: #f1efe8;
+$radius: 8px;
+$radius-lg: 12px;
+
+// ══════════════════════════════════════
+// PAGE
+// ══════════════════════════════════════
+
+:host ::ng-deep .dept-select {
+  .p-select {
+    border-radius: $radius;
+    font-size: 14px;
+    min-width: 200px;
+  }
+}
+.consultation-create {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+// ── En-tête ────────────────────────────────────────────────
+.page-header {
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: $text;
+    margin: 0 0 4px;
+    .pi {
+      font-size: 20px;
+      color: $primary;
+    }
+  }
+  p {
+    font-size: 14px;
+    color: $text-muted;
+    margin: 0;
+  }
+}
+
+// ══════════════════════════════════════
+// INDICATEUR D'ÉTAPES
+// ══════════════════════════════════════
+.steps-nav {
+  display: flex;
+  align-items: center;
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+}
+
+.step-wrapper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.step-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: $radius;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) {
+    background: $bg-light;
+  }
+
+  &.step-disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    &:hover {
+      background: transparent;
+    }
+  }
+
+  &.step-active .step-circle {
+    background: $primary;
+    border-color: $primary;
+    color: #fff;
+  }
+  &.step-active .step-info .step-num {
+    color: $primary;
+  }
+  &.step-active .step-info .step-label {
+    color: $text;
+    font-weight: 500;
+  }
+
+  &.step-done .step-circle {
+    background: $success;
+    border-color: $success;
+    color: #fff;
+  }
+  &.step-done .step-info .step-num {
+    color: $success;
+  }
+}
+
+.step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid $border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: $text-muted;
+  background: $bg;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  .pi {
+    font-size: 14px;
+  }
+}
+
+.step-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+.step-num {
+  font-size: 10px;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.step-label {
+  font-size: 13px;
+  color: $text-muted;
+}
+
+.step-connector {
+  flex: 1;
+  height: 1px;
+  background: $border;
+  margin: 0 8px;
+  min-width: 20px;
+  transition: background 0.3s;
+  &.connector-done {
+    background: $success;
+  }
+}
+
+// ══════════════════════════════════════
+// PANNEAU D'ÉTAPE
+// ══════════════════════════════════════
+.step-panel {
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  animation: fadeSlide 0.2s ease;
+}
+
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.step-panel-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 0.5px solid $border;
+  background: $bg-light;
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    color: $text;
+    margin: 0 0 3px;
+  }
+  p {
+    font-size: 13px;
+    color: $text-muted;
+    margin: 0;
+  }
+}
+
+.step-panel-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: $primary-lt;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  .pi {
+    font-size: 20px;
+    color: $primary;
+  }
+
+  &.step-icon-success {
+    background: $success-lt;
+    .pi {
+      color: $success;
+    }
+  }
+}
+
+.step-form {
+  padding: 1.5rem;
+}
+
+// ── Skeleton chargement ────────────────────────────────────
+.loading-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding: 1.5rem;
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ══════════════════════════════════════
+// CHAMPS FORMULAIRE (réutilisation)
+// ══════════════════════════════════════
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-row-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.f-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 1.1rem;
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.f-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: $text-muted;
+  .pi {
+    font-size: 14px;
+  }
+  .req {
+    color: $danger;
+    margin-left: 1px;
+  }
+}
+
+.f-input {
+  padding: 9px 12px;
+  border: 0.5px solid $border;
+  border-radius: $radius;
+  font-size: 14px;
+  color: $text;
+  background: $bg;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+  font-family: inherit;
+
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.1);
+  }
+  &::placeholder {
+    color: #b4b2a9;
+  }
+
+  .f-err & {
+    border-color: $danger;
+  }
+}
+
+.f-textarea {
+  resize: vertical;
+  min-height: 88px;
+}
+
+.f-err-msg {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: $danger;
+  .pi {
+    font-size: 12px;
+  }
+  &.mt-2 {
+    margin-top: 8px;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+// ── Hint info ─────────────────────────────────────────────
+.info-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  background: $primary-lt;
+  border: 0.5px solid #b5d4f4;
+  border-radius: $radius;
+  font-size: 13px;
+  color: $primary-dk;
+  margin-top: 0.5rem;
+  .pi {
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+}
+
+// ══════════════════════════════════════
+// ÉTAPE 0 — Cartes de sélection
+// ══════════════════════════════════════
+.selection-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: $radius;
+  margin-top: 8px;
+  border: 0.5px solid;
+
+  &.selection-card-departement {
+    background: var(--p-select-filled-hover-background);
+    border-color: var(--p-button-info-active-border-color);
+    .selection-avatar {
+      background: $primary;
+      color: #fff;
+    }
+    .selection-check {
+      color: $primary;
+    }
+  }
+
+  &.selection-card-medecin {
+    background: $primary-lt;
+    border-color: #b5d4f4;
+    .selection-avatar {
+      background: $primary;
+      color: #fff;
+    }
+    .selection-check {
+      color: $primary;
+    }
+  }
+
+  &.selection-card-patient {
+    background: $success-lt;
+    border-color: #5dcaa5;
+    .selection-avatar {
+      background: $success;
+      color: #fff;
+    }
+    .selection-check {
+      color: $success;
+    }
+  }
+}
+
+.selection-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+  flex-shrink: 0;
+
+  &.avatar-patient {
+    background: $success;
+    color: #fff;
+  }
+}
+
+.selection-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.selection-nom {
+  font-size: 14px;
+  font-weight: 500;
+  color: $text;
+}
+
+.selection-sub {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.selection-check {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.blood-tag {
+  display: inline-block;
+  background: $danger-lt;
+  color: $danger;
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+// ══════════════════════════════════════
+// ÉTAPE 1 — Rendez-vous
+// ══════════════════════════════════════
+.rdv-count-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: $text-muted;
+  padding: 1rem 1.5rem 0.5rem;
+  .pi {
+    font-size: 15px;
+  }
+}
+
+.rdv-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 1.5rem 1.5rem;
+}
+
+// Carte rendez-vous
+.rdv-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+  background: $bg;
+
+  &:hover:not(.rdv-card-disabled) {
+    border-color: $primary;
+    background: rgba($primary-lt, 0.4);
+  }
+
+  &.rdv-card-selected {
+    border-color: $primary;
+    background: $primary-lt;
+    border-width: 1.5px;
+  }
+
+  &.rdv-card-disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    &:hover {
+      border-color: $border;
+      background: $bg;
+    }
+  }
+}
+
+.rdv-radio {
+  flex-shrink: 0;
+}
+
+.rdv-radio-checked {
+  font-size: 22px;
+  color: $primary;
+}
+
+.rdv-radio-empty {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid $border;
+}
+
+.rdv-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rdv-card-date {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rdv-date-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: $primary-lt;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  .pi {
+    font-size: 16px;
+    color: $primary;
+  }
+
+  .rdv-card-selected & {
+    background: rgba($primary, 0.15);
+  }
+}
+
+.rdv-date-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: $text;
+  text-transform: capitalize;
+}
+
+.rdv-heure-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: $text-muted;
+  .pi {
+    font-size: 12px;
+  }
+}
+
+.rdv-card-motif {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: $text-muted;
+  .pi {
+    font-size: 13px;
+  }
+}
+
+.rdv-card-statut {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.rdv-indisponible {
+  font-size: 11px;
+  color: $danger;
+}
+
+// ── Aucun RDV disponible ───────────────────────────────────
+.no-rdv-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  padding: 2.5rem 2rem;
+  margin: 1rem 1.5rem;
+  background: $warning-lt;
+  border: 0.5px solid #f0c860;
+  border-radius: $radius-lg;
+}
+
+.no-rdv-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba($warning, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .pi {
+    font-size: 32px;
+    color: $warning;
+  }
+}
+
+.no-rdv-body {
+  h4 {
+    font-size: 1rem;
+    font-weight: 500;
+    color: $text;
+    margin: 0 0 8px;
+  }
+  p {
+    font-size: 14px;
+    color: $text-muted;
+    margin: 0 0 6px;
+  }
+}
+
+.no-rdv-hint {
+  font-size: 13px;
+  color: $warning;
+  font-style: italic;
+}
+
+.no-rdv-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-create-rdv {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: $radius;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  .pi {
+    font-size: 15px;
+  }
+  &:hover {
+    background: $primary-dk;
+  }
+}
+
+.btn-back-step {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  background: $bg;
+  color: $text-muted;
+  border: 0.5px solid $border;
+  border-radius: $radius;
+  font-size: 14px;
+  cursor: pointer;
+  .pi {
+    font-size: 15px;
+  }
+  &:hover {
+    background: $bg-light;
+  }
+}
+
+// ══════════════════════════════════════
+// ÉTAPE 2 — Examen clinique
+// ══════════════════════════════════════
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 0.5px solid $border;
+  .pi {
+    font-size: 15px;
+  }
+}
+
+.optional-hint {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #b4b2a9;
+  margin-left: 4px;
+}
+
+// Type de consultation — radio pills
+.type-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.type-option {
+  display: flex;
+  align-items: center;
+  padding: 7px 16px;
+  border: 0.5px solid $border;
+  border-radius: 20px;
+  font-size: 13px;
+  color: $text-muted;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: $bg;
+
+  &:hover {
+    border-color: $primary;
+    color: $primary;
+  }
+
+  &.type-selected {
+    background: $primary;
+    border-color: $primary;
+    color: #fff;
+    font-weight: 500;
+  }
+}
+
+// IMC calculé
+.imc-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: $bg-light;
+  border-radius: $radius;
+  margin-bottom: 1rem;
+  font-size: 14px;
+}
+
+.imc-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: $text-muted;
+  .pi {
+    font-size: 15px;
+  }
+}
+
+.imc-val {
+  font-size: 18px;
+  font-weight: 500;
+  color: $text;
+}
+
+// ══════════════════════════════════════
+// ÉTAPE 4 — Récapitulatif
+// ══════════════════════════════════════
+.recap-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding: 1.5rem;
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.recap-card {
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+
+.recap-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: $bg-light;
+  border-bottom: 0.5px solid $border;
+  font-size: 12px;
+  font-weight: 500;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  .pi {
+    font-size: 15px;
+  }
+}
+
+.recap-rows {
+  padding: 4px 0;
+}
+
+.recap-row {
+  display: flex;
+  gap: 12px;
+  padding: 8px 14px;
+  border-bottom: 0.5px solid $bg-light;
+  font-size: 13px;
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.recap-label {
+  min-width: 90px;
+  color: $text-muted;
+  flex-shrink: 0;
+}
+
+.recap-val {
+  color: $text;
+  font-weight: 500;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  &.recap-empty {
+    color: $text-muted;
+    font-weight: 400;
+    font-style: italic;
+  }
+}
+
+.recap-sub {
+  font-size: 12px;
+  color: $text-muted;
+  font-weight: 400;
+}
+
+// ══════════════════════════════════════
+// FOOTER NAVIGATION
+// ══════════════════════════════════════
+.step-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  padding: 1rem 1.25rem;
+}
+
+.footer-left,
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  max-width: 200px;
+}
+
+.progress-label {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: $border;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: $primary;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+// Boutons navigation
+.btn-prev {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  background: $bg;
+  color: $text-muted;
+  border: 0.5px solid $border;
+  border-radius: $radius;
+  font-size: 14px;
+  cursor: pointer;
+  .pi {
+    font-size: 15px;
+  }
+  &:hover:not(:disabled) {
+    background: $bg-light;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-cancel {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  background: $bg;
+  color: $text-muted;
+  border: 0.5px solid $border;
+  border-radius: $radius;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  .pi {
+    font-size: 15px;
+  }
+  &:hover:not(.disabled) {
+    background: $bg-light;
+  }
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.btn-next {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: $radius;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  .pi {
+    font-size: 15px;
+  }
+  &:hover:not(:disabled) {
+    background: $primary-dk;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-submit {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px;
+  background: $success;
+  color: #fff;
+  border: none;
+  border-radius: $radius;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  .pi {
+    font-size: 15px;
+  }
+  &:hover:not(:disabled) {
+    background: color.adjust($success, $lightness: -8%);
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}

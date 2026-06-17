@@ -758,4 +758,14 @@ select.form-control {
   :host ::ng-deep .p-tabs .p-tablist {
     display: none;
   }
+
+  // ── Error message ─────────────────────────────────────────────────
+  .err-msg {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+
+    color: #dc2626;
+    font-size: 0.85rem;
+  }
 }

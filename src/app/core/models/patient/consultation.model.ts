@@ -1,6 +1,10 @@
 ﻿import { Departement } from '../employe/employe.model';
 
-export type StatutConsultation = 'EN_COURS' | 'TERMINEE' | 'ANNULEE';
+export type StatutConsultation =
+  | 'PLANIFIEE'
+  | 'EN_COURS'
+  | 'TERMINEE'
+  | 'ANNULEE';
 export type TypeConsultation =
   | 'GENERALE'
   | 'SPECIALISEE'

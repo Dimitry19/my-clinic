@@ -1,5 +1,5 @@
 ﻿import { Routes } from '@angular/router';
-import { ServerRoute } from '@angular/ssr';
+import { RenderMode, ServerRoute } from '@angular/ssr';
 
 export const consultationRoutes: Routes = [
   {
@@ -38,4 +38,8 @@ export const consultationRoutes: Routes = [
   },
 ];
 
-export const consultationServerRoutes: ServerRoute[] = [];
+export const consultationServerRoutes: ServerRoute[] = [
+  { path: 'consultation/create/:patientId', renderMode: RenderMode.Client },
+  { path: 'consultation/:id', renderMode: RenderMode.Client },
+  { path: 'consultation/:id/edit', renderMode: RenderMode.Client },
+];

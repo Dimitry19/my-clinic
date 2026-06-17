@@ -8,7 +8,12 @@
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  Validators,
+  FormsModule,
+} from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
@@ -29,13 +34,13 @@ import { DividerModule } from 'primeng/divider';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import {
-  PatientLight,
   MedecinLight,
   RendezVousLight,
   TYPES_CONSULTATION,
   CONS_DEPARTEMENTS,
 } from '../../../../core/models/patient/consultation.model';
 import { PatientService } from '../../../../core/services/patient/patient.service';
+import { ConsultationService } from '../../../../core/services/patient/consultation.service';
 import { Patient } from '../../../../core/models/patient/patient.model';
 import { EmployeService } from '../../../../core/services/employe/employe.service';
 import { Configuration } from '../../../../core/models/configuration/configuration.model';
@@ -43,127 +48,19 @@ import {
   Employe,
   EmployePage,
 } from '../../../../core/models/employe/employe.model';
+import { RendezVous } from '../../../../core/models/agenda/agenda.model';
+import { AgendaService } from '../../../../core/services/agenda/agenda.service';
+import { ServiceError } from '../../../../core/models/all/all.model';
+import { CommonService } from '../../../../core/services/common.services';
 
 // ── Mock data (remplacer par vrais services) ─────────────
-const MOCK_PATIENTS: PatientLight[] = [
-  {
-    id: '1',
-    nom: 'Kouassi',
-    prenom: 'Marie',
-    dateNaissance: '1990-05-12',
-    telephone: '47821234',
-    groupeSanguin: 'A+',
-    age: 35,
-  },
-  {
-    id: '2',
-    nom: 'Dupont',
-    prenom: 'Paul',
-    dateNaissance: '1978-11-03',
-    telephone: '47856789',
-    groupeSanguin: 'O-',
-    age: 47,
-  },
-  {
-    id: '3',
-    nom: 'Ly',
-    prenom: 'Awa',
-    dateNaissance: '2001-07-22',
-    telephone: '47812345',
-    groupeSanguin: 'B+',
-    age: 24,
-  },
-  {
-    id: '4',
-    nom: 'Bernard',
-    prenom: 'Jean',
-    dateNaissance: '1965-02-14',
-    telephone: '47898765',
-    groupeSanguin: 'AB+',
-    age: 60,
-  },
-];
-const MOCK_MEDECINS: MedecinLight[] = [
-  {
-    id: '1',
-    nom: 'Martin',
-    prenom: 'Dr.',
-    poste: 'Médecin généraliste',
-    departement: 'MEDECINE',
-  },
-  {
-    id: '2',
-    nom: 'Dupont',
-    prenom: 'Dr.',
-    poste: 'Chirurgien',
-    departement: 'CHIRURGIE',
-  },
-  {
-    id: '3',
-    nom: 'Lambert',
-    prenom: 'Dr.',
-    poste: 'Cardiologue',
-    departement: 'MEDECINE',
-  },
-];
-const MOCK_RDV: RendezVousLight[] = [
-  {
-    id: '1',
-    dateHeure: '2026-06-16T09:00',
-    dureeMinutes: 30,
-    motif: 'Fièvre persistante',
-    statut: 'CONFIRME',
-    patientNom: 'Kouassi',
-    patientPrenom: 'Marie',
-    medecinNom: 'Dr. Martin',
-  },
-  {
-    id: '2',
-    dateHeure: '2026-06-16T10:30',
-    dureeMinutes: 30,
-    motif: 'Bilan annuel',
-    statut: 'PLANIFIE',
-    patientNom: 'Kouassi',
-    patientPrenom: 'Marie',
-    medecinNom: 'Dr. Martin',
-  },
-  {
-    id: '3',
-    dateHeure: '2026-06-17T14:00',
-    dureeMinutes: 45,
-    motif: 'Suivi tension',
-    statut: 'CONFIRME',
-    patientNom: 'Dupont',
-    patientPrenom: 'Paul',
-    medecinNom: 'Dr. Martin',
-  },
-  {
-    id: '4',
-    dateHeure: '2026-06-18T09:30',
-    dureeMinutes: 30,
-    motif: 'Douleur abdominale',
-    statut: 'CONFIRME',
-    patientNom: 'Ly',
-    patientPrenom: 'Awa',
-    medecinNom: 'Dr. Dupont',
-  },
-  {
-    id: '5',
-    dateHeure: '2026-06-19T11:00',
-    dureeMinutes: 30,
-    motif: 'Consultation urgente',
-    statut: 'PLANIFIE',
-    patientNom: 'Bernard',
-    patientPrenom: 'Jean',
-    medecinNom: 'Dr. Lambert',
-  },
-];
 
 @Component({
   selector: 'clnt-consultation-create',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterLink,
     ReactiveFormsModule,
     StepperModule,
@@ -192,6 +89,9 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
   private msg = inject(MessageService);
   private patientSvc = inject(PatientService);
   private employeSvc = inject(EmployeService);
+  private agendaSvc = inject(AgendaService);
+  private commonService = inject(CommonService);
+  private service = inject(ConsultationService);
   private destroy$ = new Subject<void>();
 
   items: any[] = [];
@@ -207,27 +107,27 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
     { label: 'Récapitulatif', icon: 'pi-list-check' },
   ];
 
-  departementOptions = [
-    { label: 'Tous les départements de médecine', value: '' },
-    ...CONS_DEPARTEMENTS,
-  ];
+  departementOptions = [...CONS_DEPARTEMENTS];
 
   patient = signal<Patient | null>(null);
   loading = signal(true);
   // ── Données ────────────────────────────────────────────
-  patients = signal<PatientLight[]>([]);
+  patients = signal<Patient[]>([]);
   medecins = signal<Employe[]>([]);
-  rdvDisponibles = signal<RendezVousLight[]>([]);
+  rdvDisponibles = signal<RendezVous[]>([]);
   loadingRdv = signal(false);
   loadingMeta = signal(true);
+  loadError = signal<string | null>(null);
   globalError = signal<string | null>(null);
   saving = signal(false);
   filterDept = signal<string>('');
+  currentDate = signal(new Date());
 
   // Sélections
-  selectedPatient = signal<PatientLight | null>(null);
+  selectedPatient = signal<Patient | null>(null);
   selectedMedecin = signal<MedecinLight | null>(null);
   selectedRdv = signal<RendezVousLight | null>(null);
+  selectedDpt = signal<string | null>(null);
 
   // Options pour les selects
   typesConsultation = TYPES_CONSULTATION;
@@ -249,6 +149,7 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
   // ── Formulaire ────────────────────────────────────────
   form = this.fb.group({
     // Étape 1
+    departement: ['', Validators.required],
     patientId: ['', Validators.required],
     medecinId: ['', Validators.required],
     // Étape 2
@@ -292,13 +193,6 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.recuperationPatient();
 
-    // Charger patients et médecins (mock)
-    setTimeout(() => {
-      this.patients.set(MOCK_PATIENTS);
-      //this.medecins.set(MOCK_MEDECINS);
-      this.loadingMeta.set(false);
-    }, 500);
-
     // Réagir aux changements patient/médecin pour charger les RDV
     this.form
       .get('patientId')!
@@ -323,6 +217,7 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
         this.selectedRdv.set(null);
         this.chargerRdv();
       });
+    this.loadingMeta.set(false);
   }
 
   // ── Chargement RDV filtrés ────────────────────────────
@@ -335,19 +230,35 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
     }
 
     this.loadingRdv.set(true);
-    // Simulation — filtrer par patient ET médecin
-    setTimeout(() => {
-      const patient = this.patients().find((p) => p.id === pid);
-      const medecin = this.medecins().find((m) => m.id === mid);
-      const filtered = MOCK_RDV.filter(
-        (r) =>
-          r.patientNom === patient?.nom &&
-          r.patientPrenom === patient?.prenom &&
-          r.medecinNom === `${medecin?.prenom} ${medecin?.nom}`,
-      );
-      this.rdvDisponibles.set(filtered);
-      this.loadingRdv.set(false);
-    }, 400);
+    this.loadError.set(null);
+
+    this.agendaSvc
+      .findAgendaByDoctorAndPatient(
+        this.getCurrentYear(),
+        this.getCurrentMonth(),
+        mid,
+        pid,
+      )
+      .subscribe({
+        next: (rendezVous) => {
+          const patient = this.patients().find((p) => p.id === pid);
+          const medecin = this.medecins().find((m) => m.id === mid);
+          const filtered = rendezVous.filter(
+            (r) =>
+              r.patientId === patient?.id &&
+              r.medecinNom.toLowerCase() ===
+                `${medecin?.nom.toLowerCase()} ${medecin?.prenom.toLowerCase()}`,
+          );
+          this.rdvDisponibles.set(filtered);
+          this.loadingRdv.set(false);
+
+          this.loading.set(false);
+        },
+        error: (err: ServiceError) => {
+          this.loading.set(false);
+          this.loadError.set(err.message);
+        },
+      });
   }
 
   // ── Navigation étapes ─────────────────────────────────
@@ -441,13 +352,16 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
         summary: 'Consultation créée',
         detail: `Consultation de ${this.selectedPatient()?.prenom} ${this.selectedPatient()?.nom} enregistrée.`,
       });
-      setTimeout(() => this.router.navigate(['/consultations']), 1200);
+      setTimeout(
+        () => this.router.navigate([['/patients', this.selectedPatient()!.id]]),
+        1200,
+      );
     }, 900);
   }
 
   // ── Helpers ───────────────────────────────────────────
   getInitiales(prenom: string, nom: string) {
-    return `${prenom[0]}${nom[0]}`.toUpperCase();
+    return this.commonService.getInitiales(prenom, nom);
   }
 
   getRdvSeverity(statut: string) {
@@ -498,6 +412,16 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  onFilterDept(v: string) {
+    const option = this.departementOptions.find((o) => o.value === v);
+    this.filterDept.set(v);
+    this.selectedDpt.set(option!.label);
+    this.selectedMedecin.set(null);
+    this.medecins.set([]);
+    this.form.patchValue({ medecinId: '' });
+    this.loadMedecins(0, true);
+  }
+
   private recuperationPatient(): void {
     const patientId = this.route.snapshot.paramMap.get('patientId')!;
     console.log(patientId);
@@ -508,6 +432,8 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
       next: (p) => {
         this.patient.set(p);
         this.loading.set(false);
+
+        this.patients.update((items) => [...items, p]);
       },
       error: () => {
         this.loading.set(false);
@@ -536,20 +462,32 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
     // to query your backend API.
     const startIndex = event.first ?? 0;
     this.loading.set(true);
+    this.loadMedecins(startIndex, false);
+  }
 
+  private loadMedecins(startIndex: number, changedDept: boolean) {
     this.employeSvc
-      .findAll(startIndex, Configuration.pageSize, '', this.filterDept())
+      .findEmployesByDepartementConsultation(
+        startIndex,
+        Configuration.pageSize,
+        this.filterDept(),
+      )
       .subscribe({
         next: (data: EmployePage) => {
-          this.medecins.update((items) => {
-            const updated = [...items];
+          if (changedDept) {
+            this.medecins.set(data.content);
+          } else {
+            this.medecins.update((items) => {
+              const updated = [...items];
 
-            data.content.forEach((item, i) => {
-              updated[startIndex + i] = item;
+              data.content.forEach((item, i) => {
+                updated[startIndex + i] = item;
+              });
+
+              return updated;
             });
+          }
 
-            return updated;
-          });
           this.loading.set(false);
         },
         error: () => {
@@ -561,5 +499,12 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
           });
         },
       });
+  }
+
+  getCurrentMonth(): number {
+    return this.currentDate().getMonth();
+  }
+  getCurrentYear(): number {
+    return this.currentDate().getFullYear();
   }
 }

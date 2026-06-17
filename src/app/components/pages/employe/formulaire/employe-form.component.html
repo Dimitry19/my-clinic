@@ -516,7 +516,8 @@
           (click)="activeStep.set(activeStep() - 1)"
           [disabled]="saving()"
         >
-          ← Précédent
+          <i class="pi pi-chevron-left" aria-hidden="true"></i>
+          Précédent
         </button>
       }
       <button
@@ -525,6 +526,7 @@
         (click)="annuler()"
         [disabled]="saving()"
       >
+        <i class="pi pi-times" aria-hidden="true"></i>
         Annuler
       </button>
 
@@ -535,7 +537,8 @@
             class="btn-next"
             (click)="allerEtape(activeStep() + 1)"
           >
-            Suivant →
+            Suivant
+            <i class="pi pi-chevron-right" aria-hidden="true"></i>
           </button>
         }
 

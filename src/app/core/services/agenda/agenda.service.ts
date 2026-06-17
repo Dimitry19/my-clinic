@@ -30,6 +30,24 @@ export class AgendaService {
       );
   }
 
+  findAgendaByDoctorAndPatient(
+    annee: number,
+    mois: number,
+    medecinId: string,
+    patientId: string,
+  ): Observable<RendezVous[]> {
+    let params = new HttpParams().set('annee', annee).set('mois', mois);
+    if (medecinId) params = params.set('medecinId', medecinId);
+    return this.http
+      .get<
+        ApiResponse<RendezVous[]>
+      >(`${this.API}/medecin/${patientId}`, { params })
+      .pipe(
+        map((r) => r.data),
+        catchError((e) => this.commonService.handleError(e, Entite.AGENDA)),
+      );
+  }
+
   findToday(): Observable<RendezVous[]> {
     return this.http
       .get<ApiResponse<RendezVous[]>>(`${this.API}/aujourdhui`)

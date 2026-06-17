@@ -11,7 +11,7 @@ import {
 import { ApiResponse } from '../../models/response/api-response.model';
 import { environment } from '../../../../environments/environment';
 import { CommonService } from '../common.services';
-import { Entite, StatutEmploye } from '../../models/enums/enums.model';
+import { Entite } from '../../models/enums/enums.model';
 
 @Injectable({ providedIn: 'root' })
 export class EmployeService {
@@ -29,7 +29,35 @@ export class EmployeService {
     let params = new HttpParams().set('page', page).set('size', size);
     if (search) params = params.set('q', search);
     if (departement) params = params.set('departement', departement);
-    const url = search ? `${this.API}/search` : this.API;
+    const url = search ? `${this.API}/search` : `${this.API}/departement`;
+    return this.http.get<ApiResponse<EmployePage>>(url, { params }).pipe(
+      map((r) => r.data),
+      catchError((e) => this.commonService.handleError(e, Entite.EMPLOYE)),
+    );
+  }
+
+  findEmployesByDepartement(
+    page = 0,
+    size = 20,
+    departement = '',
+  ): Observable<EmployePage> {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (departement) params = params.set('departement', departement);
+    const url = `${this.API}/departement`;
+    return this.http.get<ApiResponse<EmployePage>>(url, { params }).pipe(
+      map((r) => r.data),
+      catchError((e) => this.commonService.handleError(e, Entite.EMPLOYE)),
+    );
+  }
+
+  findEmployesByDepartementConsultation(
+    page = 0,
+    size = 20,
+    departement = '',
+  ): Observable<EmployePage> {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (departement) params = params.set('departement', departement);
+    const url = `${this.API}/consultation/departement`;
     return this.http.get<ApiResponse<EmployePage>>(url, { params }).pipe(
       map((r) => r.data),
       catchError((e) => this.commonService.handleError(e, Entite.EMPLOYE)),

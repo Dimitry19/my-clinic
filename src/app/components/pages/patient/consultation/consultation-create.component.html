@@ -2,14 +2,16 @@
 
 <div class="consultation-create">
   <!-- ── Breadcrumb ── -->
-  <nav class="breadcrumb" aria-label="Navigation">
-    <a [routerLink]="['/patients', patient()!.id]" class="bc-link">
-      <i class="pi pi-arrow-left" aria-hidden="true"></i>
-      {{ patient()!.prenom }} {{ patient()!.nom }}
-    </a>
-    <span class="bc-sep" aria-hidden="true">/</span>
-    <span class="bc-current">Nouvelle consultation</span>
-  </nav>
+  @if (patient()) {
+    <nav class="breadcrumb" aria-label="Navigation">
+      <a [routerLink]="['/patients', patient()!.id]" class="bc-link">
+        <i class="pi pi-arrow-left" aria-hidden="true"></i>
+        {{ patient()!.prenom }} {{ patient()!.nom }}
+      </a>
+      <span class="bc-sep" aria-hidden="true">/</span>
+      <span class="bc-current">Nouvelle consultation</span>
+    </nav>
+  }
 
   <!-- ── En-tête ── -->
   <div class="page-header">
@@ -66,7 +68,7 @@
   </div>
 
   <!-- ══════════════════════════════════════
-       ÉTAPE 0 — Médecin & Patient
+       ÉTAPE 0 — Departement , Médecin & Patient
   ══════════════════════════════════════ -->
   @if (activeStep() === 0) {
     <div
@@ -94,13 +96,47 @@
         </div>
       } @else {
         <form [formGroup]="form" class="step-form">
-          <div class="form-row-2">
+          <div class="form-row">
+            <div class="form-group" [class.f-err]="hasError('departement')">
+              <label class="form-label">
+                <i class="fa-solid fa-building"></i>
+                Departement
+              </label>
+              <p-select
+                formControlName="departement"
+                [options]="departementOptions"
+                [(ngModel)]="filterDept"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Département"
+                (onChange)="onFilterDept($event.value)"
+                styleClass="w-full"
+                aria-label="Filtrer par département"
+              />
+              <!-- Carte departement sélectionné -->
+              @if (selectedDpt()) {
+                <div class="selection-card selection-card-departement">
+                  <div class="selection-avatar">
+                    {{ getInitiales(selectedDpt()!.toLowerCase(), "") }}
+                  </div>
+                  <div class="selection-info">
+                    <span class="selection-nom"
+                      >{{ selectedDpt()!.toString() }}
+                    </span>
+                    <span class="selection-sub">{{ selectedDpt()! }}</span>
+                  </div>
+                  <i
+                    class="pi pi-check-circle selection-check"
+                    aria-hidden="true"
+                  ></i>
+                </div>
+              }
+            </div>
             <!-- Médecin -->
-            <div class="f-field" [class.f-err]="hasError('medecinId')">
-              <label class="f-label">
+            <div class="form-group" [class.f-err]="hasError('medecinId')">
+              <label class="form-label required">
                 <i class="pi pi-user-plus" aria-hidden="true"></i>
                 Médecin traitant
-                <span class="req" aria-hidden="true">*</span>
               </label>
 
               <p-select
@@ -152,13 +188,13 @@
                 </div>
               }
             </div>
-
+          </div>
+          <div class="form-row">
             <!-- Patient -->
-            <div class="f-field" [class.f-err]="hasError('patientId')">
-              <label class="f-label">
+            <div class="form-group" [class.f-err]="hasError('patientId')">
+              <label class="form-label required">
                 <i class="pi pi-user" aria-hidden="true"></i>
                 Patient
-                <span class="req" aria-hidden="true">*</span>
               </label>
               <p-select
                 formControlName="patientId"
@@ -856,15 +892,16 @@
 
     <div class="footer-right">
       <!-- Bouton annuler -->
-      <a
-        routerLink="/consultations"
-        class="btn-cancel"
-        [class.disabled]="saving()"
-      >
-        <i class="pi pi-times" aria-hidden="true"></i>
-        Annuler
-      </a>
-
+      @if (patient()) {
+        <a
+          [routerLink]="['/patients', patient()!.id]"
+          class="btn-cancel"
+          [class.disabled]="saving()"
+        >
+          <i class="pi pi-times" aria-hidden="true"></i>
+          Annuler
+        </a>
+      }
       <!-- Suivant ou Soumettre -->
       @if (activeStep() < STEPS.length - 1) {
         <button
@@ -894,4 +931,3 @@
     </div>
   </div>
 </div>
-EOF echo "HTML OK" Sortie HTML OK Terminé
