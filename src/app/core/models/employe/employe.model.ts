@@ -42,14 +42,6 @@ export interface Employe {
   createdAt?: string;
 }
 
-export interface EmployePage {
-  content: Employe[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
-}
-
 export const DEPARTEMENTS: { label: string; value: Departement }[] = [
   { label: 'Médecine générale', value: 'MEDECINE' },
   { label: 'Chirurgie', value: 'CHIRURGIE' },

@@ -51,7 +51,7 @@ export class PatientsComponent implements OnInit {
   searchQuery = '';
   readonly pageSize = Configuration.pageSize;
 
-  totalPatients = computed(() => this.page()?.totalElements ?? 0);
+  totalPatients = computed(() => this.page()?.page.totalElements ?? 0);
 
   private search$ = new Subject<string>();
 

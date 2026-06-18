@@ -6,7 +6,7 @@
   <div class="page-header">
     <div>
       <h2>Patients</h2>
-      <p>{{ page()?.totalElements ?? 0 }} patients enregistrés</p>
+      <p>{{ page()?.page?.totalElements ?? 0 }} patients enregistrés</p>
     </div>
     <p-button
       label="Nouveau patient"

@@ -68,7 +68,7 @@ export class PatientDetailComponent implements OnInit {
   loading = signal(true);
 
   activeTab = signal(0);
-  readonly pageSize = 2; //Configuration.pageSize;
+  readonly pageSize = Configuration.pageSize;
 
   // --Consultations
   private destroyCons$ = new Subject<void>();
@@ -76,7 +76,7 @@ export class PatientDetailComponent implements OnInit {
   pageCons = signal<Page<Consultation> | null>(null);
   pageConsIndex = signal(0);
   consultations = signal<Consultation[]>([]);
-  totalConsultations = computed(() => this.pageCons()?.totalElements ?? 0);
+  totalConsultations = computed(() => this.pageCons()?.page.totalElements ?? 0);
 
   examens = signal<ExamenLabo[]>([
     {
@@ -302,7 +302,6 @@ export class PatientDetailComponent implements OnInit {
   }
 
   onLazyLoadConsultations(e: any) {
-    console.log('Lazy Event', e);
     this.pageConsIndex.set(e.first / this.pageSize);
     this.loadConsultations(this.pageConsIndex());
   }
@@ -327,13 +326,11 @@ export class PatientDetailComponent implements OnInit {
       });
   }
 
-  successLoadConsultation(page: Page<Consultation>) {
-    console.log('PAGE', page);
-    this.pageCons.set(page);
-    this.consultations.set(page.content);
+  successLoadConsultation(data: Page<Consultation>) {
+    this.pageCons.set(data);
+    this.consultations.set(data.content);
     this.loadingCons.set(false);
     this.buildTimeline();
-    console.log('TOTAL', this.totalConsultations());
   }
   formatDate(iso: string) {
     return this.commonService.formatDate(iso);

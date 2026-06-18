@@ -34,13 +34,12 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import {
   DEPARTEMENTS,
   Employe,
-  EmployePage,
 } from '../../../core/models/employe/employe.model';
 import { EmployeService } from '../../../core/services/employe/employe.service';
 import { CommonService } from '../../../core/services/common.services';
 import { EmployeFormComponent } from './formulaire/employe-form.component';
 import { Configuration } from '../../../core/models/configuration/configuration.model';
-import { ServiceError } from '../../../core/models/all/all.model';
+import { Page, ServiceError } from '../../../core/models/all/all.model';
 import { StatutEmploye } from '../../../core/models/enums/enums.model';
 
 @Component({
@@ -76,7 +75,7 @@ export class EmployesComponent implements OnInit {
   private search$ = new Subject<string>();
 
   employes = signal<Employe[]>([]);
-  page = signal<EmployePage | null>(null);
+  page = signal<Page<Employe> | null>(null);
   loading = signal(true);
   listError = signal<string | null>(null);
   searchQuery = '';
@@ -89,7 +88,7 @@ export class EmployesComponent implements OnInit {
   editMode = signal(false);
   selectedEmploye = signal<Employe | null>(null);
 
-  totalEmployes = computed(() => this.page()?.totalElements ?? 0);
+  totalEmployes = computed(() => this.page()?.page.totalElements ?? 0);
   actifs = computed(
     () =>
       this.employes().filter((e) => e.statut === StatutEmploye.ACTIF).length,

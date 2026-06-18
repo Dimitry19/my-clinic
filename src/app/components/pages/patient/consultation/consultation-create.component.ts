@@ -45,13 +45,10 @@ import { ConsultationService } from '../../../../core/services/patient/consultat
 import { Patient } from '../../../../core/models/patient/patient.model';
 import { EmployeService } from '../../../../core/services/employe/employe.service';
 import { Configuration } from '../../../../core/models/configuration/configuration.model';
-import {
-  Employe,
-  EmployePage,
-} from '../../../../core/models/employe/employe.model';
+import { Employe } from '../../../../core/models/employe/employe.model';
 import { RendezVous } from '../../../../core/models/agenda/agenda.model';
 import { AgendaService } from '../../../../core/services/agenda/agenda.service';
-import { ServiceError } from '../../../../core/models/all/all.model';
+import { Page, ServiceError } from '../../../../core/models/all/all.model';
 import { CommonService } from '../../../../core/services/common.services';
 
 // ── Mock data (remplacer par vrais services) ─────────────
@@ -474,7 +471,7 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
         this.filterDept(),
       )
       .subscribe({
-        next: (data: EmployePage) => {
+        next: (data: Page<Employe>) => {
           if (changedDept) {
             this.medecins.set(data.content);
           } else {

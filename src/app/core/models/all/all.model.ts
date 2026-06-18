@@ -17,12 +17,15 @@ export interface StatDashboard {
   consultationsTerminees: number;
 }
 
-export interface Page<T> {
-  content: T[];
+export interface Paginator {
   totalElements: number;
   totalPages: number;
   number: number;
   size: number;
+}
+export interface Page<T> {
+  content: T[];
+  page: Paginator;
 }
 
 export type LoginStep = 'idle' | 'loading' | 'success' | 'error';
