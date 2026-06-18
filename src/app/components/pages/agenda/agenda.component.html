@@ -16,6 +16,10 @@
           <i class="pi pi-clock" aria-hidden="true"></i>
           {{ rdvEnAttente() }} en attente
         </span>
+        <span class="inline-badge badge-warn">
+          <i class="pi pi-clock" aria-hidden="true"></i>
+          {{ rdvAReassigner() }} à reassigner
+        </span>
       </p>
     </div>
     <p-button
@@ -152,6 +156,7 @@
                   [class.rdv-annule]="rdv.statut === 'ANNULE'"
                   [class.rdv-termine]="rdv.statut === 'TERMINE'"
                   [class.rdv-absent]="rdv.statut === 'ABSENT'"
+                  [class.rdv-reassigner]="rdv.statut === 'A_REASSIGNER'"
                   (click)="openDetail(rdv, $event)"
                   [pTooltip]="
                     rdv.patientPrenom + ' ' + rdv.patientNom + ' — ' + rdv.motif
@@ -233,6 +238,7 @@
                 [class.barre-annule]="rdv.statut === 'ANNULE'"
                 [class.barre-termine]="rdv.statut === 'TERMINE'"
                 [class.barre-absent]="rdv.statut === 'ABSENT'"
+                [class.rdv-reassigner]="rdv.statut === 'A_REASSIGNER'"
                 aria-hidden="true"
               ></div>
               <div class="rdv-body">

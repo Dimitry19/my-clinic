@@ -38,6 +38,7 @@ import {
   RendezVousLight,
   TYPES_CONSULTATION,
   CONS_DEPARTEMENTS,
+  ConsultationRequest,
 } from '../../../../core/models/patient/consultation.model';
 import { PatientService } from '../../../../core/services/patient/patient.service';
 import { ConsultationService } from '../../../../core/services/patient/consultation.service';
@@ -121,7 +122,6 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
   globalError = signal<string | null>(null);
   saving = signal(false);
   filterDept = signal<string>('');
-  currentDate = signal(new Date());
 
   // Sélections
   selectedPatient = signal<Patient | null>(null);
@@ -234,8 +234,8 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
 
     this.agendaSvc
       .findAgendaByDoctorAndPatient(
-        this.getCurrentYear(),
-        this.getCurrentMonth(),
+        this.commonService.getCurrentYear(),
+        this.commonService.getCurrentMonth(),
         mid,
         pid,
       )
@@ -341,22 +341,30 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
       }
       return;
     }
+
+    const data = this.form.value as Partial<ConsultationRequest>;
+
     this.saving.set(true);
     this.globalError.set(null);
 
-    // Simulation sauvegarde
-    setTimeout(() => {
-      this.saving.set(false);
-      this.msg.add({
-        severity: 'success',
-        summary: 'Consultation créée',
-        detail: `Consultation de ${this.selectedPatient()?.prenom} ${this.selectedPatient()?.nom} enregistrée.`,
-      });
-      setTimeout(
-        () => this.router.navigate([['/patients', this.selectedPatient()!.id]]),
-        1200,
-      );
-    }, 900);
+    this.service.create(data).subscribe({
+      next: (consultation) => {
+        this.saving.set(false);
+        this.msg.add({
+          severity: 'success',
+          summary: 'Consultation créée',
+          detail: `Consultation de ${this.selectedPatient()?.prenom} ${this.selectedPatient()?.nom} enregistrée.`,
+        });
+        setTimeout(
+          () => this.router.navigate(['/patients', this.selectedPatient()!.id]),
+          1500,
+        );
+      },
+      error: (err: ServiceError) => {
+        this.saving.set(false);
+        this.globalError.set(err.message);
+      },
+    });
   }
 
   // ── Helpers ───────────────────────────────────────────
@@ -499,12 +507,5 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
           });
         },
       });
-  }
-
-  getCurrentMonth(): number {
-    return this.currentDate().getMonth();
-  }
-  getCurrentYear(): number {
-    return this.currentDate().getFullYear();
   }
 }

@@ -203,6 +203,12 @@ export class AgendaComponent implements OnInit {
       this.rdvs().filter((r) => r.statut === StatutRendezVous.PLANIFIE).length,
   );
 
+  rdvAReassigner = computed(
+    () =>
+      this.rdvs().filter((r) => r.statut === StatutRendezVous.A_REASSIGNER)
+        .length,
+  );
+
   statutOptions = Object.entries(STATUT_CONFIG).map(([v, c]) => ({
     label: c.label,
     value: v,

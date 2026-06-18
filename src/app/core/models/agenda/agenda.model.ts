@@ -39,4 +39,9 @@ export const STATUT_CONFIG: Record<
   ANNULE: { label: 'Annulé', severity: 'danger', icon: 'pi-times-circle' },
   TERMINE: { label: 'Terminé', severity: 'secondary', icon: 'pi-check' },
   ABSENT: { label: 'Absent', severity: 'warn', icon: 'pi-exclamation-circle' },
+  A_REASSIGNER: {
+    label: 'A reassigner',
+    severity: 'warn',
+    icon: 'pi-exclamation-circle',
+  },
 };

@@ -1,5 +1,5 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { BehaviorSubject, Observable, of, Subject, throwError } from 'rxjs';
@@ -19,12 +19,21 @@ export class CommonService {
   private menuSubject = new BehaviorSubject(false);
   menuSubject$ = this.menuSubject.asObservable();
 
+  currentDate = signal(new Date());
+
   constructor(
     public router: Router,
     public httpClient: HttpClient,
 
     public apiService: ApiResponseService,
   ) {}
+
+  public getCurrentMonth(): number {
+    return this.currentDate().getMonth();
+  }
+  public getCurrentYear(): number {
+    return this.currentDate().getFullYear();
+  }
 
   public getInitiales(prenom?: string | null, nom?: string | null): string {
     const initialePrenom = prenom?.charAt(0) ?? '';
@@ -76,6 +85,12 @@ export class CommonService {
     if (entite === Entite.AGENDA) {
       label404 = 'Rendez-vous introuvable.';
       label409 = 'Ce créneau est déjà occupé.';
+    }
+    if (entite === Entite.CONSULTATION) {
+      label404 = 'Consultation introuvable.';
+    }
+    if (entite === Entite.PATIENT) {
+      label404 = 'Patient introuvable.';
     }
 
     if (err.status === 0) {

@@ -40,6 +40,7 @@ export interface ConsultationRequest {
   medecinId: string;
   rendezVousId: string;
   type: TypeConsultation;
+  dateHeure: string;
   motif: string;
   symptomes?: string;
   diagnostic?: string;

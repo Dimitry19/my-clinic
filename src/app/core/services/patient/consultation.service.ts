@@ -1,15 +1,22 @@
-﻿import { inject, Injectable } from '@angular/core';
+﻿import {
+  Consultation,
+  ConsultationRequest,
+} from './../../models/patient/consultation.model';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { map } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 import { ApiResponse } from '../../models/response/api-response.model';
 import { Page } from '../../models/all/all.model';
 import { environment } from '../../../../environments/environment.prod';
 import { Patient } from '../../models/patient/patient.model';
+import { Entite } from '../../models/enums/enums.model';
+import { CommonService } from '../common.services';
 
 @Injectable({ providedIn: 'root' })
 export class ConsultationService {
   private http = inject(HttpClient);
+  private commonService = inject(CommonService);
   private API = environment.apiUrl + '/consultations';
 
   findAll(page = 0, size = 20, search = '') {
@@ -22,24 +29,34 @@ export class ConsultationService {
   }
 
   findById(id: string) {
-    return this.http
-      .get<ApiResponse<Patient>>(`${this.API}/${id}`)
-      .pipe(map((r) => r.data));
+    return this.http.get<ApiResponse<Patient>>(`${this.API}/${id}`).pipe(
+      map((r) => r.data),
+      catchError((e) => this.commonService.handleError(e, Entite.CONSULTATION)),
+    );
   }
 
-  create(p: Partial<Patient>) {
-    return this.http
-      .post<ApiResponse<Patient>>(this.API, p)
-      .pipe(map((r) => r.data));
+  create(c: Partial<ConsultationRequest>) {
+    return this.http.post<ApiResponse<Consultation>>(this.API, c).pipe(
+      map((r) => r.data),
+      catchError((e) => this.commonService.handleError(e, Entite.CONSULTATION)),
+    );
   }
 
-  edit(id: string, p: Partial<Patient>) {
+  edit(id: string, c: Partial<ConsultationRequest>) {
     return this.http
-      .put<ApiResponse<Patient>>(`${this.API}/${id}`, p)
-      .pipe(map((r) => r.data));
+      .put<ApiResponse<Consultation>>(`${this.API}/${id}`, c)
+      .pipe(
+        map((r) => r.data),
+        catchError((e) =>
+          this.commonService.handleError(e, Entite.CONSULTATION),
+        ),
+      );
   }
 
   delete(id: string) {
-    return this.http.delete<ApiResponse<void>>(`${this.API}/${id}`);
+    return this.http.delete<ApiResponse<void>>(`${this.API}/${id}`).pipe(
+      map((r) => r.data),
+      catchError((e) => this.commonService.handleError(e, Entite.CONSULTATION)),
+    );
   }
 }

@@ -17,6 +17,7 @@ export enum StatutRendezVous {
   ANNULE = 'ANNULE',
   TERMINE = 'TERMINE',
   ABSENT = 'ABSENT',
+  A_REASSIGNER = 'A_REASSIGNER',
 }
 
 export enum StatutExamenLabo {
@@ -45,4 +46,6 @@ export enum Genre {
 export enum Entite {
   EMPLOYE,
   AGENDA,
+  CONSULTATION,
+  PATIENT,
 }
