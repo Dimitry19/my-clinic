@@ -35,6 +35,26 @@ export class CommonService {
     return this.currentDate().getFullYear();
   }
 
+  formatDateLocaleDateString(iso: string) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+  }
+
+  formatHeure(iso: string) {
+    const d = new Date(iso);
+    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+  }
+
+  formatDate(iso: string) {
+    const d = new Date(iso);
+    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+  }
+
   public getInitiales(prenom?: string | null, nom?: string | null): string {
     const initialePrenom = prenom?.charAt(0) ?? '';
     const initialeNom = nom?.charAt(0) ?? '';

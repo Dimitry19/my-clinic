@@ -82,6 +82,14 @@ export interface MedecinLight {
   departement: string;
 }
 
+export interface ConsultationPage {
+  content: Consultation[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
 export const TYPES_CONSULTATION = [
   { label: 'Consultation générale', value: 'GENERALE' },
   { label: 'Consultation spécialisée', value: 'SPECIALISEE' },

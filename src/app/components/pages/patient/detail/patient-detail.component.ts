@@ -1,4 +1,4 @@
-﻿import { Component, inject, OnInit, signal } from '@angular/core';
+﻿import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { TabsModule } from 'primeng/tabs';
@@ -18,7 +18,6 @@ import { PatientService } from '../../../../core/services/patient/patient.servic
 import { TooltipModule } from 'primeng/tooltip';
 import { CommonService } from '../../../../core/services/common.services';
 import {
-  Consultation,
   ExamenLabo,
   Facture,
   Ordonnance,
@@ -28,6 +27,11 @@ import {
   StatutExamenLabo,
   StatutFacture,
 } from '../../../../core/models/enums/enums.model';
+import { forkJoin, Subject, takeUntil } from 'rxjs';
+import { Page, ServiceError } from '../../../../core/models/all/all.model';
+import { ConsultationService } from '../../../../core/services/patient/consultation.service';
+import { Configuration } from '../../../../core/models/configuration/configuration.model';
+import { Consultation } from '../../../../core/models/patient/consultation.model';
 
 @Component({
   selector: 'clnt-patient-detail',
@@ -54,41 +58,25 @@ import {
 export class PatientDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private patientSvc = inject(PatientService);
+  private consultationSvc = inject(ConsultationService);
   private commonService = inject(CommonService);
   private msgSvc = inject(MessageService);
   private router = inject(Router);
 
   patient = signal<Patient | null>(null);
+  loadError = signal<string | null>(null);
   loading = signal(true);
-  activeTab = signal(0);
 
-  // Données simulées — à remplacer par de vrais services
-  consultations = signal<Consultation[]>([
-    {
-      id: '1',
-      date: new Date('2026-05-20'),
-      medecin: 'Dr. Martin',
-      motif: 'Fièvre persistante',
-      diagnostic: 'Paludisme simple',
-      statut: 'TERMINE',
-    },
-    {
-      id: '2',
-      date: new Date('2026-04-10'),
-      medecin: 'Dr. Dupont',
-      motif: 'Douleur abdominale',
-      diagnostic: 'Gastrite',
-      statut: 'TERMINE',
-    },
-    {
-      id: '3',
-      date: new Date('2026-03-02'),
-      medecin: 'Dr. Martin',
-      motif: 'Bilan de santé',
-      diagnostic: 'RAS',
-      statut: 'TERMINE',
-    },
-  ]);
+  activeTab = signal(0);
+  readonly pageSize = 2; //Configuration.pageSize;
+
+  // --Consultations
+  private destroyCons$ = new Subject<void>();
+  loadingCons = signal(true);
+  pageCons = signal<Page<Consultation> | null>(null);
+  pageConsIndex = signal(0);
+  consultations = signal<Consultation[]>([]);
+  totalConsultations = computed(() => this.pageCons()?.totalElements ?? 0);
 
   examens = signal<ExamenLabo[]>([
     {
@@ -160,18 +148,43 @@ export class PatientDetailComponent implements OnInit {
 
   timeline = signal<any[]>([]);
 
+  recuperationsParallesDesDonnees(page: number, id: string) {
+    forkJoin({
+      p: this.patientSvc.findById(id),
+      cons: this.consultationSvc.findAllByPatient(page, this.pageSize, id),
+      //cong: this.svc.getConges(id),
+    }).subscribe({
+      next: ({ p, cons }) => {
+        this.patient.set(p);
+        this.loading.set(false);
+        this.successLoadConsultation(cons);
+        //this.conges.set(cong);
+      },
+      error: (err: ServiceError) => {
+        this.loading.set(false);
+        this.loadingCons.set(false);
+        this.loadError.set(err.message);
+      },
+    });
+  }
   ngOnInit() {
-    this.recuperationPatient();
+    const patientId = this.route.snapshot.paramMap.get('id')!;
+    this.recuperationsParallesDesDonnees(0, patientId);
+  }
+
+  ngOnDestroy() {
+    this.destroyCons$.next();
+    this.destroyCons$.complete();
   }
 
   private buildTimeline() {
     const events = [
       ...this.consultations().map((c) => ({
-        date: c.date,
+        date: new Date(c.dateHeure),
         icon: 'ti ti-stethoscope',
         color: '#185FA5',
         title: c.motif,
-        subtitle: c.medecin,
+        subtitle: c.medecinNom,
         type: 'consultation',
       })),
       ...this.examens().map((e) => ({
@@ -268,5 +281,75 @@ export class PatientDetailComponent implements OnInit {
       detail: 'Patient introuvable.',
     });
     this.router.navigate(['/patients']);
+  }
+
+  confirmDeleteConsultation(consultation: Consultation) {
+    /* this.confirmService.confirm({
+      message: `Supprimer la consulation du ${patient.prenom} ${patient.nom} ?`,
+      header: 'Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.service.delete(patient.id).subscribe(() => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Supprimé',
+            detail: 'Patient supprimé.',
+          });
+          this.pageConsIndex(0, this.searchQuery);
+        });
+      },
+    });*/
+  }
+
+  onLazyLoadConsultations(e: any) {
+    console.log('Lazy Event', e);
+    this.pageConsIndex.set(e.first / this.pageSize);
+    this.loadConsultations(this.pageConsIndex());
+  }
+
+  retryLoadConsultations() {
+    this.loadConsultations(this.pageConsIndex());
+  }
+
+  loadConsultations(p = 0) {
+    this.loadingCons.set(true);
+
+    this.consultationSvc
+      .findAllByPatient(p, this.pageSize, this.patient()!.id)
+      .pipe(takeUntil(this.destroyCons$))
+      .subscribe({
+        next: (page) => {
+          this.successLoadConsultation(page);
+        },
+        error: (e: ServiceError) => {
+          this.loadingCons.set(false);
+        },
+      });
+  }
+
+  successLoadConsultation(page: Page<Consultation>) {
+    console.log('PAGE', page);
+    this.pageCons.set(page);
+    this.consultations.set(page.content);
+    this.loadingCons.set(false);
+    this.buildTimeline();
+    console.log('TOTAL', this.totalConsultations());
+  }
+  formatDate(iso: string) {
+    return this.commonService.formatDate(iso);
+  }
+  formatHeure(iso: string) {
+    return this.commonService.formatHeure(iso);
+  }
+
+  getConsultationStatutSeverity(s: string) {
+    return (
+      {
+        PLANIFIEE: 'warn',
+        EN_COURS: 'info',
+        TERMINEE: 'success',
+        ANNULER: 'danger',
+      }[s] ?? 'secondary'
+    );
   }
 }

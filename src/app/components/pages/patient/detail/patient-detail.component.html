@@ -292,7 +292,15 @@
       <p-tabpanel [value]="1">
         <div class="tab-panel-header">
           <span>{{ consultations().length }} consultation(s)</span>
-
+          <p-button
+            label="Rafraîchir"
+            icon="pi pi-refresh"
+            size="small"
+            styleClass="hero-btn-primary"
+            [loading]="loadingCons()"
+            (onClick)="retryLoadConsultations()"
+          >
+          </p-button>
           <p-button
             [disabled]="!patient()"
             [routerLink]="
@@ -309,8 +317,16 @@
         </div>
         <p-table
           [value]="consultations()"
+          [loading]="loadingCons()"
+          [paginator]="true"
+          [rows]="pageSize"
+          [totalRecords]="totalConsultations()"
+          [lazy]="true"
+          (onLazyLoad)="onLazyLoadConsultations($event)"
           styleClass="p-datatable-sm"
           [rowHover]="true"
+          dataKey="id"
+          aria-label="Liste des consultations du patient"
         >
           <ng-template pTemplate="header">
             <tr>
@@ -319,23 +335,76 @@
               <th>Motif</th>
               <th>Diagnostic</th>
               <th>Statut</th>
+              <th style="width: 120px">Actions</th>
               <th></th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-c>
             <tr>
-              <td>{{ c.date | date: "dd/MM/yyyy" }}</td>
-              <td>{{ c.medecin }}</td>
+              <td>
+                {{ formatDate(c.dateHeure) }} à {{ formatHeure(c.dateHeure) }}
+              </td>
+              <td>{{ c.medecinNom }}</td>
               <td>{{ c.motif }}</td>
               <td>{{ c.diagnostic }}</td>
-              <td><p-tag value="Terminé" severity="success" /></td>
               <td>
+                @if (c.statut) {
+                  <p-tag
+                    [value]="c.statut"
+                    [severity]="getConsultationStatutSeverity(c.statut)"
+                  />
+                }
+              </td>
+              <td>
+                <div class="action-btns">
+                  <p-button
+                    icon="pi pi-eye"
+                    [text]="true"
+                    size="small"
+                    pTooltip="Voir le dossier"
+                    tooltipPosition="top"
+                    [routerLink]="['/consultation', c.id]"
+                  />
+                  <p-button
+                    icon="pi pi-user-edit"
+                    [text]="true"
+                    size="small"
+                    severity="secondary"
+                    pTooltip="Modifier"
+                    tooltipPosition="top"
+                    [routerLink]="['/consultation', c.id, 'edit']"
+                  />
+                  <p-button
+                    icon="pi pi-trash"
+                    [text]="true"
+                    size="small"
+                    severity="danger"
+                    pTooltip="Supprimer"
+                    tooltipPosition="top"
+                    (onClick)="confirmDeleteConsultation(c)"
+                  />
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="6" class="empty-state">
+                <i class="fa-solid fa-stethoscope"></i>
+                <p>Aucune consultation trouvée</p>
                 <p-button
-                  icon="pi pi-eye"
-                  [text]="true"
+                  [disabled]="!patient()"
+                  [routerLink]="
+                    patient() ? ['/consultation/create', patient()!.id] : null
+                  "
+                  label="Nouvelle consultation"
+                  styleClass="hero-btn-primary"
                   size="small"
-                  pTooltip="Voir détails"
-                />
+                >
+                  <ng-template pTemplate="icon">
+                    <i class="fa-solid fa-stethoscope"></i>
+                  </ng-template>
+                </p-button>
               </td>
             </tr>
           </ng-template>

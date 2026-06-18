@@ -384,18 +384,11 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
   }
 
   formatDate(iso: string) {
-    const d = new Date(iso);
-    return d.toLocaleDateString('fr-FR', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    });
+    return this.commonService.formatDateLocaleDateString(iso);
   }
 
   formatHeure(iso: string) {
-    const d = new Date(iso);
-    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+    return this.commonService.formatHeure(iso);
   }
 
   hasError(name: string) {

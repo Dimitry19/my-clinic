@@ -26,14 +26,6 @@ export interface Patient {
   statut?: StatutPatient;
 }
 
-export interface Consultation {
-  id: string;
-  date: Date;
-  medecin: string;
-  motif: string;
-  diagnostic: string;
-  statut: string;
-}
 export interface ExamenLabo {
   id: string;
   date: Date;
