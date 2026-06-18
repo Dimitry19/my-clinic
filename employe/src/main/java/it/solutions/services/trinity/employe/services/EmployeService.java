@@ -2,14 +2,16 @@ package it.solutions.services.trinity.employe.services;
 
 import it.solutions.services.trinity.core.shared.enums.Departement;
 import it.solutions.services.trinity.core.shared.enums.StatutEmploye;
+import it.solutions.services.trinity.core.shared.events.employe.EmployeStatusChangedEvent;
 import it.solutions.services.trinity.employe.dao.EmployeDao;
-import it.solutions.services.trinity.employe.dto.EmployeDto;
+import it.solutions.services.trinity.contracts.dto.EmployeDto;
 import it.solutions.services.trinity.employe.entities.Employe;
 import it.solutions.services.trinity.employe.helpers.EmployeHelper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +29,7 @@ public class EmployeService {
 
     private final EmployeDao dao;
     private final EmployeHelper helper;
+    private final ApplicationEventPublisher publisher;
 
     @Transactional(readOnly = true)
     @Cacheable(value = "employes", key = "#id")
@@ -99,8 +102,17 @@ public class EmployeService {
     @CacheEvict(value = "employes", key = "#id")
     public EmployeDto.Response changeStatus(UUID id, EmployeDto.StatusRequest statutEmploye) {
         Employe employe = helper.findEmployeOrThrow(id);
-        employe.setActif(StatutEmploye.ACTIF.name().equals(statutEmploye.getStatut()));
-        return helper.toResponse(dao.save(employe));
+        boolean actif = StatutEmploye.ACTIF.name().equals(statutEmploye.getStatut());
+
+        employe.setActif(actif);
+        Employe saved = dao.save(employe);
+        // Publie l'événement — employe ne sait pas qui (ni même si quelqu'un) écoute
+        publisher.publishEvent(new EmployeStatusChangedEvent(
+                saved.getId(),
+                saved.getUtilisateur().getId(),
+                actif
+        ));
+        return helper.toResponse(saved);
     }
 
     @Transactional

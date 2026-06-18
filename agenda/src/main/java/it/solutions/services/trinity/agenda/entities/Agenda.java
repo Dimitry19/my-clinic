@@ -4,14 +4,11 @@ package it.solutions.services.trinity.agenda.entities;
 import it.solutions.services.trinity.core.shared.entities.BaseEntity;
 import it.solutions.services.trinity.core.shared.entities.UserLight;
 import it.solutions.services.trinity.core.shared.enums.StatutRendezVous;
-import it.solutions.services.trinity.patient.entities.Patient;
-import it.solutions.services.trinity.patient.entities.PatientLight;
+import it.solutions.services.trinity.contracts.entities.PatientLight;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "rendez_vous")

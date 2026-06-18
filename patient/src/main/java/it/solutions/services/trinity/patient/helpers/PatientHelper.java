@@ -1,17 +1,8 @@
 package it.solutions.services.trinity.patient.helpers;
 
-import it.solutions.services.trinity.core.shared.dao.UserDao;
-import it.solutions.services.trinity.core.shared.entities.User;
-import it.solutions.services.trinity.core.shared.utils.GenericUtils;
-import it.solutions.services.trinity.patient.dao.ConsultationDao;
-import it.solutions.services.trinity.patient.dao.PatientDao;
-import it.solutions.services.trinity.patient.dto.ConsultationDto;
-import it.solutions.services.trinity.patient.dto.PatientDto;
-import it.solutions.services.trinity.patient.entities.Consultation;
+import it.solutions.services.trinity.contracts.dto.PatientDto;
 import it.solutions.services.trinity.patient.entities.Patient;
-import it.solutions.services.trinity.patient.entities.PatientLight;
 import it.solutions.services.trinity.patient.validations.PatientValidator;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -24,15 +15,9 @@ import java.util.UUID;
 public class PatientHelper {
 
 
-    private final ConsultationDao dao;
-    private final UserDao userDao;
-    private final PatientDao patientDao;
     private final PatientValidator patientValidator;
 
 
-    public void checkMedecin(UUID medecinId){
-        userDao.findById(medecinId).orElseThrow(()-> new EntityNotFoundException("Médecin introuvable"));
-    }
 
     public void checkPatient(UUID patientId){
         patientValidator.existsPatient(patientId);

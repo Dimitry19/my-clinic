@@ -1,7 +1,7 @@
 package it.solutions.services.trinity.patient.services;
 
 import it.solutions.services.trinity.patient.dao.PatientDao;
-import it.solutions.services.trinity.patient.dto.PatientDto;
+import it.solutions.services.trinity.contracts.dto.PatientDto;
 import it.solutions.services.trinity.patient.entities.Patient;
 import it.solutions.services.trinity.patient.helpers.PatientHelper;
 import it.solutions.services.trinity.patient.validations.PatientValidator;
@@ -11,8 +11,7 @@ import org.springframework.cache.annotation.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDate;
-import java.time.Period;
+
 import java.util.UUID;
 
 @Service

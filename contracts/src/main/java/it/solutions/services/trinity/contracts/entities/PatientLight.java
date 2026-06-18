@@ -1,15 +1,13 @@
-package it.solutions.services.trinity.patient.entities;
+package it.solutions.services.trinity.contracts.entities;
 
 import it.solutions.services.trinity.core.shared.entities.BaseEntity;
-import it.solutions.services.trinity.core.shared.enums.Genre;
-import it.solutions.services.trinity.core.shared.enums.GroupeSanguin;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.Immutable;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity

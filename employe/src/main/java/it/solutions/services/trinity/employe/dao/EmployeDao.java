@@ -1,6 +1,7 @@
 package it.solutions.services.trinity.employe.dao;
 
 
+ import it.solutions.services.trinity.core.shared.entities.User;
  import it.solutions.services.trinity.core.shared.enums.Departement;
  import it.solutions.services.trinity.employe.entities.Employe;
 import org.springframework.data.domain.Page;
@@ -30,12 +31,8 @@ public interface EmployeDao extends JpaRepository<Employe, UUID> {
             @Param("departement") String departement,
             Pageable pageable);
 
-    Page<Employe> findEmployesByDepartement(Departement departement, Pageable pageable);
 
-
-
-    Page<Employe> findByNomContainingIgnoreCaseOrPrenomContainingIgnoreCase(
-            String nom, String prenom, Pageable pageable);
+    Optional<Employe> findEmployeByUtilisateur(User utilisateur);
 
     boolean existsByEmailAndIdNot(String email, UUID id);
 

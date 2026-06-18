@@ -1,12 +1,12 @@
 package it.solutions.services.trinity.agenda.helpers;
 
+import it.solutions.services.trinity.contracts.dto.EmployeDto;
+import it.solutions.services.trinity.contracts.port.EmployeLookupPort;
+import it.solutions.services.trinity.contracts.port.PatientLookupPort;
 import it.solutions.services.trinity.core.shared.dao.UserDao;
 import it.solutions.services.trinity.core.shared.entities.User;
 import it.solutions.services.trinity.core.shared.entities.UserLight;
-import it.solutions.services.trinity.employe.dao.EmployeDao;
-import it.solutions.services.trinity.employe.entities.Employe;
-import it.solutions.services.trinity.patient.dao.PatientDao;
-import it.solutions.services.trinity.patient.entities.PatientLight;
+import it.solutions.services.trinity.contracts.entities.PatientLight;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,20 +18,20 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AgendaHelper {
 
-    private final PatientDao patientDao;
     private final UserDao userDao;
-    private final EmployeDao employeDao;
+    private final PatientLookupPort patientLookupPort;
+    private final EmployeLookupPort employeLookupPort;
 
 
     public PatientLight findPatientLight(UUID patientId){
-         return patientDao.findPatientLight(patientId).orElseThrow(() -> new EntityNotFoundException("Patient introuvable " ));
+         return patientLookupPort.findPatientLight(patientId);
 
     }
     public UserLight findUserLight(UUID medecinId, boolean isEdit){
         UUID utilisateurId=medecinId;
         if(!isEdit){
-            Employe employe=employeDao.findById(medecinId).orElseThrow(() -> new EntityNotFoundException("Employé introuvable " ));
-            utilisateurId=employe.getUtilisateur().getId();
+            EmployeDto.Response employe=employeLookupPort.findById(medecinId);
+            utilisateurId=employe.getId();
         }
 
          return userDao.findUserLight(utilisateurId).orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable " ));

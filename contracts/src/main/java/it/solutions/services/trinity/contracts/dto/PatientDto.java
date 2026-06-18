@@ -1,14 +1,20 @@
-package it.solutions.services.trinity.patient.dto;
+package it.solutions.services.trinity.contracts.dto;
 
 
 import it.solutions.services.trinity.core.shared.enums.Genre;
 import it.solutions.services.trinity.core.shared.enums.GroupeSanguin;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 import java.util.UUID;
-import lombok.*;
 
 public class PatientDto {
 

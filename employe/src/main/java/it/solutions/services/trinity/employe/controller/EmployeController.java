@@ -4,7 +4,7 @@ import it.solutions.services.trinity.core.shared.api.ApiResponse;
 
 import it.solutions.services.trinity.core.shared.enums.Departement;
 import it.solutions.services.trinity.employe.dto.CongeDto;
-import it.solutions.services.trinity.employe.dto.EmployeDto;
+import it.solutions.services.trinity.contracts.dto.EmployeDto;
 import it.solutions.services.trinity.employe.dto.FicheDePaieDto;
 import it.solutions.services.trinity.employe.services.CongeService;
 import it.solutions.services.trinity.employe.services.EmployeService;

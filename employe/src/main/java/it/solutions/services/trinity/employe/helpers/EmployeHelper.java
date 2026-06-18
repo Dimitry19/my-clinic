@@ -2,11 +2,10 @@ package it.solutions.services.trinity.employe.helpers;
 
 import it.solutions.services.trinity.core.security.services.UserService;
 import it.solutions.services.trinity.core.shared.entities.User;
-import it.solutions.services.trinity.core.shared.entities.UserLight;
 import it.solutions.services.trinity.core.shared.enums.StatutEmploye;
 import it.solutions.services.trinity.core.shared.utils.GenericUtils;
 import it.solutions.services.trinity.employe.dao.EmployeDao;
-import it.solutions.services.trinity.employe.dto.EmployeDto;
+import it.solutions.services.trinity.contracts.dto.EmployeDto;
 import it.solutions.services.trinity.employe.entities.Employe;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -64,7 +63,7 @@ public class EmployeHelper {
                 .nom(GenericUtils.normalizeUpper(req.getNom()))
                 .prenom(GenericUtils.normalize(req.getPrenom()))
                 .poste(req.getPoste())
-                .departement(req.getDepartement())
+                //.departement(req.getDepartement())
                 .telephone(req.getTelephone())
                 .email(req.getEmail())
                 .dateEmbauche(req.getDateEmbauche())

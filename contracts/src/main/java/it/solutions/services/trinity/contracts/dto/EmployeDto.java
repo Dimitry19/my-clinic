@@ -1,7 +1,10 @@
-package it.solutions.services.trinity.employe.dto;
+package it.solutions.services.trinity.contracts.dto;
 
 
-import it.solutions.services.trinity.core.shared.enums.*;
+import it.solutions.services.trinity.core.shared.enums.Departement;
+import it.solutions.services.trinity.core.shared.enums.Role;
+import it.solutions.services.trinity.core.shared.enums.StatutEmploye;
+import it.solutions.services.trinity.core.shared.enums.TypeContrat;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;
@@ -23,6 +26,7 @@ public class EmployeDto {
     public static class StatusRequest {
         private String statut;
     }
+
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class Request {
         @NotBlank(message = "Le nom est obligatoire")

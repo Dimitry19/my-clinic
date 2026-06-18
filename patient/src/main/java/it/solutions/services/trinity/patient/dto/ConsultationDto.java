@@ -12,7 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -24,16 +24,15 @@ public class ConsultationDto {
     @AllArgsConstructor
     public static class Request {
 
-        @NotBlank(message = "Id patient est obligatoire")
+        @NotNull(message = "Id patient est obligatoire")
         private UUID patientId;
 
-        @NotBlank(message = "Id médecin est obligatoire")
+        @NotNull(message = "Id médecin est obligatoire")
         private UUID medecinId;
 
-        @NotBlank(message = "Id rendez vous est obligatoire")
+        @NotNull(message = "Id rendez vous est obligatoire")
         private UUID rendezVousId;
 
-        @NotNull(message = "Date et heures sont obligatoires")
         private LocalDateTime dateHeure;
 
         @Enumerated(value = EnumType.STRING)

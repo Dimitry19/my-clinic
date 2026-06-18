@@ -30,9 +30,6 @@ public class Consultation extends BaseEntity {
     @Column(nullable = false)
     private UUID rendezVousId;
 
-    @Column(nullable = false)
-    private LocalDateTime dateHeure;
-
     @Enumerated(value = EnumType.STRING)
     @Column(nullable = false)
     private TypeConsultation type;

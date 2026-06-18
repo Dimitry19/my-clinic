@@ -8,12 +8,14 @@ import it.solutions.services.trinity.core.shared.entities.User;
 import it.solutions.services.trinity.core.shared.entities.UserLight;
 import it.solutions.services.trinity.core.shared.enums.Role;
 import it.solutions.services.trinity.core.shared.enums.StatutRendezVous;
+import it.solutions.services.trinity.core.shared.events.agenda.AgendaStatusChangedEvent;
 import it.solutions.services.trinity.core.shared.utils.GenericUtils;
-import it.solutions.services.trinity.patient.entities.PatientLight;
+import it.solutions.services.trinity.contracts.entities.PatientLight;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
@@ -27,6 +29,7 @@ public class AgendaService {
 
     private final AgendaDao dao;
     private final AgendaHelper helper;
+    private ApplicationEventPublisher publisher;
 
 
     public List<AgendaDto.Response> findAgendaByPeriode(String  email, int annee, int mois){
@@ -90,6 +93,10 @@ public class AgendaService {
         Agenda agenda = dao.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Agenda introuvable : " + id));
         agenda.setStatut(statut.getStatut());
+        publisher.publishEvent(new AgendaStatusChangedEvent(
+                agenda.getId(),
+                statut.getStatut()
+        ));
         return toResponse(dao.save(agenda));
     }
 
@@ -98,6 +105,28 @@ public class AgendaService {
     public void delete(UUID id) {
         if (!dao.existsById(id)) throw new EntityNotFoundException("Agenda introuvable : " + id);
         dao.deleteById(id);
+    }
+
+    @Transactional
+    public void marquerRendezVousAReassigner(UUID medecinId) {
+        List<Agenda> agendas = dao.findAllByMedecinAndDateHeureAfterAndStatutNotIn(
+                medecinId,
+                LocalDateTime.now(),
+                List.of(StatutRendezVous.ANNULE, StatutRendezVous.TERMINE)
+        );
+
+        if (agendas.isEmpty()) {
+            return;
+        }
+
+        agendas.forEach(a -> a.setStatut(StatutRendezVous.A_REASSIGNER));
+        dao.saveAll(agendas);
+
+        agendas.forEach(a -> publisher.publishEvent(new AgendaStatusChangedEvent(
+                a.getId(),
+                StatutRendezVous.A_REASSIGNER
+        )));
+
     }
 
 
@@ -121,4 +150,6 @@ public class AgendaService {
                 .statut(a.getStatut().name())
                 .build();
     }
+
+
 }

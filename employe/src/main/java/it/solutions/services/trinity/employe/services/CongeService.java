@@ -1,12 +1,12 @@
 package it.solutions.services.trinity.employe.services;
 
 
+import it.solutions.services.trinity.contracts.dto.EmployeDto;
 import it.solutions.services.trinity.core.security.services.UserService;
 import it.solutions.services.trinity.core.shared.entities.User;
 import it.solutions.services.trinity.employe.dao.CongeDao;
 import it.solutions.services.trinity.employe.dao.EmployeDao;
 import it.solutions.services.trinity.employe.dto.CongeDto;
-import it.solutions.services.trinity.employe.dto.EmployeDto;
 import it.solutions.services.trinity.employe.entities.Conge;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

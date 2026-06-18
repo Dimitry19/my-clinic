@@ -24,7 +24,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         "it.solutions.services.trinity.core.shared.entities",
         "it.solutions.services.trinity.patient.entities",
         "it.solutions.services.trinity.employe.entities",
-        "it.solutions.services.trinity.agenda.entities"
+        "it.solutions.services.trinity.agenda.entities",
+        "it.solutions.services.trinity.contracts.entities"
 })
 public class  TrinityApplication {
     static {

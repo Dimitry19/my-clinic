@@ -1,6 +1,7 @@
 package it.solutions.services.trinity.agenda.dao;
 
 import it.solutions.services.trinity.agenda.entities.Agenda;
+import it.solutions.services.trinity.core.shared.enums.StatutRendezVous;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,4 +37,7 @@ public interface AgendaDao extends JpaRepository<Agenda,UUID> {
     List<Agenda> findAgendaByPeriode( @Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 
 
+
+    List<Agenda> findAllByMedecinAndDateHeureAfterAndStatutNotIn(
+            UUID medecinId, LocalDateTime dateHeure, List<StatutRendezVous> statutsExclus);
 }
