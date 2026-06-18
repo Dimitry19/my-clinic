@@ -1,9 +1,9 @@
 package it.solutions.services.trinity.agenda.services;
 
 import it.solutions.services.trinity.agenda.dao.AgendaDao;
-import it.solutions.services.trinity.agenda.dto.AgendaDto;
 import it.solutions.services.trinity.agenda.entities.Agenda;
 import it.solutions.services.trinity.agenda.helpers.AgendaHelper;
+import it.solutions.services.trinity.contracts.dto.AgendaDto;
 import it.solutions.services.trinity.core.shared.entities.User;
 import it.solutions.services.trinity.core.shared.entities.UserLight;
 import it.solutions.services.trinity.core.shared.enums.Role;
@@ -38,9 +38,9 @@ public class AgendaService {
         LocalDateTime fin = debut.plusMonths(1);
 
         if(user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.SUPER_ADMIN)){
-            return dao.findAgendaByPeriode(debut, fin).stream().map(this::toResponse).toList();
+            return dao.findAgendaByPeriode(debut, fin).stream().map(helper::toResponse).toList();
         }
-        return dao.findAgendaByDoctor(user.getId(),debut, fin).stream().map(this::toResponse).toList();
+        return dao.findAgendaByDoctor(user.getId(),debut, fin).stream().map(helper::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
@@ -48,7 +48,7 @@ public class AgendaService {
 
         LocalDateTime debut = LocalDate.of(annee, mois, 1).atStartOfDay().plusMonths(1);
         LocalDateTime fin = debut.plusMonths(1);
-        return dao.findAgendaByDoctorAndPatient(medecinId,patientId,debut, fin).stream().map(this::toResponse).toList();
+        return dao.findAgendaByDoctorAndPatient(medecinId,patientId,debut, fin).stream().map(helper::toResponse).toList();
     }
 
 
@@ -66,7 +66,7 @@ public class AgendaService {
                 .notes(req.getNotes())
                 .statut(StatutRendezVous.PLANIFIE)
                 .build();
-        return toResponse(dao.save(agenda));
+        return helper.toResponse(dao.save(agenda));
     }
 
 
@@ -84,7 +84,7 @@ public class AgendaService {
         agenda.setDureeMinutes(req.getDureeMinutes());
         agenda.setMotif(req.getMotif());
         agenda.setNotes(req.getNotes());
-        return toResponse(dao.save(agenda));
+        return helper.toResponse(dao.save(agenda));
     }
 
     @Transactional
@@ -97,7 +97,7 @@ public class AgendaService {
                 agenda.getId(),
                 statut.getStatut()
         ));
-        return toResponse(dao.save(agenda));
+        return helper.toResponse(dao.save(agenda));
     }
 
     @Transactional
@@ -109,47 +109,14 @@ public class AgendaService {
 
     @Transactional
     public void marquerRendezVousAReassigner(UUID medecinId) {
-        List<Agenda> agendas = dao.findAllByMedecinAndDateHeureAfterAndStatutNotIn(
-                medecinId,
-                LocalDateTime.now(),
-                List.of(StatutRendezVous.ANNULE, StatutRendezVous.TERMINE)
-        );
-
+        List<Agenda> agendas = dao.findAllByMedecinAndDateHeureAfterAndStatutNotIn(medecinId, LocalDateTime.now(), List.of(StatutRendezVous.ANNULE, StatutRendezVous.TERMINE));
         if (agendas.isEmpty()) {
             return;
         }
-
         agendas.forEach(a -> a.setStatut(StatutRendezVous.A_REASSIGNER));
         dao.saveAll(agendas);
 
-        agendas.forEach(a -> publisher.publishEvent(new AgendaStatusChangedEvent(
-                a.getId(),
-                StatutRendezVous.A_REASSIGNER
-        )));
-
+        agendas.forEach(a -> publisher.publishEvent(new AgendaStatusChangedEvent(a.getId(), StatutRendezVous.A_REASSIGNER)));
     }
-
-
-    private AgendaDto.Response toResponse(Agenda a) {
-
-        PatientLight p=a.getPatient();
-        UserLight m=a.getMedecin();
-        String nom = GenericUtils.normalizeUpper(m.getNom());
-        String prenom = GenericUtils.normalize(m.getPrenom());
-        return AgendaDto.Response.builder()
-                .id(a.getId())
-                .patientId(p.getId())
-                .patientNom(p.getNom())
-                .patientPrenom(p.getPrenom())
-                .medecinId(m.getId())
-                .medecinNom(GenericUtils.formatMedecinNom(nom,prenom))
-                .dateHeure(a.getDateHeure())
-                .dureeMinutes(a.getDureeMinutes())
-                .motif(a.getMotif())
-                .notes(a.getNotes())
-                .statut(a.getStatut().name())
-                .build();
-    }
-
 
 }

@@ -1,7 +1,7 @@
 package it.solutions.services.trinity.agenda.controller;
 
-import it.solutions.services.trinity.agenda.dto.AgendaDto;
 import it.solutions.services.trinity.agenda.services.AgendaService;
+import it.solutions.services.trinity.contracts.dto.AgendaDto;
 import it.solutions.services.trinity.core.security.services.CookieUtils;
 import it.solutions.services.trinity.core.security.services.JwtService;
 import it.solutions.services.trinity.core.shared.api.ApiResponse;
@@ -32,8 +32,8 @@ public class AgendaController {
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE')")
     public ResponseEntity<ApiResponse<List<AgendaDto.Response>>> findAgendaByPeriode(HttpServletRequest request,
-                                                                     @RequestParam  int annee,
-                                                                     @RequestParam int mois, @CookieValue(name = COOKIE_ACCESS_TOKEN, required = false) String accessToken) {
+                                                                                     @RequestParam  int annee,
+                                                                                     @RequestParam int mois, @CookieValue(name = COOKIE_ACCESS_TOKEN, required = false) String accessToken) {
         String access= StringUtils.isEmpty(accessToken)?cookieUtil.mixedExtractFromRequest(request,COOKIE_ACCESS_TOKEN):accessToken;
         return ResponseEntity.ok(ApiResponse.ok(service.findAgendaByPeriode(jwtService.extraireEmail(access),annee, mois)));
     }

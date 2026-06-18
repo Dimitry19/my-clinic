@@ -1,5 +1,4 @@
-package it.solutions.services.trinity.agenda.dto;
-
+package it.solutions.services.trinity.contracts.dto;
 
 
 import it.solutions.services.trinity.core.shared.enums.StatutRendezVous;
@@ -7,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 

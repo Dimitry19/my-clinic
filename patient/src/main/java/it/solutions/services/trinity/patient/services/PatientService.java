@@ -25,19 +25,19 @@ public class PatientService {
 
     @Cacheable(value = "patients", key = "#id")
     public PatientDto.Response findById(UUID id) {
-        return toResponse(dao.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Patient introuvable : " + id)));
+        return helper.toResponse(dao.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Patient introuvable ")));
     }
 
     public Page<PatientDto.Response> search(String query, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, SORT_BY_NOM);
         return dao.findByNomContainingIgnoreCaseOrPrenomContainingIgnoreCaseOrTelephoneContainingIgnoreCase(
-                query, query,query, pageable).map(this::toResponse);
+                query, query,query, pageable).map(helper::toResponse);
     }
 
     public Page<PatientDto.Response> findAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, SORT_BY_NOM);
-        return dao.findAll(pageable).map(this::toResponse);
+        return dao.findAll(pageable).map(helper::toResponse);
     }
 
     @Transactional
@@ -45,19 +45,19 @@ public class PatientService {
 
         validator.validatePhone(req.getTelephone());
         Patient patient = helper.builder(req);
-        return toResponse(dao.save(patient));
+        return helper.toResponse(dao.save(patient));
     }
 
     @Transactional
     @CacheEvict(value = "patients", key = "#id")
     public PatientDto.Response edit(UUID id, PatientDto.Request req) {
         Patient patient = dao.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Patient introuvable : " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Patient introuvable"));
 
 
         validator.validatePhone(id,req.getTelephone());
         helper.update(patient ,req);
-        return toResponse(dao.save(patient));
+        return helper.toResponse(dao.save(patient));
     }
 
     @Transactional
@@ -67,7 +67,5 @@ public class PatientService {
         dao.deleteById(id);
     }
 
-    private PatientDto.Response toResponse(Patient p) {
-        return helper.toResponse(p) ;
-    }
+
 }

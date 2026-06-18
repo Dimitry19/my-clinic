@@ -2,6 +2,7 @@ package it.solutions.services.trinity.patient.helpers;
 
 import it.solutions.services.trinity.contracts.dto.EmployeDto;
 import it.solutions.services.trinity.contracts.entities.PatientLight;
+import it.solutions.services.trinity.contracts.port.AgendaLookupPort;
 import it.solutions.services.trinity.contracts.port.EmployeLookupPort;
 import it.solutions.services.trinity.core.shared.dao.UserDao;
 import it.solutions.services.trinity.core.shared.entities.User;
@@ -27,6 +28,8 @@ public class ConsultationHelper {
     private final PatientDao patientDao;
     private final PatientValidator patientValidator;
     private final EmployeLookupPort employeLookupPort;
+    private final AgendaLookupPort agendaLookupPort;
+
 
 
     public EmployeDto.Response checkMedecin(UUID userId){
@@ -64,6 +67,8 @@ public class ConsultationHelper {
 
         User user=userDao.findById(c.getMedecinId()).orElseThrow(()-> new EntityNotFoundException("Médecin introuvable"));
 
+
+
         String nom = GenericUtils.normalizeUpper(user.getNom());
         String prenom = GenericUtils.normalize(user.getPrenom());
         return ConsultationDto.Response.builder()
@@ -74,7 +79,7 @@ public class ConsultationHelper {
                 .patientNom(patient.getNom())
                 .patientPrenom(patient.getPrenom())
                 .medecinNom(GenericUtils.formatMedecinNom(nom,prenom))
-                //.dateHeure(c.getDateHeure())
+                .dateHeure(agendaLookupPort.findById(c.getRendezVousId()).getDateHeure())
                 .type(c.getType().name())
                 .statut(c.getStatut().name())
                 .motif(c.getMotif())

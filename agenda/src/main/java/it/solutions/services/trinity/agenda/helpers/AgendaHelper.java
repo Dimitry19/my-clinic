@@ -1,5 +1,7 @@
 package it.solutions.services.trinity.agenda.helpers;
 
+import it.solutions.services.trinity.agenda.entities.Agenda;
+import it.solutions.services.trinity.contracts.dto.AgendaDto;
 import it.solutions.services.trinity.contracts.dto.EmployeDto;
 import it.solutions.services.trinity.contracts.port.EmployeLookupPort;
 import it.solutions.services.trinity.contracts.port.PatientLookupPort;
@@ -7,6 +9,7 @@ import it.solutions.services.trinity.core.shared.dao.UserDao;
 import it.solutions.services.trinity.core.shared.entities.User;
 import it.solutions.services.trinity.core.shared.entities.UserLight;
 import it.solutions.services.trinity.contracts.entities.PatientLight;
+import it.solutions.services.trinity.core.shared.utils.GenericUtils;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -40,5 +43,27 @@ public class AgendaHelper {
 
     public User findUserByEmail(String  email){
         return userDao.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable " ));
+    }
+
+
+    public AgendaDto.Response toResponse(Agenda a) {
+
+        PatientLight p=a.getPatient();
+        UserLight m=a.getMedecin();
+        String nom = GenericUtils.normalizeUpper(m.getNom());
+        String prenom = GenericUtils.normalize(m.getPrenom());
+        return AgendaDto.Response.builder()
+                .id(a.getId())
+                .patientId(p.getId())
+                .patientNom(p.getNom())
+                .patientPrenom(p.getPrenom())
+                .medecinId(m.getId())
+                .medecinNom(GenericUtils.formatMedecinNom(nom,prenom))
+                .dateHeure(a.getDateHeure())
+                .dureeMinutes(a.getDureeMinutes())
+                .motif(a.getMotif())
+                .notes(a.getNotes())
+                .statut(a.getStatut().name())
+                .build();
     }
 }

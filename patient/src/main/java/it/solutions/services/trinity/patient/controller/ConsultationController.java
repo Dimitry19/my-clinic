@@ -21,7 +21,7 @@ import java.util.UUID;
 public class ConsultationController {
 
     private final PatientService patientService;
-    private final ConsultationService consultationService;
+    private final ConsultationService service;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE')")
@@ -29,6 +29,15 @@ public class ConsultationController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(ApiResponse.ok(patientService.findAll(page, size)));
+    }
+
+    @GetMapping("/patient/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER')")
+    public ResponseEntity<ApiResponse<Page<ConsultationDto.Response>>> findAllByPatient(
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(ApiResponse.ok(service.findAllByPatient(id, page, size)));
     }
 
     @GetMapping("/search")
@@ -49,7 +58,7 @@ public class ConsultationController {
     @PostMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN')")
     public ResponseEntity<ApiResponse<ConsultationDto.Response>> createConsultation(@Valid @RequestBody ConsultationDto.Request req) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Consultation créée", consultationService.create(req)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Consultation créée", service.create(req)));
     }
 
     @PutMapping("/{id}")

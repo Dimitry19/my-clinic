@@ -2,12 +2,17 @@ package it.solutions.services.trinity.patient.services;
 
 
 import it.solutions.services.trinity.contracts.dto.EmployeDto;
+import it.solutions.services.trinity.contracts.dto.PatientDto;
 import it.solutions.services.trinity.core.shared.enums.StatutConsultation;
 import it.solutions.services.trinity.patient.dao.ConsultationDao;
 import it.solutions.services.trinity.patient.dto.ConsultationDto;
 import it.solutions.services.trinity.patient.entities.Consultation;
 import it.solutions.services.trinity.patient.helpers.ConsultationHelper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,7 +21,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class ConsultationService {
-
+    private static final Sort SORT_BY_STATUT = Sort.by("statut").ascending();
     private final ConsultationDao dao;
     private final ConsultationHelper helper;
 
@@ -26,8 +31,17 @@ public class ConsultationService {
         helper.checkPatient(req.getPatientId());
         req.setMedecinId(emp.getUtilisateurId());
         Consultation consultation = helper.builder(req);
-        return toResponse(dao.save(consultation));
+        return helper.toResponse(dao.save(consultation));
     }
+
+
+
+    public Page<ConsultationDto.Response> findAllByPatient(UUID id, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, SORT_BY_STATUT);
+        return dao.findConsultationsByPatientId(
+                id, pageable).map(helper::toResponse);
+    }
+
 
     public void marquerConsultationAPlanifier(UUID rendezVousId) {
 
@@ -40,7 +54,7 @@ public class ConsultationService {
     }
 
 
-    private ConsultationDto.Response toResponse(Consultation c) {
-        return  helper.toResponse(c);
-    }
+
+
+
 }
