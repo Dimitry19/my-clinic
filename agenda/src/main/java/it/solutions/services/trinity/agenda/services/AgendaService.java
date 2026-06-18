@@ -29,7 +29,7 @@ public class AgendaService {
 
     private final AgendaDao dao;
     private final AgendaHelper helper;
-    private ApplicationEventPublisher publisher;
+    private final ApplicationEventPublisher publisher;
 
 
     public List<AgendaDto.Response> findAgendaByPeriode(String  email, int annee, int mois){
