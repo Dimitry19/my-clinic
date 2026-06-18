@@ -23,6 +23,7 @@
         <module>patient</module>
         <module>employe</module>
         <module>agenda</module>
+        <module>contracts</module>
         <module>services</module> <!-- toujours en dernier -->
     </modules>
 
