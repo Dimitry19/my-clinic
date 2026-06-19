@@ -8,5 +8,5 @@ import java.util.UUID;
 public interface EmployeLookupPort {
 
     EmployeDto.Response findById(UUID medecinId);
-    EmployeDto.Response findEmployeByUtilisateur(UUID medecinId);
+    EmployeDto.Response findEmployeByUtilisateur(UUID userId);
 }

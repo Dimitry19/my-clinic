@@ -5,25 +5,32 @@ import it.solutions.services.trinity.contracts.dto.AgendaDto;
 import it.solutions.services.trinity.contracts.dto.EmployeDto;
 import it.solutions.services.trinity.contracts.port.EmployeLookupPort;
 import it.solutions.services.trinity.contracts.port.PatientLookupPort;
+import it.solutions.services.trinity.core.exception.ValidationException;
+import it.solutions.services.trinity.core.helpers.CoreHelper;
 import it.solutions.services.trinity.core.shared.dao.UserDao;
 import it.solutions.services.trinity.core.shared.entities.User;
 import it.solutions.services.trinity.core.shared.entities.UserLight;
 import it.solutions.services.trinity.contracts.entities.PatientLight;
 import it.solutions.services.trinity.core.shared.utils.GenericUtils;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Component
-@RequiredArgsConstructor
-public class AgendaHelper {
+public class AgendaHelper extends CoreHelper {
 
-    private final UserDao userDao;
+
     private final PatientLookupPort patientLookupPort;
     private final EmployeLookupPort employeLookupPort;
+
+    public AgendaHelper(UserDao userDao, PatientLookupPort patientLookupPort, EmployeLookupPort employeLookupPort) {
+        super(userDao);
+        this.patientLookupPort = patientLookupPort;
+        this.employeLookupPort = employeLookupPort;
+    }
 
 
     public PatientLight findPatientLight(UUID patientId){
@@ -34,16 +41,21 @@ public class AgendaHelper {
         UUID utilisateurId=medecinId;
         if(!isEdit){
             EmployeDto.Response employe=employeLookupPort.findById(medecinId);
-            utilisateurId=employe.getId();
+            utilisateurId=employe.getUtilisateurId();
         }
 
          return userDao.findUserLight(utilisateurId).orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable " ));
 
     }
 
-    public User findUserByEmail(String  email){
-        return userDao.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable " ));
+
+    public void validDate(LocalDateTime dateHeure){
+        if(!GenericUtils.isFutureDate(dateHeure)){
+            throw new ValidationException("Impossible de créer un rendez-vous avec une date antérieure à la date actuelle" );
+        }
     }
+
+
 
 
     public AgendaDto.Response toResponse(Agenda a) {

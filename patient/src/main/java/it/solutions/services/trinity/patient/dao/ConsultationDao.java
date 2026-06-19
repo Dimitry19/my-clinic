@@ -15,5 +15,7 @@ public interface ConsultationDao extends JpaRepository<Consultation, UUID> {
 
     List<Consultation> findAllByRendezVousIdAndStatutNotIn(UUID rendezVousId,  List<StatutConsultation> statut);
 
+    Page<Consultation> findConsultationsByMedecinIdAndStatutIs(UUID medecinId,StatutConsultation statutConsultation, Pageable pageable);
+    Page<Consultation> findConsultationsByStatutIs(StatutConsultation statutConsultation, Pageable pageable);
     Page<Consultation> findConsultationsByPatientId(UUID patientId, Pageable pageable);
 }

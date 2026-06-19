@@ -58,4 +58,12 @@ public interface EmployeDao extends JpaRepository<Employe, UUID> {
             "AND e.departement = :departement")
     Page<Employe> findByNomOrPrenomOrEmailAndDepartementFetchUser(
             @Param("query") String query, @Param("departement") String departement, Pageable pageable);
+
+    @Query("SELECT e FROM Employe e JOIN FETCH e.utilisateur WHERE " +
+            "(LOWER(e.nom) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            " LOWER(e.prenom) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            " LOWER(e.email) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+            "AND e.departement in ('MEDECINE','CHIRURGIE','INFIRMERIE') and e.utilisateur.role in ('MEDECIN','INFIRMIER')")
+    Page<Employe> findByNomOrPrenomOrEmailFetchUserMedecin(
+            @Param("query") String query,  Pageable pageable);
 }

@@ -23,18 +23,21 @@ public class PatientService {
     private final PatientDao dao;
     private final PatientHelper helper;
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "patients", key = "#id")
     public PatientDto.Response findById(UUID id) {
         return helper.toResponse(dao.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Patient introuvable ")));
     }
 
+    @Transactional(readOnly = true)
     public Page<PatientDto.Response> search(String query, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, SORT_BY_NOM);
         return dao.findByNomContainingIgnoreCaseOrPrenomContainingIgnoreCaseOrTelephoneContainingIgnoreCase(
                 query, query,query, pageable).map(helper::toResponse);
     }
 
+    @Transactional(readOnly = true)
     public Page<PatientDto.Response> findAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, SORT_BY_NOM);
         return dao.findAll(pageable).map(helper::toResponse);

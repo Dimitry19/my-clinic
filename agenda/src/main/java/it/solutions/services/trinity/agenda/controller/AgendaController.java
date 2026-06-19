@@ -25,17 +25,16 @@ import static it.solutions.services.trinity.core.shared.Constants.COOKIE_ACCESS_
 public class AgendaController {
 
     private final AgendaService service;
-    private final CookieUtils cookieUtil;
     private final JwtService jwtService;
 
 
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE')")
-    public ResponseEntity<ApiResponse<List<AgendaDto.Response>>> findAgendaByPeriode(HttpServletRequest request,
+    public ResponseEntity<ApiResponse<List<AgendaDto.Response>>> findAgendaByPeriode(
                                                                                      @RequestParam  int annee,
-                                                                                     @RequestParam int mois, @CookieValue(name = COOKIE_ACCESS_TOKEN, required = false) String accessToken) {
-        String access= StringUtils.isEmpty(accessToken)?cookieUtil.mixedExtractFromRequest(request,COOKIE_ACCESS_TOKEN):accessToken;
-        return ResponseEntity.ok(ApiResponse.ok(service.findAgendaByPeriode(jwtService.extraireEmail(access),annee, mois)));
+                                                                                     @RequestParam int mois, @CookieValue(name = COOKIE_ACCESS_TOKEN) String accessToken) {
+
+        return ResponseEntity.ok(ApiResponse.ok(service.findAgendaByPeriode(jwtService.extraireEmail(accessToken),annee, mois)));
     }
 
 

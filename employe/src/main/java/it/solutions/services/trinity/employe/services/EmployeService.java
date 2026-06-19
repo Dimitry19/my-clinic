@@ -55,6 +55,13 @@ public class EmployeService {
     }
 
     @Transactional(readOnly = true)
+    public Page<EmployeDto.Response> searchMedecin(String query, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, SORT_BY_NOM);
+
+        return dao.findByNomOrPrenomOrEmailFetchUserMedecin(query, pageable).map(helper::toResponse);
+    }
+
+    @Transactional(readOnly = true)
     public Page<EmployeDto.Response> findEmployesByDepartement(Departement departement, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, SORT_BY_NOM);
         if (departement == null) {

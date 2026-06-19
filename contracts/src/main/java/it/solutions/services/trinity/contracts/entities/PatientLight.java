@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.Immutable;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -24,11 +25,12 @@ public class PatientLight extends BaseEntity {
     public PatientLight(
             UUID id,
             String nom,
-            String prenom
+            String prenom,LocalDate dateNaissance
     ) {
         this.setId(id);
         this.nom = nom;
         this.prenom = prenom;
+        this.dateNaissance = dateNaissance;
     }
 
     @NotBlank @Column(nullable = false)
@@ -37,5 +39,7 @@ public class PatientLight extends BaseEntity {
     @NotBlank
     @Column(nullable = false)
     private String prenom;
+    @Column(nullable = false)
+    private LocalDate dateNaissance;
 
 }

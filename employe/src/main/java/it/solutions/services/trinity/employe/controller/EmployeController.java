@@ -47,6 +47,15 @@ public class EmployeController {
         return ResponseEntity.ok(ApiResponse.ok(service.search(q,departement, page, size)));
     }
 
+    @GetMapping("/search/medecin")
+    @PreAuthorize("hasAnyRole('ADMIN','MEDECIN')")
+    public ResponseEntity<ApiResponse<Page<EmployeDto.Response>>> searchMedecin(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(ApiResponse.ok(service.searchMedecin(q, page, size)));
+    }
+
 
     @GetMapping("/departement")
     @PreAuthorize("hasAnyRole('ADMIN','MEDECIN')")

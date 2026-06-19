@@ -24,7 +24,7 @@ public interface PatientDao extends JpaRepository<Patient, UUID> {
     boolean existsByTelephoneAndIdNot(String telephone, UUID id);
 
     @Query("""
-            SELECT new it.solutions.services.trinity.contracts.entities.PatientLight(p.id,p.nom,p.prenom )
+            SELECT new it.solutions.services.trinity.contracts.entities.PatientLight(p.id,p.nom,p.prenom, p.dateNaissance )
             FROM Patient p
             WHERE p.id = :id
             """)

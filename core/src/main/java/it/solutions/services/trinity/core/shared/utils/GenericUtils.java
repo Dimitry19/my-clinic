@@ -1,5 +1,6 @@
 package it.solutions.services.trinity.core.shared.utils;
 
+import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
 public class GenericUtils {
@@ -19,5 +20,10 @@ public class GenericUtils {
     public static String normalizeUpper(String value) {
         String v = normalize(value);
         return v == null ? null : v.toUpperCase();
+    }
+
+    public static boolean isFutureDate(LocalDateTime dateHeure){
+        return  !dateHeure.isBefore(LocalDateTime.now());
+
     }
 }

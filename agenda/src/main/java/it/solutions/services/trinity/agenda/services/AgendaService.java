@@ -32,15 +32,21 @@ public class AgendaService {
     private final ApplicationEventPublisher publisher;
 
 
-    public List<AgendaDto.Response> findAgendaByPeriode(String  email, int annee, int mois){
-        User user=helper.findUserByEmail(email);
-        LocalDateTime debut = LocalDate.of(annee, mois, 1).atStartOfDay().plusMonths(1);
-        LocalDateTime fin = debut.plusMonths(1);
+    public List<AgendaDto.Response> findAgendaToday(String email) {
+        return findAgendaByPlage(
+                helper.findUserByEmail(email),
+                LocalDate.now().atStartOfDay(),
+                LocalDate.now().plusDays(1).atStartOfDay()
+        );
+    }
 
-        if(user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.SUPER_ADMIN)){
-            return dao.findAgendaByPeriode(debut, fin).stream().map(helper::toResponse).toList();
-        }
-        return dao.findAgendaByDoctor(user.getId(),debut, fin).stream().map(helper::toResponse).toList();
+    public List<AgendaDto.Response> findAgendaByPeriode(String email, int annee, int mois) {
+        LocalDateTime debut = LocalDate.of(annee, mois, 1).atStartOfDay().plusMonths(1);
+        return findAgendaByPlage(
+                helper.findUserByEmail(email),
+                debut,
+                debut.plusMonths(1)
+        );
     }
 
     @Transactional(readOnly = true)
@@ -55,6 +61,7 @@ public class AgendaService {
     @Transactional
     public AgendaDto.Response create(AgendaDto.Request req) {
 
+        helper.validDate(req.getDateHeure());
         UserLight user=helper.findUserLight(req.getMedecinId(),false);
         PatientLight patient=helper.findPatientLight(req.getPatientId());
         Agenda agenda = Agenda.builder()
@@ -119,4 +126,12 @@ public class AgendaService {
         agendas.forEach(a -> publisher.publishEvent(new AgendaStatusChangedEvent(a.getId(), StatutRendezVous.A_REASSIGNER)));
     }
 
+    private List<AgendaDto.Response> findAgendaByPlage(User user, LocalDateTime debut, LocalDateTime fin) {
+        return (helper.isAdmin(user)
+                ? dao.findAgendaByPeriode(debut, fin)
+                : dao.findAgendaByDoctor(user.getId(), debut, fin))
+                .stream()
+                .map(helper::toResponse)
+                .toList();
+    }
 }

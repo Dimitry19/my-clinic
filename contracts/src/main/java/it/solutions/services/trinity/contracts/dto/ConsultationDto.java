@@ -1,4 +1,4 @@
-package it.solutions.services.trinity.patient.dto;
+package it.solutions.services.trinity.contracts.dto;
 
 import it.solutions.services.trinity.core.shared.enums.StatutConsultation;
 import it.solutions.services.trinity.core.shared.enums.TypeConsultation;
@@ -17,6 +17,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class ConsultationDto {
+
+
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    public static class StatusRequest {
+        private StatutConsultation statut;
+    }
 
     @Data
     @Builder
@@ -61,6 +67,7 @@ public class ConsultationDto {
         private UUID medecinId;
         private UUID rendezVousId;
         private String patientNom;
+        private String departement;
         private String patientPrenom;
         private String medecinNom;
         private LocalDateTime  dateHeure;
@@ -76,6 +83,7 @@ public class ConsultationDto {
         private BigDecimal taille;
         private String notes;
         private Integer dureeMinutes;
+        private Integer age;
     }
 
     public static class ResponseLight {

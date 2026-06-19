@@ -1,8 +1,14 @@
 package it.solutions.services.trinity.services.services;
 
+import it.solutions.services.trinity.agenda.services.AgendaService;
+import it.solutions.services.trinity.contracts.dto.AgendaDto;
+import it.solutions.services.trinity.core.shared.enums.StatutConsultation;
 import it.solutions.services.trinity.core.shared.enums.StatutRendezVous;
+import it.solutions.services.trinity.patient.services.ConsultationService;
 import it.solutions.services.trinity.services.controllers.out.RendezVous;
 import it.solutions.services.trinity.services.controllers.out.StatDashboard;
+import jakarta.validation.constraints.NotNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -11,41 +17,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class DashboardService {
 
-    public StatDashboard stats(){
+    private final AgendaService agendaService;
+    private final ConsultationService consultationService;
 
+    public StatDashboard stats(@NotNull String email){
+
+        long consultationsTerminees=consultationService.findAllByStatusAndDoctor(email,StatutConsultation.TERMINEE, 0,10).getTotalElements();
+        int rdvRestants=agendaService.findAgendaToday(email).size();
         return StatDashboard.builder()
                 .patientsAujourdhui(5)
-                .consultationsTerminees(3)
+                .consultationsTerminees(consultationsTerminees)
                 .enAttente(2)
-                .rdvRestants(6).build();
+                .rdvRestants(rdvRestants).build();
 
     }
 
-    public List<RendezVous> rendezVous(){
-
-        List<RendezVous> rendezVous=new ArrayList<>();
-
-        rendezVous.add(RendezVous.builder()
-                .id("5b1227a1-ee78-45c1-859e-71b32d4b9045")
-                .motif("Visite mensuelle")
-                .dateHeure(LocalDateTime.now())
-                .dureeMinutes("45")
-                .patientNom("GENNESIS")
-                .patientPrenom("Lucie-Rachel")
-                .statut(StatutRendezVous.CONFIRME)
-                .medecinNom("Kaizer Franck").build());
-        rendezVous.add(RendezVous.builder()
-                .id("e81e6f73-b8e7-43b8-917a-b2788ba5596c")
-                .motif("Visite de controle")
-                .dateHeure(LocalDateTime.now())
-                .dureeMinutes("45")
-                .patientNom("KAMDEM")
-                .patientPrenom("Gerard")
-                .statut(StatutRendezVous.PLANIFIE)
-                .medecinNom("Kaizer Franck").build());
-        return rendezVous;
+    public List<AgendaDto.Response> rendezVous(@NotNull String email){
+        return agendaService.findAgendaToday(email);
     }
 
     public List<Integer> chart() {

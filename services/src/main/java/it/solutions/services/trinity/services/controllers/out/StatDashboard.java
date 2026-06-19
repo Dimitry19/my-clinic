@@ -13,6 +13,6 @@ public class StatDashboard {
     private int patientsAujourdhui;
     private int enAttente;
     private int rdvRestants;
-    private int consultationsTerminees;
+    private long consultationsTerminees;
 
 }
