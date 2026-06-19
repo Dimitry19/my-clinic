@@ -12,6 +12,9 @@ import { AvatarModule } from 'primeng/avatar';
 import { DividerModule } from 'primeng/divider';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { DialogModule } from 'primeng/dialog';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import type { ButtonSeverity } from 'primeng/button';
 
 import { PatientService } from '../../../../core/services/patient/patient.service';
 
@@ -31,7 +34,12 @@ import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { Page, ServiceError } from '../../../../core/models/all/all.model';
 import { ConsultationService } from '../../../../core/services/patient/consultation.service';
 import { Configuration } from '../../../../core/models/configuration/configuration.model';
-import { Consultation } from '../../../../core/models/patient/consultation.model';
+import {
+  CONS_STATUT_CONFIG,
+  Consultation,
+  StatutConsultation,
+} from '../../../../core/models/patient/consultation.model';
+import { AppConfirmationService } from '../../../../core/services/global/app.confirmation.service';
 
 @Component({
   selector: 'clnt-patient-detail',
@@ -50,8 +58,10 @@ import { Consultation } from '../../../../core/models/patient/consultation.model
     DividerModule,
     ToastModule,
     TooltipModule,
+    DialogModule,
+    ConfirmDialogModule,
   ],
-  providers: [MessageService],
+  providers: [MessageService, AppConfirmationService],
   templateUrl: './patient-detail.component.html',
   styleUrls: ['./patient-detail.component.scss'],
 })
@@ -62,6 +72,7 @@ export class PatientDetailComponent implements OnInit {
   private commonService = inject(CommonService);
   private msgSvc = inject(MessageService);
   private router = inject(Router);
+  private confirmService = inject(AppConfirmationService);
 
   patient = signal<Patient | null>(null);
   loadError = signal<string | null>(null);
@@ -77,6 +88,23 @@ export class PatientDetailComponent implements OnInit {
   pageConsIndex = signal(0);
   consultations = signal<Consultation[]>([]);
   totalConsultations = computed(() => this.pageCons()?.page.totalElements ?? 0);
+
+  // ── Dialog Consultation ────────────────────────────────────────
+  showDetailConsultation = signal(false);
+
+  selectedRdv = signal<Consultation | null>(null);
+  saving = signal(false);
+  formError = signal<string | null>(null);
+
+  // ── Dialog détail Consultation─────────────────────────────────────
+  showDetail = signal(false);
+  detailConsultation = signal<Consultation | null>(null);
+
+  statutConsOptions = Object.entries(CONS_STATUT_CONFIG).map(([v, c]) => ({
+    label: c.label,
+    value: v,
+  }));
+  statutConsConfig = CONS_STATUT_CONFIG;
 
   examens = signal<ExamenLabo[]>([
     {
@@ -249,6 +277,29 @@ export class PatientDetailComponent implements OnInit {
     window.print();
   }
 
+  openConsultationDetails(cons: Consultation) {
+    /* 
+      this.formError.set(null);
+      this.form.patchValue({
+        patientId: rdv.patientId,
+        medecinId: rdv.medecinId,
+        patientNom: rdv.patientNom + ' ' + rdv.patientPrenom,
+        medecinNom: rdv.medecinNom,
+        dateHeure: rdv.dateHeure.slice(0, 16),
+        dureeMinutes: rdv.dureeMinutes,
+        motif: rdv.motif,
+        notes: rdv.notes ?? '',
+      });
+      */
+    this.detailConsultation.set(cons);
+    this.showDetailConsultation.set(true);
+    // this.showDialogConsultation.set(true);
+  }
+
+  editableConsultation(cons: Consultation): boolean {
+    if (!cons) return false;
+    return cons.statut === StatutConsultation.PLANIFIEE;
+  }
   private recuperationPatient(): void {
     const patientId = this.route.snapshot.paramMap.get('id')!;
     if (!patientId) {
@@ -284,21 +335,42 @@ export class PatientDetailComponent implements OnInit {
   }
 
   confirmDeleteConsultation(consultation: Consultation) {
-    /* this.confirmService.confirm({
-      message: `Supprimer la consulation du ${patient.prenom} ${patient.nom} ?`,
-      header: 'Confirmation',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.service.delete(patient.id).subscribe(() => {
-          this.messageService.add({
+    this.confirmService.action(
+      `Suppression de la consulation`,
+      `Supprimer la consulation du ${consultation.patientPrenom} ${consultation.patientNom} ?`,
+      () => {
+        this.consultationSvc.delete(consultation.id).subscribe(() => {
+          this.msgSvc.add({
             severity: 'success',
-            summary: 'Supprimé',
-            detail: 'Patient supprimé.',
+            summary: 'Supprimée',
+            detail: 'consulation supprimée.',
           });
-          this.pageConsIndex(0, this.searchQuery);
+          this.loadConsultations(0);
         });
       },
-    });*/
+    );
+  }
+
+  changeConsultationStatus(cons: Consultation, statut: StatutConsultation) {
+    this.consultationSvc.updateStatus(cons.id, statut).subscribe({
+      next: () => {
+        this.consultations.update((list) =>
+          list.map((r) => (r.id === cons.id ? { ...r, statut } : r)),
+        );
+        if (this.detailConsultation()?.id === cons.id)
+          this.detailConsultation.set({ ...cons, statut });
+        this.msgSvc.add({
+          severity: 'success',
+          summary: 'Statut mis à jour',
+          detail: `Consultation marquée comme ${CONS_STATUT_CONFIG[statut].label}.`,
+        });
+      },
+      error: (err: ServiceError) => {
+        this.saving.set(false);
+        this.loading.set(false);
+        this.loadError.set(err.message);
+      },
+    });
   }
 
   onLazyLoadConsultations(e: any) {
@@ -339,14 +411,26 @@ export class PatientDetailComponent implements OnInit {
     return this.commonService.formatHeure(iso);
   }
 
+  getConsultationStatutLabel(s: string): string {
+    return CONS_STATUT_CONFIG[s as StatutConsultation]?.label ?? 'Planifiée';
+  }
+
   getConsultationStatutSeverity(s: string) {
+    return CONS_STATUT_CONFIG[s as StatutConsultation]?.severity ?? 'secondary';
+  }
+
+  getConsultationStatutIcon(s: string) {
+    return CONS_STATUT_CONFIG[s as StatutConsultation]?.icon ?? 'pi-clock';
+  }
+
+  getConsultationStatutButtonSeverity(statut: string): ButtonSeverity {
     return (
-      {
-        PLANIFIEE: 'warn',
-        EN_COURS: 'info',
-        TERMINEE: 'success',
-        ANNULER: 'danger',
-      }[s] ?? 'secondary'
+      (CONS_STATUT_CONFIG[statut as StatutConsultation]
+        ?.severity as ButtonSeverity) ?? 'secondary'
     );
+  }
+
+  getInitiales(c: Consultation): string {
+    return this.commonService.getInitiales(c.patientPrenom, c.patientNom);
   }
 }

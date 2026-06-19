@@ -30,7 +30,7 @@ export interface CalendarDay {
   isCurrentMonth: boolean;
 }
 
-export const STATUT_CONFIG: Record<
+export const RDV_STATUT_CONFIG: Record<
   StatutRendezVous,
   { label: string; severity: string; icon: string }
 > = {
@@ -40,7 +40,7 @@ export const STATUT_CONFIG: Record<
   TERMINE: { label: 'Terminé', severity: 'secondary', icon: 'pi-check' },
   ABSENT: { label: 'Absent', severity: 'warn', icon: 'pi-exclamation-circle' },
   A_REASSIGNER: {
-    label: 'A reassigner',
+    label: 'A réassigner',
     severity: 'warn',
     icon: 'pi-exclamation-circle',
   },

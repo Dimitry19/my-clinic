@@ -22,6 +22,7 @@ import { errorInterceptor } from './core/interceptors/http/error.interceptor';
 
 import { registerLocaleData } from '@angular/common';
 import localeFr from '@angular/common/locales/fr';
+import { ConfirmationService } from 'primeng/api';
 
 registerLocaleData(localeFr);
 
@@ -35,7 +36,7 @@ export const appConfig: ApplicationConfig = {
     ),
     provideClientHydration(withEventReplay()),
     provideAnimationsAsync(),
-    //provideAnimations(),
+    ConfirmationService,
     providePrimeNG({
       theme: {
         preset: TrinityPrimeTheme,

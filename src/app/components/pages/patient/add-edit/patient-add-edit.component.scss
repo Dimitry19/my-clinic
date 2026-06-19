@@ -15,21 +15,6 @@ $bg-light: #f1efe8;
 $radius: 8px;
 $radius-lg: 12px;
 
-// ── Breadcrumb ─────────────────────────────────────────────
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-}
-.bc-link {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #185fa5;
-  text-decoration: none;
-}
-
 // ── Container ──────────────────────────────────────────────
 .patient-form-container {
   max-width: 760px;

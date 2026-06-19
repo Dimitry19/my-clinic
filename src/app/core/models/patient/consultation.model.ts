@@ -1,10 +1,15 @@
 ﻿import { Departement } from '../employe/employe.model';
 
+export const StatutConsultation = {
+  PLANIFIEE: 'PLANIFIEE',
+  EN_COURS: 'EN_COURS',
+  TERMINEE: 'TERMINEE',
+  ANNULEE: 'ANNULEE',
+} as const;
+
 export type StatutConsultation =
-  | 'PLANIFIEE'
-  | 'EN_COURS'
-  | 'TERMINEE'
-  | 'ANNULEE';
+  (typeof StatutConsultation)[keyof typeof StatutConsultation];
+
 export type TypeConsultation =
   | 'GENERALE'
   | 'SPECIALISEE'
@@ -17,8 +22,10 @@ export interface Consultation {
   patientId: string;
   patientNom: string;
   patientPrenom: string;
+  age: number;
   medecinId: string;
   medecinNom: string;
+  departement: string;
   rendezVousId: string;
   dateHeure: string;
   type: TypeConsultation;
@@ -103,3 +110,13 @@ export const CONS_DEPARTEMENTS: { label: string; value: Departement }[] = [
   { label: 'Chirurgie', value: 'CHIRURGIE' },
   { label: 'Infirmerie', value: 'INFIRMERIE' },
 ];
+
+export const CONS_STATUT_CONFIG: Record<
+  StatutConsultation,
+  { label: string; severity: string; icon: string }
+> = {
+  PLANIFIEE: { label: 'Planifiée', severity: 'info', icon: 'pi-clock' },
+  EN_COURS: { label: 'En cours', severity: 'secondary', icon: 'pi-check' },
+  ANNULEE: { label: 'Annulée', severity: 'danger', icon: 'pi-times-circle' },
+  TERMINEE: { label: 'Terminée', severity: 'success', icon: 'pi-check-circle' },
+};

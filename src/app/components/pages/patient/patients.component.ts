@@ -10,7 +10,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { SkeletonModule } from 'primeng/skeleton';
 import { AvatarModule } from 'primeng/avatar';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 
 import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 import { PatientService } from '../../../core/services/patient/patient.service';
@@ -18,6 +18,7 @@ import { Page } from '../../../core/models/all/all.model';
 import { TooltipModule } from 'primeng/tooltip';
 import { Configuration } from '../../../core/models/configuration/configuration.model';
 import { Patient } from '../../../core/models/patient/patient.model';
+import { AppConfirmationService } from '../../../core/services/global/app.confirmation.service';
 
 @Component({
   selector: 'clnt-patients',
@@ -36,13 +37,13 @@ import { Patient } from '../../../core/models/patient/patient.model';
     AvatarModule,
     TooltipModule,
   ],
-  providers: [ConfirmationService, MessageService],
+  providers: [AppConfirmationService, MessageService],
   templateUrl: './patients.component.html',
   styleUrls: ['./patients.component.scss'],
 })
 export class PatientsComponent implements OnInit {
   private service = inject(PatientService);
-  private confirmService = inject(ConfirmationService);
+  private confirmService = inject(AppConfirmationService);
   private messageService = inject(MessageService);
 
   patients = signal<Patient[]>([]);
@@ -91,11 +92,10 @@ export class PatientsComponent implements OnInit {
   }
 
   confirmDelete(patient: Patient) {
-    this.confirmService.confirm({
-      message: `Supprimer le patient ${patient.prenom} ${patient.nom} ?`,
-      header: 'Confirmation',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
+    this.confirmService.action(
+      `Suppression du patient`,
+      `Supprimer le patient ${patient.prenom} ${patient.nom} ?`,
+      () => {
         this.service.delete(patient.id).subscribe(() => {
           this.messageService.add({
             severity: 'success',
@@ -105,7 +105,7 @@ export class PatientsComponent implements OnInit {
           this.load(0, this.searchQuery);
         });
       },
-    });
+    );
   }
 
   getStatutSeverity(s: string) {

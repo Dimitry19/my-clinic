@@ -1,4 +1,6 @@
-﻿export interface ServiceError {
+﻿import { ButtonProps } from 'primeng/button';
+
+export interface ServiceError {
   code:
     | 'NOT_FOUND'
     | 'CONFLICT'

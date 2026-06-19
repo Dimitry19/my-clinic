@@ -1,6 +1,5 @@
 ﻿import {
   Consultation,
-  ConsultationPage,
   ConsultationRequest,
 } from './../../models/patient/consultation.model';
 import { inject, Injectable } from '@angular/core';
@@ -10,7 +9,6 @@ import { catchError, map } from 'rxjs/operators';
 import { ApiResponse } from '../../models/response/api-response.model';
 import { Page } from '../../models/all/all.model';
 import { environment } from '../../../../environments/environment.prod';
-import { Patient } from '../../models/patient/patient.model';
 import { Entite } from '../../models/enums/enums.model';
 import { CommonService } from '../common.services';
 import { Observable } from 'rxjs/internal/Observable';
@@ -58,6 +56,16 @@ export class ConsultationService {
   edit(id: string, c: Partial<ConsultationRequest>) {
     return this.http
       .put<ApiResponse<Consultation>>(`${this.API}/${id}`, c)
+      .pipe(
+        map((r) => r.data),
+        catchError((e) =>
+          this.commonService.handleError(e, Entite.CONSULTATION),
+        ),
+      );
+  }
+  updateStatus(id: string, statut: string): Observable<Consultation> {
+    return this.http
+      .patch<ApiResponse<Consultation>>(`${this.API}/${id}`, { statut })
       .pipe(
         map((r) => r.data),
         catchError((e) =>

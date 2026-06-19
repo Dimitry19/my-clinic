@@ -41,6 +41,7 @@ import { EmployeFormComponent } from './formulaire/employe-form.component';
 import { Configuration } from '../../../core/models/configuration/configuration.model';
 import { Page, ServiceError } from '../../../core/models/all/all.model';
 import { StatutEmploye } from '../../../core/models/enums/enums.model';
+import { AppConfirmationService } from '../../../core/services/global/app.confirmation.service';
 
 @Component({
   selector: 'clnt-employes',
@@ -62,14 +63,14 @@ import { StatutEmploye } from '../../../core/models/enums/enums.model';
     TooltipModule,
     EmployeFormComponent,
   ],
-  providers: [ConfirmationService, MessageService],
+  providers: [AppConfirmationService, MessageService],
   templateUrl: './employes.component.html',
   styleUrls: ['./employes.component.scss'],
 })
 export class EmployesComponent implements OnInit {
   private service = inject(EmployeService);
   private commonService = inject(CommonService);
-  private confirm = inject(ConfirmationService);
+  private confirm = inject(AppConfirmationService);
   private msg = inject(MessageService);
   private destroy$ = new Subject<void>();
   private search$ = new Subject<string>();
@@ -189,14 +190,10 @@ export class EmployesComponent implements OnInit {
   }
 
   confirmDelete(e: Employe) {
-    this.confirm.confirm({
-      header: 'Confirmer la suppression',
-      message: `Supprimer l'employé <strong>${e.prenom} ${e.nom}</strong> ? Cette action est irréversible.`,
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Oui, supprimer',
-      rejectLabel: 'Annuler',
-      acceptButtonStyleClass: 'p-button-danger',
-      accept: () => {
+    this.confirm.action(
+      'Confirmer la suppression',
+      `Supprimer l'employé <strong>${e.prenom} ${e.nom}</strong> ? Cette action est irréversible.`,
+      () => {
         this.service
           .delete(e.id)
           .pipe(takeUntil(this.destroy$))
@@ -219,21 +216,20 @@ export class EmployesComponent implements OnInit {
             },
           });
       },
-    });
+    );
   }
 
   // ── Changement de statut ──────────────────────────────
   toggleStatut(e: Employe) {
     const nouveau = e.statut === 'ACTIF' ? 'INACTIF' : 'ACTIF';
-    const label = nouveau === 'INACTIF' ? 'réactiver' : 'désactiver';
+    const label = nouveau === 'ACTIF' ? 'réactiver' : 'désactiver';
 
-    this.confirm.confirm({
-      header: 'Modifier le statut',
-      message: `Voulez-vous ${label} ${e.prenom} ${e.nom} ?`,
-      icon: 'pi pi-question-circle',
-      acceptLabel: 'Oui',
-      rejectLabel: 'Non',
-      accept: () => {
+    console.log(nouveau);
+
+    this.confirm.confirm(
+      'Modifier le statut',
+      `Voulez-vous ${label} ${e.prenom} ${e.nom} ?`,
+      () => {
         this.service
           .changeStatus(e.id, nouveau)
           .pipe(takeUntil(this.destroy$))
@@ -258,7 +254,7 @@ export class EmployesComponent implements OnInit {
             },
           });
       },
-    });
+    );
   }
 
   // ── Helpers ───────────────────────────────────────────

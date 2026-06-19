@@ -9,7 +9,7 @@
         {{ patient()!.prenom }} {{ patient()!.nom }}
       </a>
       <span class="bc-sep" aria-hidden="true">/</span>
-      <span class="bc-current">Nouvelle consultation</span>
+      <span class="bc-current">{{ getPageTitle() }}</span>
     </nav>
   }
 
@@ -18,7 +18,7 @@
     <div>
       <h2>
         <i class="pi pi-stethoscope" aria-hidden="true"></i>
-        Nouvelle consultation
+        {{ getPageTitle() }}
       </h2>
       <p>Complétez les étapes pour enregistrer la consultation</p>
     </div>
@@ -404,8 +404,8 @@
               <!-- Statut -->
               <div class="rdv-card-statut">
                 <p-tag
-                  [value]="rdv.statut"
-                  [severity]="getRdvSeverity(rdv.statut)"
+                  [value]="getRendezVousStatutLabel(rdv.statut)"
+                  [severity]="getRendezVousStatutSeverity(rdv.statut)"
                 />
                 @if (rdv.statut === "ANNULE" || rdv.statut === "TERMINE") {
                   <span class="rdv-indisponible">Non disponible</span>

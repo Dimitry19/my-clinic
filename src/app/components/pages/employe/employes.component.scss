@@ -2,7 +2,7 @@
 
 // ── Variables ──────────────────────────────────────────────
 
-@import "../../../../variables.scss";
+@use "../../../../variables.scss" as *;
 
 .search-icon-all-emp {
   position: absolute;

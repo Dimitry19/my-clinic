@@ -22,14 +22,7 @@ export const patientRoutes: Routes = [
           ),
         title: 'Nouveau patient',
       },
-      {
-        path: ':id',
-        loadComponent: () =>
-          import('../../../components/pages/patient/detail/patient-detail.component').then(
-            (m) => m.PatientDetailComponent,
-          ),
-        title: 'Dossier patient',
-      },
+
       {
         path: ':id/edit',
         loadComponent: () =>
@@ -37,6 +30,14 @@ export const patientRoutes: Routes = [
             (m) => m.PatientAddEditComponent,
           ),
         title: 'Modifier patient',
+      },
+      {
+        path: ':id',
+        loadComponent: () =>
+          import('../../../components/pages/patient/detail/patient-detail.component').then(
+            (m) => m.PatientDetailComponent,
+          ),
+        title: 'Dossier patient',
       },
     ],
   },

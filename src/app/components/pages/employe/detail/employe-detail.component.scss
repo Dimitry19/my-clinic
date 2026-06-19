@@ -1,6 +1,6 @@
 ﻿// ── Variables ──────────────────────────────────────────────
 
-@import "../../../../../variables.scss";
+@use "../../../../../variables.scss" as *;
 
 // ── Hero actions — override PrimeNG ───────────────────────
 .hero-actions {

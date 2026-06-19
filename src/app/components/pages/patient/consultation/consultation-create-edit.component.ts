@@ -13,6 +13,7 @@ import {
   FormBuilder,
   Validators,
   FormsModule,
+  FormGroup,
 } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -39,6 +40,8 @@ import {
   TYPES_CONSULTATION,
   CONS_DEPARTEMENTS,
   ConsultationRequest,
+  Consultation,
+  PatientLight,
 } from '../../../../core/models/patient/consultation.model';
 import { PatientService } from '../../../../core/services/patient/patient.service';
 import { ConsultationService } from '../../../../core/services/patient/consultation.service';
@@ -46,10 +49,14 @@ import { Patient } from '../../../../core/models/patient/patient.model';
 import { EmployeService } from '../../../../core/services/employe/employe.service';
 import { Configuration } from '../../../../core/models/configuration/configuration.model';
 import { Employe } from '../../../../core/models/employe/employe.model';
-import { RendezVous } from '../../../../core/models/agenda/agenda.model';
+import {
+  RDV_STATUT_CONFIG,
+  RendezVous,
+} from '../../../../core/models/agenda/agenda.model';
 import { AgendaService } from '../../../../core/services/agenda/agenda.service';
 import { Page, ServiceError } from '../../../../core/models/all/all.model';
 import { CommonService } from '../../../../core/services/common.services';
+import { StatutRendezVous } from '../../../../core/models/enums/enums.model';
 
 // ── Mock data (remplacer par vrais services) ─────────────
 
@@ -77,10 +84,10 @@ import { CommonService } from '../../../../core/services/common.services';
     TooltipModule,
   ],
   providers: [MessageService],
-  templateUrl: './consultation-create.component.html',
-  styleUrls: ['./consultation-create.component.scss'],
+  templateUrl: './consultation-create-edit.component.html',
+  styleUrls: ['./consultation-create-edit.component.scss'],
 })
-export class ConsultationCreateComponent implements OnInit, OnDestroy {
+export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -92,8 +99,9 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
   private service = inject(ConsultationService);
   private destroy$ = new Subject<void>();
 
-  items: any[] = [];
   selectedItem: Employe | null = null;
+  form!: FormGroup;
+  consultationId: string = '';
 
   // ── Étapes ────────────────────────────────────────────
   activeStep = signal(0);
@@ -109,8 +117,9 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
 
   patient = signal<Patient | null>(null);
   loading = signal(true);
+  editMode = signal(false);
   // ── Données ────────────────────────────────────────────
-  patients = signal<Patient[]>([]);
+  patients = signal<PatientLight[]>([]);
   medecins = signal<Employe[]>([]);
   rdvDisponibles = signal<RendezVous[]>([]);
   loadingRdv = signal(false);
@@ -121,7 +130,7 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
   filterDept = signal<string>('');
 
   // Sélections
-  selectedPatient = signal<Patient | null>(null);
+  selectedPatient = signal<PatientLight | null>(null);
   selectedMedecin = signal<MedecinLight | null>(null);
   selectedRdv = signal<RendezVousLight | null>(null);
   selectedDpt = signal<string | null>(null);
@@ -143,32 +152,6 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
     })),
   );
 
-  // ── Formulaire ────────────────────────────────────────
-  form = this.fb.group({
-    // Étape 1
-    departement: ['', Validators.required],
-    patientId: ['', Validators.required],
-    medecinId: ['', Validators.required],
-    // Étape 2
-    rendezVousId: ['', Validators.required],
-    // Étape 3 — Examen clinique
-    type: ['GENERALE', Validators.required],
-    tension: ['', [Validators.pattern(/^\d{2,3}\/\d{2,3}$/)]],
-    temperature: [
-      null as number | null,
-      [Validators.min(34), Validators.max(43)],
-    ],
-    poids: [null as number | null, [Validators.min(1), Validators.max(300)]],
-    taille: [null as number | null, [Validators.min(30), Validators.max(250)]],
-    symptomes: [''],
-    // Étape 4 — Diagnostic
-    motif: ['', [Validators.required, Validators.minLength(3)]],
-    diagnostic: [''],
-    traitement: [''],
-    notes: [''],
-    dureeMinutes: [30, [Validators.min(5)]],
-  });
-
   // ── IMC calculé ───────────────────────────────────────
   imc = computed(() => {
     const p = this.form.get('poids')?.value;
@@ -188,7 +171,20 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
-    this.recuperationPatient();
+    this.initForm();
+
+    // Mode modification si un ID est dans l'URL
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const id = params.get('id');
+      console.log(id);
+      if (id) {
+        this.editMode.set(true);
+        this.consultationId = id;
+        this.loadConsultation(id);
+      } else {
+        this.recuperationPatient();
+      }
+    });
 
     // Réagir aux changements patient/médecin pour charger les RDV
     this.form
@@ -217,6 +213,85 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
     this.loadingMeta.set(false);
   }
 
+  private initForm(): void {
+    // ── Formulaire ────────────────────────────────────────
+    this.form = this.fb.group({
+      // Étape 1
+      departement: ['', Validators.required],
+      patientId: ['', Validators.required],
+      medecinId: ['', Validators.required],
+      // Étape 2
+      rendezVousId: ['', Validators.required],
+      // Étape 3 — Examen clinique
+      type: ['GENERALE', Validators.required],
+      tension: ['', [Validators.pattern(/^\d{2,3}\/\d{2,3}$/)]],
+      temperature: [
+        null as number | null,
+        [Validators.min(34), Validators.max(43)],
+      ],
+      poids: [null as number | null, [Validators.min(1), Validators.max(300)]],
+      taille: [
+        null as number | null,
+        [Validators.min(30), Validators.max(250)],
+      ],
+      symptomes: [''],
+      // Étape 4 — Diagnostic
+      motif: ['', [Validators.required, Validators.minLength(3)]],
+      diagnostic: [''],
+      traitement: [''],
+      notes: [''],
+      dureeMinutes: [30, [Validators.min(5)]],
+    });
+  }
+
+  private remplirFormulaire(c: Consultation): void {
+    this.form = this.fb.group({
+      // Étape 1
+      departement: [c.departement || '', Validators.required],
+      patientId: [c.patientId || '', Validators.required],
+      medecinId: [c.medecinId || '', Validators.required],
+      // Étape 2
+      rendezVousId: [c.rendezVousId || '', Validators.required],
+      // Étape 3 — Examen clinique
+      type: [c.type || 'GENERALE', Validators.required],
+      tension: [c.tension || '', [Validators.pattern(/^\d{2,3}\/\d{2,3}$/)]],
+      temperature: [
+        c.temperature || (null as number | null),
+        [Validators.min(34), Validators.max(43)],
+      ],
+      poids: [
+        c.poids || (null as number | null),
+        [Validators.min(1), Validators.max(300)],
+      ],
+      taille: [
+        c.taille || (null as number | null),
+        [Validators.min(30), Validators.max(250)],
+      ],
+      symptomes: [c.symptomes || ''],
+      // Étape 4 — Diagnostic
+      motif: [c.motif || '', [Validators.required, Validators.minLength(3)]],
+      diagnostic: [c.diagnostic || ''],
+      traitement: [c.traitement || ''],
+      notes: [c.notes || ''],
+      dureeMinutes: [c.dureeMinutes || 30, [Validators.min(5)]],
+    });
+    this.onSetEditModeValue(c);
+  }
+
+  private loadConsultation(id: string): void {
+    this.loading.set(true);
+    this.service.findById(id).subscribe({
+      next: (p) => {
+        this.remplirFormulaire(p);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        //this.errorMessage = 'Patient introuvable.';
+      },
+    });
+  }
+
   // ── Chargement RDV filtrés ────────────────────────────
   chargerRdv() {
     const pid = this.form.get('patientId')?.value;
@@ -238,15 +313,19 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (rendezVous) => {
-          const patient = this.patients().find((p) => p.id === pid);
-          const medecin = this.medecins().find((m) => m.id === mid);
-          const filtered = rendezVous.filter(
-            (r) =>
-              r.patientId === patient?.id &&
-              r.medecinNom.toLowerCase() ===
-                `${medecin?.nom.toLowerCase()} ${medecin?.prenom.toLowerCase()}`,
-          );
-          this.rdvDisponibles.set(filtered);
+          if (this.editMode()) {
+            this.rdvDisponibles.set(rendezVous);
+          } else {
+            const patient = this.patients().find((p) => p.id === pid);
+            const medecin = this.medecins().find((m) => m.id === mid);
+            const filtered = rendezVous.filter(
+              (r) =>
+                r.patientId === patient?.id &&
+                r.medecinNom.toLowerCase() ===
+                  `${medecin?.nom.toLowerCase()} ${medecin?.prenom.toLowerCase()}`,
+            );
+            this.rdvDisponibles.set(filtered);
+          }
           this.loadingRdv.set(false);
 
           this.loading.set(false);
@@ -340,11 +419,14 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
     }
 
     const data = this.form.value as Partial<ConsultationRequest>;
+    const op = this.editMode()
+      ? this.service.edit(this.consultationId, data)
+      : this.service.create(data);
 
     this.saving.set(true);
     this.globalError.set(null);
 
-    this.service.create(data).subscribe({
+    op.subscribe({
       next: (consultation) => {
         this.saving.set(false);
         this.msg.add({
@@ -369,15 +451,16 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
     return this.commonService.getInitiales(prenom, nom);
   }
 
-  getRdvSeverity(statut: string) {
-    return (
-      {
-        CONFIRME: 'success',
-        PLANIFIE: 'info',
-        ANNULE: 'danger',
-        TERMINE: 'secondary',
-      }[statut] ?? 'secondary'
-    );
+  getRendezVousStatutLabel(s: string): string {
+    return RDV_STATUT_CONFIG[s as StatutRendezVous]?.label ?? 'Planifié';
+  }
+
+  getRendezVousStatutSeverity(s: string) {
+    return RDV_STATUT_CONFIG[s as StatutRendezVous]?.severity ?? 'secondary';
+  }
+
+  getRendezVousStatutIcon(s: string) {
+    return RDV_STATUT_CONFIG[s as StatutRendezVous]?.icon ?? 'pi-clock';
   }
 
   formatDate(iso: string) {
@@ -497,5 +580,43 @@ export class ConsultationCreateComponent implements OnInit, OnDestroy {
           });
         },
       });
+  }
+
+  onSetEditModeValue(c: Consultation) {
+    const medecin: MedecinLight = {
+      id: c.medecinId,
+      nom: c.medecinNom,
+      prenom: '',
+      poste: '',
+      departement: c.departement,
+    };
+    const patient: PatientLight = {
+      id: c.patientId,
+      nom: c.patientNom,
+      prenom: c.patientPrenom,
+      dateNaissance: '',
+      age: c.age,
+    };
+
+    this.selectedMedecin.set(medecin);
+    this.selectedPatient.set(patient);
+    const option = this.departementOptions.find(
+      (o) => o.value === c.departement,
+    );
+    this.filterDept.set(c.departement);
+    this.selectedDpt.set(option!.label);
+    this.loadMedecins(0, true);
+    this.chargerRdv();
+  }
+  getPageTitle(): string {
+    return !this.editMode()
+      ? 'Nouvelle consultation'
+      : 'Modifier la consultation';
+  }
+
+  getPageSubtitle(): string {
+    return !this.editMode()
+      ? 'Enregistrement à la réception'
+      : 'Mise à jour de la consultation';
   }
 }

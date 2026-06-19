@@ -12,21 +12,23 @@ import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { SelectModule } from 'primeng/select';
 import { DialogModule } from 'primeng/dialog';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ToastModule } from 'primeng/toast';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
+
 import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageModule } from 'primeng/message';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import type { ButtonSeverity } from 'primeng/button';
 
 import { AgendaService } from '../../../core/services/agenda/agenda.service';
 import {
   RendezVous,
   CalendarDay,
-  STATUT_CONFIG,
+  RDV_STATUT_CONFIG,
   RdvRequest,
 } from '../../../core/models/agenda/agenda.model';
 
@@ -37,6 +39,7 @@ import { PatientService } from '../../../core/services/patient/patient.service';
 import { Patient } from '../../../core/models/patient/patient.model';
 import { Employe } from '../../../core/models/employe/employe.model';
 import { EmployeService } from '../../../core/services/employe/employe.service';
+import { AppConfirmationService } from '../../../core/services/global/app.confirmation.service';
 
 const JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MOIS = [
@@ -74,7 +77,7 @@ const MOIS = [
     TooltipModule,
     MessageModule,
   ],
-  providers: [MessageService, ConfirmationService, DatePipe],
+  providers: [MessageService, AppConfirmationService, DatePipe],
   templateUrl: './agenda.component.html',
   styleUrls: ['./agenda.component.scss'],
 })
@@ -83,7 +86,7 @@ export class AgendaComponent implements OnInit {
   private msg = inject(MessageService);
   private patientService = inject(PatientService);
   private employeService = inject(EmployeService);
-  private confirm = inject(ConfirmationService);
+  private confirm = inject(AppConfirmationService);
   private commonService = inject(CommonService);
   private fb = inject(FormBuilder);
 
@@ -209,11 +212,11 @@ export class AgendaComponent implements OnInit {
         .length,
   );
 
-  statutOptions = Object.entries(STATUT_CONFIG).map(([v, c]) => ({
+  statutOptions = Object.entries(RDV_STATUT_CONFIG).map(([v, c]) => ({
     label: c.label,
     value: v,
   }));
-  statutConfig = STATUT_CONFIG;
+  statutConfig = RDV_STATUT_CONFIG;
 
   // ── Formulaire ────────────────────────────────────────
   form = this.fb.group({
@@ -395,7 +398,7 @@ export class AgendaComponent implements OnInit {
         this.msg.add({
           severity: 'success',
           summary: 'Statut mis à jour',
-          detail: `Rendez-vous marqué comme ${STATUT_CONFIG[statut].label}.`,
+          detail: `Rendez-vous marqué comme ${RDV_STATUT_CONFIG[statut].label}.`,
         });
       },
       error: (err: ServiceError) => {
@@ -408,14 +411,11 @@ export class AgendaComponent implements OnInit {
 
   confirmDelete(rdv: RendezVous) {
     this.showDetail.set(false);
-    this.confirm.confirm({
-      header: 'Supprimer le rendez-vous',
-      message: `Supprimer le RDV de ${rdv.patientPrenom} ${rdv.patientNom} ?`,
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Oui, supprimer',
-      rejectLabel: 'Annuler',
-      acceptButtonStyleClass: 'p-button-danger',
-      accept: () => {
+    this.confirm.action(
+      'Supprimer le rendez-vous',
+      `Supprimer le RDV de ${rdv.patientPrenom} ${rdv.patientNom} ?`,
+
+      () => {
         this.svc.delete(rdv.id).subscribe({
           next: () => {
             this.rdvs.update((list) => list.filter((r) => r.id !== rdv.id));
@@ -435,7 +435,7 @@ export class AgendaComponent implements OnInit {
           },
         });
       },
-    });
+    );
   }
   onSearchInput(event: Event): void {
     const query = (event.target as HTMLInputElement).value;
@@ -548,5 +548,12 @@ export class AgendaComponent implements OnInit {
   }
   getCurrentYear(): number {
     return this.dateNavigation().getFullYear();
+  }
+
+  getStatutSeverity(statut: string): ButtonSeverity {
+    return (
+      (RDV_STATUT_CONFIG[statut as StatutRendezVous]
+        ?.severity as ButtonSeverity) ?? 'info'
+    );
   }
 }
