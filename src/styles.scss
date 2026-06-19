@@ -129,6 +129,11 @@ $radius-lg: 12px;
   }
 }
 
+.invisible {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 // ── Étape formulaire ───────────────────────────────────────
 .form-step {
   animation: fadeIn 0.2s ease;

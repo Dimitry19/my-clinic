@@ -177,16 +177,18 @@
                 </div>
               }
 
-              <!-- Bouton ajouter au survol -->
-              <button
-                class="cell-add-btn"
-                (click)="$event.stopPropagation(); openCreation(day.date)"
-                aria-label="Ajouter un RDV"
-                pTooltip="Ajouter un RDV"
-                tooltipPosition="top"
-              >
-                <i class="pi pi-plus" aria-hidden="true"></i>
-              </button>
+              @if (selectionnable()) {
+                <!-- Bouton ajouter au survol -->
+                <button
+                  class="cell-add-btn"
+                  (click)="$event.stopPropagation(); openCreation(day.date)"
+                  aria-label="Ajouter un RDV"
+                  pTooltip="Ajouter un RDV"
+                  tooltipPosition="top"
+                >
+                  <i class="pi pi-plus" aria-hidden="true"></i>
+                </button>
+              }
             </div>
           }
         </div>
@@ -200,13 +202,15 @@
       <div class="jour-panel-header">
         <h4>
           <i class="pi pi-list" aria-hidden="true"></i>
-          RDV du {{ jourSelectionne()! | date: "EEEE d MMMM" : "" : "fr" }}
+          Rendez-vous du
+          {{ jourSelectionne()! | date: "EEEE d MMMM" : "" : "fr" }}
         </h4>
         <p-button
           icon="pi pi-plus"
           label="Ajouter"
           size="small"
           [outlined]="true"
+          [class.invisible]="!selectionnable()"
           (onClick)="openCreation(jourSelectionne()!)"
         />
       </div>
@@ -220,6 +224,7 @@
             icon="pi pi-plus"
             [text]="true"
             size="small"
+            [class.invisible]="!selectionnable()"
             (onClick)="openCreation(jourSelectionne()!)"
           />
         </div>
@@ -265,6 +270,7 @@
                     [text]="true"
                     size="small"
                     pTooltip="Modifier"
+                    [class.invisible]="!selectionnable()"
                     (onClick)="openEdit(rdv); $event.stopPropagation()"
                   />
                   <p-button
@@ -273,6 +279,7 @@
                     size="small"
                     severity="danger"
                     pTooltip="Supprimer"
+                    [class.invisible]="!selectionnable()"
                     (onClick)="confirmDelete(rdv); $event.stopPropagation()"
                   />
                 </div>

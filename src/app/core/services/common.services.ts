@@ -2,12 +2,18 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { BehaviorSubject, Observable, of, Subject, throwError } from 'rxjs';
+import type { ButtonSeverity } from 'primeng/button';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 
 import { ApiResponseService } from '../models/response/api.service';
 import { ApiResponse } from '../models/response/api-response.model';
 import { ServiceError } from '../models/all/all.model';
-import { Entite } from '../models/enums/enums.model';
+import { Entite, StatutRendezVous } from '../models/enums/enums.model';
+import { RDV_STATUT_CONFIG } from '../models/agenda/agenda.model';
+import {
+  CONS_STATUT_CONFIG,
+  StatutConsultation,
+} from '../models/patient/consultation.model';
 
 @Injectable({
   providedIn: 'root',
@@ -60,6 +66,55 @@ export class CommonService {
     const initialeNom = nom?.charAt(0) ?? '';
 
     return `${initialePrenom}${initialeNom}`.toUpperCase();
+  }
+  getStatutLabel(s: string, entite: Entite): string {
+    if (entite === Entite.AGENDA) {
+      return RDV_STATUT_CONFIG[s as StatutRendezVous]?.label ?? 'Planifié';
+    }
+
+    if (entite === Entite.CONSULTATION) {
+      return CONS_STATUT_CONFIG[s as StatutConsultation]?.label ?? 'Planifiée';
+    }
+    return '-';
+  }
+
+  getStatutSeverity(s: string, entite: Entite) {
+    if (entite === Entite.AGENDA) {
+      return RDV_STATUT_CONFIG[s as StatutRendezVous]?.label ?? 'secondary';
+    }
+
+    if (entite === Entite.CONSULTATION) {
+      return CONS_STATUT_CONFIG[s as StatutConsultation]?.label ?? 'secondary';
+    }
+    return 'secondary';
+  }
+
+  getStatutIcon(s: string, entite: Entite) {
+    if (entite === Entite.AGENDA) {
+      return RDV_STATUT_CONFIG[s as StatutRendezVous]?.label ?? 'pi-clock';
+    }
+
+    if (entite === Entite.CONSULTATION) {
+      return CONS_STATUT_CONFIG[s as StatutConsultation]?.label ?? 'pi-clock';
+    }
+    return 'pi-clock';
+  }
+
+  getStatutButtonSeverity(s: string, entite: Entite): ButtonSeverity {
+    if (entite === Entite.CONSULTATION) {
+      return (
+        (CONS_STATUT_CONFIG[s as StatutConsultation]
+          ?.severity as ButtonSeverity) ?? 'secondary'
+      );
+    }
+    if (entite === Entite.AGENDA) {
+      return (
+        (RDV_STATUT_CONFIG[s as StatutRendezVous]
+          ?.severity as ButtonSeverity) ?? 'info'
+      );
+    }
+
+    return 'secondary';
   }
 
   public isSuccessResponse(response: ApiResponse): boolean {

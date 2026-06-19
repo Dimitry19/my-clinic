@@ -350,14 +350,8 @@
             <div
               class="rdv-card"
               [class.rdv-card-selected]="selectedRdv()?.id === rdv.id"
-              [class.rdv-card-disabled]="
-                rdv.statut === 'ANNULE' || rdv.statut === 'TERMINE'
-              "
-              (click)="
-                rdv.statut !== 'ANNULE' &&
-                  rdv.statut !== 'TERMINE' &&
-                  selectionnerRdv(rdv)
-              "
+              [class.rdv-card-disabled]="isIndisponible(rdv)"
+              (click)="!isIndisponible(rdv) && selectionnerRdv(rdv)"
               role="radio"
               [attr.aria-checked]="selectedRdv()?.id === rdv.id"
               [attr.aria-label]="'Rendez-vous du ' + formatDate(rdv.dateHeure)"
@@ -407,7 +401,7 @@
                   [value]="getRendezVousStatutLabel(rdv.statut)"
                   [severity]="getRendezVousStatutSeverity(rdv.statut)"
                 />
-                @if (rdv.statut === "ANNULE" || rdv.statut === "TERMINE") {
+                @if (isIndisponible(rdv)) {
                   <span class="rdv-indisponible">Non disponible</span>
                 }
               </div>

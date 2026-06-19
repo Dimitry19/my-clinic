@@ -21,7 +21,7 @@ import { ToastModule } from 'primeng/toast';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageModule } from 'primeng/message';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import type { ButtonSeverity } from 'primeng/button';
 
 import { AgendaService } from '../../../core/services/agenda/agenda.service';
@@ -34,7 +34,10 @@ import {
 
 import { forkJoin, Subject } from 'rxjs';
 import { ServiceError } from '../../../core/models/all/all.model';
-import { StatutRendezVous } from '../../../core/models/enums/enums.model';
+import {
+  Entite,
+  StatutRendezVous,
+} from '../../../core/models/enums/enums.model';
 import { PatientService } from '../../../core/services/patient/patient.service';
 import { Patient } from '../../../core/models/patient/patient.model';
 import { Employe } from '../../../core/models/employe/employe.model';
@@ -112,6 +115,7 @@ export class AgendaComponent implements OnInit {
 
   // ── Jour sélectionné ──────────────────────────────────
   jourSelectionne = signal<Date | null>(null);
+
   rdvJourSelectionne = computed(() => {
     const j = this.jourSelectionne();
     if (!j) return [];
@@ -473,7 +477,7 @@ export class AgendaComponent implements OnInit {
     }
     this.medecinSearchQuery = query;
     this.searchSubject.next(query);
-    this.employeService.findAll(0, 5, query).subscribe((res) => {
+    this.employeService.findAllMedecin(0, 5, query).subscribe((res) => {
       this.searchMedecinResults = res.content;
       this.showSearchMedecinResults = true;
     });
@@ -550,10 +554,13 @@ export class AgendaComponent implements OnInit {
     return this.dateNavigation().getFullYear();
   }
 
-  getStatutSeverity(statut: string): ButtonSeverity {
-    return (
-      (RDV_STATUT_CONFIG[statut as StatutRendezVous]
-        ?.severity as ButtonSeverity) ?? 'info'
-    );
+  getStatutSeverity(s: string): ButtonSeverity {
+    return this.commonService.getStatutButtonSeverity(s, Entite.AGENDA);
+  }
+
+  selectionnable(): boolean {
+    const jour = this.jourSelectionne();
+    if (!jour) return false;
+    return jour >= this.aujourdhui;
   }
 }

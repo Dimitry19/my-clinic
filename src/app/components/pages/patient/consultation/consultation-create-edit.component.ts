@@ -56,7 +56,10 @@ import {
 import { AgendaService } from '../../../../core/services/agenda/agenda.service';
 import { Page, ServiceError } from '../../../../core/models/all/all.model';
 import { CommonService } from '../../../../core/services/common.services';
-import { StatutRendezVous } from '../../../../core/models/enums/enums.model';
+import {
+  Entite,
+  StatutRendezVous,
+} from '../../../../core/models/enums/enums.model';
 
 // ── Mock data (remplacer par vrais services) ─────────────
 
@@ -452,15 +455,25 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
   }
 
   getRendezVousStatutLabel(s: string): string {
-    return RDV_STATUT_CONFIG[s as StatutRendezVous]?.label ?? 'Planifié';
+    return this.commonService.getStatutLabel(s, Entite.AGENDA);
   }
 
   getRendezVousStatutSeverity(s: string) {
-    return RDV_STATUT_CONFIG[s as StatutRendezVous]?.severity ?? 'secondary';
+    return this.commonService.getStatutSeverity(s, Entite.AGENDA);
   }
 
   getRendezVousStatutIcon(s: string) {
-    return RDV_STATUT_CONFIG[s as StatutRendezVous]?.icon ?? 'pi-clock';
+    return this.commonService.getStatutIcon(s, Entite.AGENDA);
+  }
+
+  isIndisponible(rdv: RendezVous) {
+    const dateAComparer: Date = new Date(rdv.dateHeure);
+    const dateCourante: Date = new Date();
+    const indispo = dateAComparer < dateCourante;
+    return rdv.statut === 'ANNULE' || rdv.statut === 'TERMINE' || indispo;
+  }
+  disponible(rdv: RendezVous) {
+    return !this.isIndisponible(rdv);
   }
 
   formatDate(iso: string) {

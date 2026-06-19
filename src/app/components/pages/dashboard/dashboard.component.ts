@@ -12,7 +12,15 @@ import { StatDashboard } from '../../../core/models/all/all.model';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { DashboardService } from '../../../core/services/dashboard/dashboard.service';
 import { TooltipModule } from 'primeng/tooltip';
-import { RendezVous } from '../../../core/models/agenda/agenda.model';
+import {
+  RDV_STATUT_CONFIG,
+  RendezVous,
+} from '../../../core/models/agenda/agenda.model';
+import {
+  Entite,
+  StatutRendezVous,
+} from '../../../core/models/enums/enums.model';
+import { CommonService } from '../../../core/services/common.services';
 
 @Component({
   selector: 'clnt-dashboard',
@@ -83,7 +91,7 @@ import { RendezVous } from '../../../core/models/agenda/agenda.model';
                 label="Voir tout"
                 [text]="true"
                 size="small"
-                routerLink="/patients/all"
+                routerLink="/agenda"
               />
             </div>
           </ng-template>
@@ -113,8 +121,8 @@ import { RendezVous } from '../../../core/models/agenda/agenda.model';
                 <td>{{ rdv.dateHeure | date: 'HH:mm' }}</td>
                 <td>
                   <p-tag
-                    [value]="rdv.statut"
-                    [severity]="getSeverity(rdv.statut)"
+                    [value]="getStatutLabel(rdv.statut)"
+                    [severity]="getStatutSeverity(rdv.statut)"
                   />
                 </td>
                 <td>
@@ -264,6 +272,7 @@ import { RendezVous } from '../../../core/models/agenda/agenda.model';
 })
 export class DashboardComponent implements OnInit {
   private dashService = inject(DashboardService);
+  private commonService = inject(CommonService);
 
   auth = inject(AuthService);
 
@@ -329,7 +338,7 @@ export class DashboardComponent implements OnInit {
           deltaColor: '#BA7517',
         },
         {
-          label: 'RDV restants',
+          label: 'Rendez-vous restants',
           value: s.rdvRestants,
           icon: 'pi-calendar',
           bg: '#E1F5EE',
@@ -338,7 +347,7 @@ export class DashboardComponent implements OnInit {
           deltaColor: '#0F6E56',
         },
         {
-          label: 'Terminées',
+          label: 'Consultations terminées',
           value: s.consultationsTerminees,
           icon: 'pi-check',
           bg: '#EEEDFE',
@@ -350,14 +359,11 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  getSeverity(statut: string): string {
-    const map: Record<string, string> = {
-      PLANIFIE: 'info',
-      CONFIRME: 'warn',
-      TERMINE: 'success',
-      ANNULE: 'danger',
-      ABSENT: 'secondary',
-    };
-    return map[statut] ?? 'secondary';
+  getStatutLabel(s: string): string {
+    return this.commonService.getStatutLabel(s, Entite.AGENDA);
+  }
+
+  getStatutSeverity(s: string) {
+    return this.commonService.getStatutSeverity(s, Entite.AGENDA);
   }
 }

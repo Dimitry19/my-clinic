@@ -27,6 +27,7 @@ import {
   Patient,
 } from '../../../../core/models/patient/patient.model';
 import {
+  Entite,
   StatutExamenLabo,
   StatutFacture,
 } from '../../../../core/models/enums/enums.model';
@@ -412,22 +413,19 @@ export class PatientDetailComponent implements OnInit {
   }
 
   getConsultationStatutLabel(s: string): string {
-    return CONS_STATUT_CONFIG[s as StatutConsultation]?.label ?? 'Planifiée';
+    return this.commonService.getStatutLabel(s, Entite.CONSULTATION);
   }
 
   getConsultationStatutSeverity(s: string) {
-    return CONS_STATUT_CONFIG[s as StatutConsultation]?.severity ?? 'secondary';
+    return this.commonService.getStatutSeverity(s, Entite.CONSULTATION);
   }
 
   getConsultationStatutIcon(s: string) {
-    return CONS_STATUT_CONFIG[s as StatutConsultation]?.icon ?? 'pi-clock';
+    return this.commonService.getStatutIcon(s, Entite.CONSULTATION);
   }
 
-  getConsultationStatutButtonSeverity(statut: string): ButtonSeverity {
-    return (
-      (CONS_STATUT_CONFIG[statut as StatutConsultation]
-        ?.severity as ButtonSeverity) ?? 'secondary'
-    );
+  getConsultationStatutButtonSeverity(s: string): ButtonSeverity {
+    return this.commonService.getStatutButtonSeverity(s, Entite.CONSULTATION);
   }
 
   getInitiales(c: Consultation): string {

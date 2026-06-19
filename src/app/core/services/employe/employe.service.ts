@@ -31,6 +31,17 @@ export class EmployeService {
     );
   }
 
+  findAllMedecin(page = 0, size = 20, search = '', departement = '') {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (search) params = params.set('q', search);
+
+    const url = `${this.API}/search/medecin`;
+    return this.http.get<ApiResponse<Page<Employe>>>(url, { params }).pipe(
+      map((r) => r.data),
+      catchError((e) => this.commonService.handleError(e, Entite.EMPLOYE)),
+    );
+  }
+
   findEmployesByDepartement(page = 0, size = 20, departement = '') {
     let params = new HttpParams().set('page', page).set('size', size);
     if (departement) params = params.set('departement', departement);
