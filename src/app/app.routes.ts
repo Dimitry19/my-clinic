@@ -3,7 +3,7 @@ import { patientRoutes } from './core/routes/patient/patient.routes';
 import { authGuard } from './core/guards/auth.guard';
 import { employeRoutes } from './core/routes/employe/employe.routes';
 import { consultationRoutes } from './core/routes/patient/consultation.routes';
-import { examenLaboRoutes } from './core/routes/laboratoire/laboratoire.route';
+import { examenLaboRoutes } from './core/routes/laboratoire/laboratoire.routes';
 
 export const routes: Routes = [
   {
