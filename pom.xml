@@ -24,6 +24,7 @@
         <module>employe</module>
         <module>agenda</module>
         <module>contracts</module>
+        <module>laboratoire</module>
         <module>services</module> <!-- toujours en dernier -->
     </modules>
 

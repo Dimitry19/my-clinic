@@ -30,7 +30,7 @@ public class ConsultationHelper extends CoreHelper{
     private final EmployeLookupPort employeLookupPort;
     private final AgendaLookupPort agendaLookupPort;
 
-    public ConsultationHelper(UserDao userDao, UserDao userDao1, PatientDao patientDao, PatientValidator patientValidator, EmployeLookupPort employeLookupPort, AgendaLookupPort agendaLookupPort) {
+    public ConsultationHelper(UserDao userDao, PatientDao patientDao, PatientValidator patientValidator, EmployeLookupPort employeLookupPort, AgendaLookupPort agendaLookupPort) {
         super(userDao);
         this.patientDao = patientDao;
         this.patientValidator = patientValidator;
