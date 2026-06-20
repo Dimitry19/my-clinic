@@ -11,7 +11,8 @@ import { RendezVous } from '../../models/agenda/agenda.model';
 export class DashboardService {
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
-  private API = environment.apiUrl + '/dashboard';
+
+  private readonly API = `${environment.apiUrl}/dashboard`;
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {

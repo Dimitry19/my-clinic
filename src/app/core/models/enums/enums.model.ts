@@ -21,9 +21,10 @@ export enum StatutRendezVous {
 }
 
 export enum StatutExamenLabo {
-  EN_ATTENTE = 'EN ATTENTE',
-  EN_COURS = 'EN COURS',
+  EN_ATTENTE = 'EN_ATTENTE',
+  EN_COURS = 'EN_COURS',
   TERMINE = 'TERMINE',
+  ANNULE = 'ANNULE',
 }
 
 export enum StatutFacture {
@@ -48,4 +49,5 @@ export enum Entite {
   AGENDA,
   CONSULTATION,
   PATIENT,
+  LABORATOIRE,
 }

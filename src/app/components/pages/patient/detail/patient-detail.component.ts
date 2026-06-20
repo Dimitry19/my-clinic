@@ -21,7 +21,6 @@ import { PatientService } from '../../../../core/services/patient/patient.servic
 import { TooltipModule } from 'primeng/tooltip';
 import { CommonService } from '../../../../core/services/common.services';
 import {
-  ExamenLabo,
   Facture,
   Ordonnance,
   Patient,
@@ -41,6 +40,7 @@ import {
   StatutConsultation,
 } from '../../../../core/models/patient/consultation.model';
 import { AppConfirmationService } from '../../../../core/services/global/app.confirmation.service';
+import { ExamenLabo } from '../../../../core/models/laboratoire/laboratoire.model';
 
 @Component({
   selector: 'clnt-patient-detail',
@@ -107,28 +107,7 @@ export class PatientDetailComponent implements OnInit {
   }));
   statutConsConfig = CONS_STATUT_CONFIG;
 
-  examens = signal<ExamenLabo[]>([
-    {
-      id: '1',
-      date: new Date('2026-05-21'),
-      type: 'NFS + Goutte épaisse',
-      statut: StatutExamenLabo.TERMINE,
-      resultat: 'Positif Pf',
-    },
-    {
-      id: '2',
-      date: new Date('2026-04-11'),
-      type: 'Échographie abdominale',
-      statut: StatutExamenLabo.TERMINE,
-      resultat: 'Normal',
-    },
-    {
-      id: '3',
-      date: new Date('2026-06-01'),
-      type: 'Glycémie à jeun',
-      statut: StatutExamenLabo.EN_ATTENTE,
-    },
-  ]);
+  examens = signal<ExamenLabo[]>([]);
 
   factures = signal<Facture[]>([
     {
@@ -216,14 +195,14 @@ export class PatientDetailComponent implements OnInit {
         subtitle: c.medecinNom,
         type: 'consultation',
       })),
-      ...this.examens().map((e) => ({
+      /*...this.examens().map((e) => ({
         date: e.date,
         icon: 'ti ti-flask',
         color: '#0F6E56',
         title: e.type,
         subtitle: e.resultat ?? 'En attente',
         type: 'examen',
-      })),
+      })),*/
     ].sort((a, b) => b.date.getTime() - a.date.getTime());
     this.timeline.set(events);
   }
@@ -258,10 +237,7 @@ export class PatientDetailComponent implements OnInit {
   }
 
   getExamenSeverity(s: string) {
-    return (
-      { TERMINE: 'success', EN_COURS: 'info', EN_ATTENTE: 'warn' }[s] ??
-      'secondary'
-    );
+    return this.commonService.getStatutSeverity(s, Entite.LABORATOIRE);
   }
 
   copierId() {

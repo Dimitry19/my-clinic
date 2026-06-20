@@ -17,7 +17,8 @@ import { Observable } from 'rxjs/internal/Observable';
 export class ConsultationService {
   private http = inject(HttpClient);
   private commonService = inject(CommonService);
-  private API = environment.apiUrl + '/consultations';
+
+  private readonly API = `${environment.apiUrl}/consultations`;
 
   findAll(page = 0, size = 20, search = '') {
     let params = new HttpParams().set('page', page).set('size', size);

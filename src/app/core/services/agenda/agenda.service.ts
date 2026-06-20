@@ -13,7 +13,8 @@ import { environment } from '../../../../environments/environment';
 export class AgendaService {
   private http = inject(HttpClient);
   private commonService = inject(CommonService);
-  private API = environment.apiUrl + '/agenda';
+
+  private readonly API = `${environment.apiUrl}/agenda`;
 
   findAgendaByPeriode(
     annee: number,

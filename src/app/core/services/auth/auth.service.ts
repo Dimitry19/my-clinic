@@ -22,7 +22,7 @@ export class AuthService extends HeaderService {
   private platformId = inject(PLATFORM_ID);
   private commonService = inject(CommonService);
   private http = inject(HttpClient);
-  private authUrl = environment.authUrl;
+  private readonly authUrl = environment.authUrl;
 
   public currentUser = signal<User | null>(null);
 

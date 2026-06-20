@@ -13,7 +13,8 @@ import { CommonService } from '../common.services';
 export class PatientService {
   private http = inject(HttpClient);
   private commonService = inject(CommonService);
-  private API = environment.apiUrl + '/patients';
+
+  private readonly API = `${environment.apiUrl}/patients`;
 
   findAll(page = 0, size = 20, search = '') {
     let params = new HttpParams().set('page', page).set('size', size);

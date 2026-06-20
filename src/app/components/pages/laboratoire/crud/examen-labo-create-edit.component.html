@@ -1,0 +1,520 @@
+﻿<p-toast position="top-right" />
+
+<div class="consultation-create">
+  <!-- ── Breadcrumb ── -->
+  <nav class="breadcrumb" aria-label="Navigation">
+    @if (patient()) {
+      <a [routerLink]="['/patients', patient()!.id]" class="bc-link">
+        <i class="pi pi-arrow-left" aria-hidden="true"></i>
+        {{ patient()!.prenom }} {{ patient()!.nom }}
+      </a>
+      <span class="bc-sep" aria-hidden="true">/</span>
+    } @else {
+      <a routerLink="/examens-labo" class="bc-link">
+        <i class="pi pi-arrow-left" aria-hidden="true"></i>
+        Examens de laboratoire
+      </a>
+      <span class="bc-sep" aria-hidden="true">/</span>
+    }
+    <span class="bc-current">{{ getPageTitle() }}</span>
+  </nav>
+
+  <!-- ── En-tête ── -->
+  <div class="page-header">
+    <div>
+      <h2>
+        <i class="pi pi-flask" aria-hidden="true"></i>
+        {{ getPageTitle() }}
+      </h2>
+      <p>{{ getPageSubtitle() }}</p>
+    </div>
+  </div>
+
+  <!-- ── Erreur globale ── -->
+  @if (globalError()) {
+    <p-message severity="error" [text]="globalError()!" styleClass="w-full" />
+  }
+
+  <!-- ── Indicateur d'étapes ── -->
+  <div class="steps-nav" role="tablist" aria-label="Étapes de création">
+    @for (step of STEPS; track $index) {
+      <div class="step-wrapper">
+        <button
+          class="step-btn"
+          [class.step-active]="activeStep() === $index"
+          [class.step-done]="etapeComplete($index)"
+          [class.step-disabled]="$index > activeStep()"
+          (click)="allerEtape($index)"
+          role="tab"
+          [attr.aria-selected]="activeStep() === $index"
+          [attr.aria-label]="'Étape ' + ($index + 1) + ' : ' + step.label"
+          [disabled]="$index > activeStep()"
+        >
+          <div class="step-circle">
+            @if (etapeComplete($index)) {
+              <i class="pi pi-check" aria-hidden="true"></i>
+            } @else {
+              <span>{{ $index + 1 }}</span>
+            }
+          </div>
+          <div class="step-info">
+            <span class="step-num">Étape {{ $index + 1 }}</span>
+            <span class="step-label">{{ step.label }}</span>
+          </div>
+        </button>
+        @if ($index < STEPS.length - 1) {
+          <div
+            class="step-connector"
+            [class.connector-done]="etapeComplete($index)"
+            aria-hidden="true"
+          ></div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 0 — Médecin & Patient
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 0) {
+    <div
+      class="step-panel"
+      role="tabpanel"
+      aria-label="Sélection médecin et patient"
+    >
+      <div class="step-panel-header">
+        <div class="step-panel-icon">
+          <i class="pi pi-users" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Médecin & Patient</h3>
+          <p>Sélectionnez le médecin prescripteur et le patient concerné</p>
+        </div>
+      </div>
+
+      @if (loadingMeta()) {
+        <div class="loading-grid">
+          <p-skeleton height="56px" borderRadius="8px" />
+          <p-skeleton height="56px" borderRadius="8px" />
+          <p-skeleton height="56px" borderRadius="8px" />
+        </div>
+      } @else {
+        <form [formGroup]="form" class="step-form">
+          <div class="form-row">
+            <!-- Département -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fa-solid fa-building"></i>
+                Département
+              </label>
+              <p-select
+                formControlName="departement"
+                [options]="departementOptions"
+                [(ngModel)]="filterDept"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Filtrer par département"
+                (onChange)="onFilterDept($event.value)"
+                styleClass="w-full"
+              />
+            </div>
+
+            <!-- Médecin prescripteur -->
+            <div class="form-group" [class.f-err]="hasError('prescritPar')">
+              <label class="form-label required">
+                <i class="pi pi-user-plus" aria-hidden="true"></i>
+                Médecin prescripteur
+              </label>
+              <p-select
+                formControlName="prescritPar"
+                [options]="medecinOptions()"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Sélectionner un médecin"
+                styleClass="w-full"
+                [filter]="true"
+                filterPlaceholder="Rechercher..."
+                [showClear]="true"
+                [virtualScroll]="true"
+                [virtualScrollItemSize]="38"
+                [lazy]="true"
+                (onLazyLoad)="onMedecinsLazyLoad($event)"
+              />
+              @if (fieldError("prescritPar")) {
+                <span class="f-err-msg" role="alert">
+                  <i class="pi pi-info-circle" aria-hidden="true"></i>
+                  {{ fieldError("prescritPar") }}
+                </span>
+              }
+              @if (selectedMedecin()) {
+                <div class="selection-card selection-card-medecin">
+                  <div class="selection-avatar">
+                    {{
+                      getInitiales(
+                        selectedMedecin()!.prenom,
+                        selectedMedecin()!.nom
+                      )
+                    }}
+                  </div>
+                  <div class="selection-info">
+                    <span class="selection-nom"
+                      >{{ selectedMedecin()!.prenom }}
+                      {{ selectedMedecin()!.nom }}</span
+                    >
+                    <span class="selection-sub">{{
+                      selectedMedecin()!.poste
+                    }}</span>
+                  </div>
+                  <i
+                    class="pi pi-check-circle selection-check"
+                    aria-hidden="true"
+                  ></i>
+                </div>
+              }
+            </div>
+
+            <!-- Patient -->
+            <div class="form-group" [class.f-err]="hasError('patientId')">
+              <label class="form-label required">
+                <i class="pi pi-user" aria-hidden="true"></i>
+                Patient
+              </label>
+              <p-select
+                formControlName="patientId"
+                [options]="patientOptions()"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Sélectionner un patient"
+                styleClass="w-full"
+                [filter]="true"
+                filterPlaceholder="Rechercher..."
+                [showClear]="true"
+              />
+              @if (fieldError("patientId")) {
+                <span class="f-err-msg" role="alert">
+                  <i class="pi pi-info-circle" aria-hidden="true"></i>
+                  {{ fieldError("patientId") }}
+                </span>
+              }
+              @if (selectedPatient()) {
+                <div class="selection-card selection-card-patient">
+                  <div class="selection-avatar avatar-patient">
+                    {{
+                      getInitiales(
+                        selectedPatient()!.prenom,
+                        selectedPatient()!.nom
+                      )
+                    }}
+                  </div>
+                  <div class="selection-info">
+                    <span class="selection-nom"
+                      >{{ selectedPatient()!.prenom }}
+                      {{ selectedPatient()!.nom }}</span
+                    >
+                    <span class="selection-sub"
+                      >{{ selectedPatient()!.age }} ans</span
+                    >
+                  </div>
+                  <i
+                    class="pi pi-check-circle selection-check"
+                    aria-hidden="true"
+                  ></i>
+                </div>
+              }
+            </div>
+          </div>
+        </form>
+      }
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 1 — Détails de l'examen
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 1) {
+    <div class="step-panel" role="tabpanel" aria-label="Détails de l'examen">
+      <div class="step-panel-header">
+        <div class="step-panel-icon">
+          <i class="pi pi-flask" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Détails de l'examen</h3>
+          <p>Renseignez le type et les informations de l'examen prescrit</p>
+        </div>
+      </div>
+
+      <form [formGroup]="form" class="step-form">
+        <!-- Type d'examen -->
+        <div class="f-field" [class.f-err]="hasError('typeExamen')">
+          <label class="f-label">
+            <i class="pi pi-tag" aria-hidden="true"></i>
+            Type d'examen
+            <span class="req" aria-hidden="true">*</span>
+          </label>
+          <input
+            pInputText
+            formControlName="typeExamen"
+            placeholder="Ex : Numération formule sanguine (NFS), Glycémie à jeun..."
+            class="f-input"
+          />
+          @if (fieldError("typeExamen")) {
+            <span class="f-err-msg" role="alert">
+              <i class="pi pi-info-circle" aria-hidden="true"></i>
+              {{ fieldError("typeExamen") }}
+            </span>
+          }
+        </div>
+
+        <!-- Description -->
+        <div class="f-field">
+          <label class="f-label">
+            <i class="pi pi-align-left" aria-hidden="true"></i>
+            Description / Contexte clinique
+            <span class="optional-hint">(optionnel)</span>
+          </label>
+          <textarea
+            pTextarea
+            formControlName="description"
+            rows="4"
+            placeholder="Contexte clinique, instructions particulières pour le laboratoire..."
+            class="f-input f-textarea"
+          ></textarea>
+        </div>
+
+        <div class="form-row-2">
+          <!-- Statut -->
+          <div class="f-field" [class.f-err]="hasError('statut')">
+            <label class="f-label">
+              <i class="pi pi-info-circle" aria-hidden="true"></i>
+              Statut
+              <span class="req" aria-hidden="true">*</span>
+            </label>
+            <div class="type-options" role="radiogroup">
+              @for (s of statutOptions; track s.value) {
+                <label
+                  class="type-option"
+                  [class.type-selected]="form.get('statut')?.value === s.value"
+                >
+                  <input
+                    type="radio"
+                    formControlName="statut"
+                    [value]="s.value"
+                    class="sr-only"
+                  />
+                  {{ s.label }}
+                </label>
+              }
+            </div>
+          </div>
+
+          <!-- Date de prescription -->
+          <div class="f-field">
+            <label class="f-label">
+              <i class="pi pi-calendar" aria-hidden="true"></i>
+              Date de prescription
+            </label>
+            <input
+              pInputText
+              type="datetime-local"
+              formControlName="datePrescription"
+              class="f-input"
+            />
+          </div>
+        </div>
+
+        <!-- Date résultat (conditionnel) -->
+        @if (
+          form.get("statut")?.value === "TERMINE" ||
+          form.get("statut")?.value === "EN_COURS"
+        ) {
+          <div class="f-field">
+            <label class="f-label">
+              <i class="pi pi-calendar-check" aria-hidden="true"></i>
+              Date du résultat
+              @if (form.get("statut")?.value === "TERMINE") {
+                <span class="req" aria-hidden="true">*</span>
+              } @else {
+                <span class="optional-hint">(optionnel)</span>
+              }
+            </label>
+            <input
+              pInputText
+              type="datetime-local"
+              formControlName="dateResultat"
+              class="f-input"
+            />
+          </div>
+        }
+
+        @if (!selectedMedecin() || !selectedPatient()) {
+          <div class="info-hint">
+            <i class="pi pi-info-circle" aria-hidden="true"></i>
+            Retournez à l'étape précédente pour sélectionner un médecin et un
+            patient.
+          </div>
+        }
+      </form>
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 2 — Récapitulatif
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 2) {
+    <div class="step-panel" role="tabpanel" aria-label="Récapitulatif">
+      <div class="step-panel-header">
+        <div class="step-panel-icon step-icon-success">
+          <i class="pi pi-list-check" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Récapitulatif</h3>
+          <p>Vérifiez les informations avant d'enregistrer l'examen</p>
+        </div>
+      </div>
+
+      <div class="recap-grid">
+        <!-- Intervenants -->
+        <div class="recap-card">
+          <div class="recap-card-title">
+            <i class="pi pi-users" aria-hidden="true"></i>
+            Intervenants
+          </div>
+          <div class="recap-rows">
+            <div class="recap-row">
+              <span class="recap-label">Médecin</span>
+              <span class="recap-val">
+                {{ selectedMedecin()?.prenom }} {{ selectedMedecin()?.nom }}
+                <span class="recap-sub">{{ selectedMedecin()?.poste }}</span>
+              </span>
+            </div>
+            <div class="recap-row">
+              <span class="recap-label">Patient</span>
+              <span class="recap-val">
+                {{ selectedPatient()?.prenom }} {{ selectedPatient()?.nom }}
+                <span class="recap-sub">{{ selectedPatient()?.age }} ans</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Examen -->
+        <div class="recap-card">
+          <div class="recap-card-title">
+            <i class="pi pi-flask" aria-hidden="true"></i>
+            Détails de l'examen
+          </div>
+          <div class="recap-rows">
+            <div class="recap-row">
+              <span class="recap-label">Type</span>
+              <span class="recap-val">{{
+                form.get("typeExamen")?.value || "—"
+              }}</span>
+            </div>
+            <div class="recap-row">
+              <span class="recap-label">Statut</span>
+              <span class="recap-val">
+                <p-tag
+                  [value]="getStatutLabel(form.get('statut')?.value)"
+                  [severity]="
+                    $any(getStatutSeverity(form.get('statut')?.value))
+                  "
+                />
+              </span>
+            </div>
+            <div class="recap-row">
+              <span class="recap-label">Prescription</span>
+              <span class="recap-val">{{
+                formatDate(form.get("datePrescription")?.value)
+              }}</span>
+            </div>
+            @if (form.get("dateResultat")?.value) {
+              <div class="recap-row">
+                <span class="recap-label">Résultat</span>
+                <span class="recap-val">{{
+                  formatDate(form.get("dateResultat")?.value)
+                }}</span>
+              </div>
+            }
+            @if (form.get("description")?.value) {
+              <div class="recap-row">
+                <span class="recap-label">Description</span>
+                <span class="recap-val">{{
+                  form.get("description")?.value
+                }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Navigation ── -->
+  <div class="step-footer">
+    <div class="footer-left">
+      @if (activeStep() > 0) {
+        <button
+          class="btn-prev"
+          (click)="etapePrecedente()"
+          [disabled]="saving()"
+        >
+          <i class="pi pi-chevron-left" aria-hidden="true"></i>
+          Précédent
+        </button>
+      }
+    </div>
+
+    <div class="footer-progress">
+      <span class="progress-label"
+        >Étape {{ activeStep() + 1 }} / {{ STEPS.length }}</span
+      >
+      <div
+        class="progress-bar"
+        role="progressbar"
+        [attr.aria-valuenow]="activeStep() + 1"
+        [attr.aria-valuemin]="1"
+        [attr.aria-valuemax]="STEPS.length"
+      >
+        <div
+          class="progress-fill"
+          [style.width.%]="((activeStep() + 1) / STEPS.length) * 100"
+        ></div>
+      </div>
+    </div>
+
+    <div class="footer-right">
+      <a
+        [routerLink]="
+          patient() ? ['/patients', patient()!.id] : ['/examens-labo']
+        "
+        class="btn-cancel"
+        [class.disabled]="saving()"
+      >
+        <i class="pi pi-times" aria-hidden="true"></i>
+        Annuler
+      </a>
+
+      @if (activeStep() < STEPS.length - 1) {
+        <button class="btn-next" (click)="etapeSuivante()">
+          Suivant
+          <i class="pi pi-chevron-right" aria-hidden="true"></i>
+        </button>
+      } @else {
+        <button
+          class="btn-submit"
+          (click)="soumettre()"
+          [disabled]="saving()"
+          [attr.aria-busy]="saving()"
+        >
+          @if (saving()) {
+            <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+            Enregistrement...
+          } @else {
+            <i class="pi pi-check" aria-hidden="true"></i>
+            {{ editMode() ? "Modifier l'examen" : "Enregistrer l'examen" }}
+          }
+        </button>
+      }
+    </div>
+  </div>
+</div>

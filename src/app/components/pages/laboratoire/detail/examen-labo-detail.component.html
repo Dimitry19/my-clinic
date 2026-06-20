@@ -1,0 +1,258 @@
+﻿<p-toast />
+<p-confirmDialog />
+
+<!-- ── Skeleton ── -->
+@if (loading()) {
+  <div class="detail-skeleton">
+    <p-skeleton height="40px" borderRadius="8px" styleClass="mb-3" />
+    <p-skeleton height="120px" borderRadius="12px" styleClass="mb-3" />
+    <div class="skeleton-grid">
+      <p-skeleton height="180px" borderRadius="12px" />
+      <p-skeleton height="180px" borderRadius="12px" />
+    </div>
+    <p-skeleton height="100px" borderRadius="12px" styleClass="mt-3" />
+  </div>
+}
+
+<!-- ── Contenu ── -->
+@if (!loading() && examen()) {
+  <div class="clnt-detail">
+    <!-- ── Breadcrumb ── -->
+    <nav class="breadcrumb" aria-label="Navigation">
+      <a routerLink="/examens-labo" class="bc-link">
+        <i class="pi pi-arrow-left" aria-hidden="true"></i>
+        Examens de laboratoire
+      </a>
+      <span class="bc-sep" aria-hidden="true">/</span>
+      <span class="bc-current">{{ examen()!.typeExamen }}</span>
+    </nav>
+
+    <!-- ── Hero ── -->
+    <div class="clnt-hero">
+      <div class="hero-left">
+        <div class="examen-hero-icon">
+          <i class="pi pi-flask" aria-hidden="true"></i>
+        </div>
+        <div class="clnt-main-info">
+          <div class="clnt-fullname">{{ examen()!.typeExamen }}</div>
+          <div class="clnt-meta">
+            <span>
+              <i class="pi pi-user" aria-hidden="true"></i>
+              {{ examen()!.prescritParNom }}
+            </span>
+            <span class="meta-sep">·</span>
+            <span>
+              <i class="pi pi-calendar" aria-hidden="true"></i>
+              {{ formatDate(examen()!.datePrescription) }}
+            </span>
+          </div>
+          <!-- Statut courant -->
+          <div class="examen-statut-row">
+            <p-tag
+              [value]="getStatutLabel(examen()!.statut)"
+              [severity]="$any(getStatutSeverity(examen()!.statut))"
+            >
+              <ng-template pTemplate="icon">
+                <i
+                  class="pi {{ getStatutIcon(examen()!.statut) }}"
+                  style="margin-right: 4px"
+                ></i>
+              </ng-template>
+            </p-tag>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="hero-actions">
+        <p-button
+          icon="pi pi-pencil"
+          label="Modifier"
+          severity="secondary"
+          [outlined]="true"
+          [routerLink]="['/examens-labo', examen()!.id, 'edit']"
+          [class.invisible]="!isEditable()"
+          pTooltip="Modifier l'examen"
+          tooltipPosition="top"
+        />
+        <p-button
+          icon="pi pi-trash"
+          severity="danger"
+          [outlined]="true"
+          pTooltip="Supprimer"
+          tooltipPosition="top"
+          (onClick)="confirmDelete()"
+        />
+      </div>
+    </div>
+
+    <!-- ── Cartes résumé ── -->
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="sc-icon sc-blue">
+          <i class="pi pi-calendar" aria-hidden="true"></i>
+        </div>
+        <div class="sc-body">
+          <span class="sc-val">{{
+            formatDate(examen()!.datePrescription)
+          }}</span>
+          <span class="sc-label">Prescrit le</span>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div
+          class="sc-icon"
+          [class.sc-green]="examen()!.dateResultat"
+          [class.sc-amber]="!examen()!.dateResultat"
+        >
+          <i
+            class="pi"
+            [class.pi-check-circle]="examen()!.dateResultat"
+            [class.pi-clock]="!examen()!.dateResultat"
+            aria-hidden="true"
+          ></i>
+        </div>
+        <div class="sc-body">
+          <span class="sc-val">{{ formatDate(examen()!.dateResultat) }}</span>
+          <span class="sc-label">Résultat le</span>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-icon sc-blue">
+          <i class="pi pi-user" aria-hidden="true"></i>
+        </div>
+        <div class="sc-body">
+          <span class="sc-val">{{ examen()!.prescritParNom }}</span>
+          <span class="sc-label">Prescrit par</span>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-icon" [ngClass]="getStatutColorClass(examen()!.statut)">
+          <i
+            class="pi {{ getStatutIcon(examen()!.statut) }}"
+            aria-hidden="true"
+          ></i>
+        </div>
+        <div class="sc-body">
+          <span class="sc-val">{{ getStatutLabel(examen()!.statut) }}</span>
+          <span class="sc-label">Statut actuel</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Détails ── -->
+    <div class="dossier-grid">
+      <!-- Informations générales -->
+      <div class="info-card">
+        <div class="info-card-title">
+          <i class="pi pi-flask" aria-hidden="true"></i>
+          Informations de l'examen
+        </div>
+        <div class="info-rows">
+          <div class="info-row">
+            <span class="info-label">Type</span>
+            <span class="info-val">{{ examen()!.typeExamen }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Prescrit par</span>
+            <span class="info-val">{{ examen()!.prescritParNom }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Date prescription</span>
+            <span class="info-val">{{
+              formatDatetime(examen()!.datePrescription)
+            }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Date résultat</span>
+            <span class="info-val">{{
+              formatDatetime(examen()!.dateResultat)
+            }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Statut</span>
+            <span class="info-val">
+              <p-tag
+                [value]="getStatutLabel(examen()!.statut)"
+                [severity]="$any(getStatutSeverity(examen()!.statut))"
+              />
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="info-card">
+        <div class="info-card-title">
+          <i class="pi pi-align-left" aria-hidden="true"></i>
+          Description / Contexte clinique
+        </div>
+        <div class="info-rows">
+          <div class="info-row">
+            <span class="info-val examen-desc-full">
+              {{ examen()!.description || "Aucune description renseignée." }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Changement de statut ── -->
+    @if (examen()!.statut !== "ANNULE") {
+      <div class="examen-statut-panel">
+        <div class="info-card-title">
+          <i class="pi pi-arrow-right-arrow-left" aria-hidden="true"></i>
+          Changer le statut
+        </div>
+        <div class="clnt-dialog-statut-btns">
+          @for (opt of statutOptions; track opt.value) {
+            <p-button
+              [label]="opt.label"
+              size="small"
+              [outlined]="examen()!.statut !== opt.value"
+              [severity]="$any(opt.severity)"
+              [disabled]="saving() || examen()!.statut === opt.value"
+              (onClick)="changeStatut(opt.value)"
+            >
+              <ng-template pTemplate="icon">
+                <i class="pi {{ opt.icon }}" style="margin-right: 6px"></i>
+              </ng-template>
+            </p-button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ── Métadonnées ── -->
+    <div class="examen-meta-footer">
+      <span>
+        <i class="pi pi-calendar-plus" aria-hidden="true"></i>
+        Créé le {{ formatDatetime(examen()!.createdAt) }}
+      </span>
+      @if (examen()!.updatedAt !== examen()!.createdAt) {
+        <span>
+          <i class="pi pi-calendar-clock" aria-hidden="true"></i>
+          Modifié le {{ formatDatetime(examen()!.updatedAt) }}
+        </span>
+      }
+      <span class="examen-id">
+        <i class="pi pi-hashtag" aria-hidden="true"></i>
+        {{ examen()!.id }}
+      </span>
+    </div>
+  </div>
+}
+
+<!-- ── Introuvable ── -->
+@if (!loading() && !examen()) {
+  <div class="not-found">
+    <i class="pi pi-flask"></i>
+    <h3>Examen introuvable</h3>
+    <p>Cet examen n'existe pas ou a été supprimé.</p>
+    <p-button
+      label="Retour aux examens"
+      icon="pi pi-arrow-left"
+      routerLink="/examens-labo"
+    />
+  </div>
+}

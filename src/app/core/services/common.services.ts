@@ -8,12 +8,17 @@ import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { ApiResponseService } from '../models/response/api.service';
 import { ApiResponse } from '../models/response/api-response.model';
 import { ServiceError } from '../models/all/all.model';
-import { Entite, StatutRendezVous } from '../models/enums/enums.model';
+import {
+  Entite,
+  StatutExamenLabo,
+  StatutRendezVous,
+} from '../models/enums/enums.model';
 import { RDV_STATUT_CONFIG } from '../models/agenda/agenda.model';
 import {
   CONS_STATUT_CONFIG,
   StatutConsultation,
 } from '../models/patient/consultation.model';
+import { EXAMEN_STATUT_CONFIG } from '../models/laboratoire/laboratoire.model';
 
 @Injectable({
   providedIn: 'root',
@@ -57,8 +62,14 @@ export class CommonService {
   }
 
   formatDate(iso: string) {
+    if (!iso) return '—';
     const d = new Date(iso);
     return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+  }
+
+  formatDatetime(iso: string | null): string {
+    if (!iso) return '—';
+    return `${this.formatDate(iso)} à ${this.formatHeure(iso)}`;
   }
 
   public getInitiales(prenom?: string | null, nom?: string | null): string {
@@ -75,27 +86,39 @@ export class CommonService {
     if (entite === Entite.CONSULTATION) {
       return CONS_STATUT_CONFIG[s as StatutConsultation]?.label ?? 'Planifiée';
     }
+    if (entite === Entite.LABORATOIRE) {
+      return EXAMEN_STATUT_CONFIG[s as StatutExamenLabo]?.label ?? 'secondary';
+    }
     return '-';
   }
 
   getStatutSeverity(s: string, entite: Entite) {
     if (entite === Entite.AGENDA) {
-      return RDV_STATUT_CONFIG[s as StatutRendezVous]?.label ?? 'secondary';
+      return RDV_STATUT_CONFIG[s as StatutRendezVous]?.severity ?? 'secondary';
     }
 
     if (entite === Entite.CONSULTATION) {
-      return CONS_STATUT_CONFIG[s as StatutConsultation]?.label ?? 'secondary';
+      return (
+        CONS_STATUT_CONFIG[s as StatutConsultation]?.severity ?? 'secondary'
+      );
+    }
+    if (entite === Entite.LABORATOIRE) {
+      return EXAMEN_STATUT_CONFIG[s as StatutExamenLabo]?.severity ?? 'info';
     }
     return 'secondary';
   }
 
   getStatutIcon(s: string, entite: Entite) {
     if (entite === Entite.AGENDA) {
-      return RDV_STATUT_CONFIG[s as StatutRendezVous]?.label ?? 'pi-clock';
+      return RDV_STATUT_CONFIG[s as StatutRendezVous]?.icon ?? 'pi-clock';
     }
 
     if (entite === Entite.CONSULTATION) {
-      return CONS_STATUT_CONFIG[s as StatutConsultation]?.label ?? 'pi-clock';
+      return CONS_STATUT_CONFIG[s as StatutConsultation]?.icon ?? 'pi-clock';
+    }
+
+    if (entite === Entite.LABORATOIRE) {
+      return EXAMEN_STATUT_CONFIG[s as StatutExamenLabo]?.icon ?? 'pi-clock';
     }
     return 'pi-clock';
   }

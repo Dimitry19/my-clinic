@@ -18,7 +18,7 @@ export class EmployeService {
   private http = inject(HttpClient);
   private commonService = inject(CommonService);
 
-  private API = environment.apiUrl + '/employes';
+  private readonly API = `${environment.apiUrl}/employes`;
 
   findAll(page = 0, size = 20, search = '', departement = '') {
     let params = new HttpParams().set('page', page).set('size', size);

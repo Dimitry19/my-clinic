@@ -431,6 +431,7 @@
             label="Prescrire un examen"
             icon="pi pi-plus"
             size="small"
+            [routerLink]="['/examens-labo/new', patient()!.id]"
           />
         </div>
         <p-table

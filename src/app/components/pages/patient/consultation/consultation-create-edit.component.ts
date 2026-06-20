@@ -284,8 +284,10 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
   private loadConsultation(id: string): void {
     this.loading.set(true);
     this.service.findById(id).subscribe({
-      next: (p) => {
-        this.remplirFormulaire(p);
+      next: (c) => {
+        this.remplirFormulaire(c);
+        this.recuperationPatient(c.patientId);
+
         this.loading.set(false);
       },
       error: () => {
@@ -516,11 +518,12 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
     this.loadMedecins(0, true);
   }
 
-  private recuperationPatient(): void {
-    const patientId = this.route.snapshot.paramMap.get('patientId')!;
-    console.log(patientId);
+  private recuperationPatient(id?: string): void {
+    const patientId = id ?? this.route.snapshot.paramMap.get('patientId');
+
     if (!patientId) {
       this.handleMissingPatient();
+      return;
     }
     this.patientSvc.findById(patientId).subscribe({
       next: (p) => {
