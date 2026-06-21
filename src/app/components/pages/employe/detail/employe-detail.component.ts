@@ -23,7 +23,7 @@ import {
 } from '../../../../core/models/employe/employe.model';
 import { EmployeService } from '../../../../core/services/employe/employe.service';
 import { EmployeFormComponent } from '../formulaire/employe-form.component';
-import { forkJoin } from 'rxjs';
+import { catchError, EMPTY, forkJoin, of } from 'rxjs';
 import { StatutConge } from '../../../../core/models/enums/enums.model';
 import { ServiceError } from '../../../../core/models/all/all.model';
 
@@ -182,10 +182,11 @@ export class EmployeDetailComponent implements OnInit {
       cong: this.svc.getConges(id),
     }).subscribe({
       next: ({ emp, fpaies, cong }) => {
+        this.loading.set(false);
         this.employe.set(emp);
         this.fiches.set(fpaies);
         this.conges.set(cong);
-        this.loading.set(false);
+
         this.buildTimeline();
       },
       error: (err: ServiceError) => {

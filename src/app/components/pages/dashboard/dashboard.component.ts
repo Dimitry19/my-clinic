@@ -12,14 +12,8 @@ import { StatDashboard } from '../../../core/models/all/all.model';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { DashboardService } from '../../../core/services/dashboard/dashboard.service';
 import { TooltipModule } from 'primeng/tooltip';
-import {
-  RDV_STATUT_CONFIG,
-  RendezVous,
-} from '../../../core/models/agenda/agenda.model';
-import {
-  Entite,
-  StatutRendezVous,
-} from '../../../core/models/enums/enums.model';
+import { RendezVous } from '../../../core/models/agenda/agenda.model';
+import { Entite } from '../../../core/models/enums/enums.model';
 import { CommonService } from '../../../core/services/common.services';
 
 @Component({
@@ -132,7 +126,7 @@ import { CommonService } from '../../../core/services/common.services';
                     size="small"
                     pTooltip="Voir le dossier"
                     tooltipPosition="top"
-                    [routerLink]="['/patients', rdv.id]"
+                    [routerLink]="['/patients', rdv.patientId]"
                   />
                 </td>
               </tr>

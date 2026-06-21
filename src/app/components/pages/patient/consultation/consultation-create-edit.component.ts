@@ -49,10 +49,7 @@ import { Patient } from '../../../../core/models/patient/patient.model';
 import { EmployeService } from '../../../../core/services/employe/employe.service';
 import { Configuration } from '../../../../core/models/configuration/configuration.model';
 import { Employe } from '../../../../core/models/employe/employe.model';
-import {
-  RDV_STATUT_CONFIG,
-  RendezVous,
-} from '../../../../core/models/agenda/agenda.model';
+import { RendezVous } from '../../../../core/models/agenda/agenda.model';
 import { AgendaService } from '../../../../core/services/agenda/agenda.service';
 import { Page, ServiceError } from '../../../../core/models/all/all.model';
 import { CommonService } from '../../../../core/services/common.services';
@@ -105,6 +102,7 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
   selectedItem: Employe | null = null;
   form!: FormGroup;
   consultationId: string = '';
+  utilisateurId: string = '';
 
   // ── Étapes ────────────────────────────────────────────
   activeStep = signal(0);
@@ -132,6 +130,10 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
   saving = signal(false);
   filterDept = signal<string>('');
 
+  // Signaux pour poids et taille
+  poids = signal<number | null>(null);
+  taille = signal<number | null>(null);
+
   // Sélections
   selectedPatient = signal<PatientLight | null>(null);
   selectedMedecin = signal<MedecinLight | null>(null);
@@ -157,8 +159,9 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
 
   // ── IMC calculé ───────────────────────────────────────
   imc = computed(() => {
-    const p = this.form.get('poids')?.value;
-    const t = this.form.get('taille')?.value;
+    const p = this.poids();
+    const t = this.taille();
+
     if (!p || !t || t === 0) return null;
     const tM = t / 100;
     return (p / (tM * tM)).toFixed(1);
@@ -177,42 +180,10 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
     this.initForm();
 
     // Mode modification si un ID est dans l'URL
-    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
-      const id = params.get('id');
-      console.log(id);
-      if (id) {
-        this.editMode.set(true);
-        this.consultationId = id;
-        this.loadConsultation(id);
-      } else {
-        this.recuperationPatient();
-      }
-    });
+    this.editionMode();
 
     // Réagir aux changements patient/médecin pour charger les RDV
-    this.form
-      .get('patientId')!
-      .valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe((id) => {
-        this.selectedPatient.set(
-          this.patients().find((p) => p.id === id) ?? null,
-        );
-        this.form.patchValue({ rendezVousId: '' });
-        this.selectedRdv.set(null);
-        this.chargerRdv();
-      });
-
-    this.form
-      .get('medecinId')!
-      .valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe((id) => {
-        this.selectedMedecin.set(
-          this.medecins().find((m) => m.id === id) ?? null,
-        );
-        this.form.patchValue({ rendezVousId: '' });
-        this.selectedRdv.set(null);
-        this.chargerRdv();
-      });
+    this.globalOnChanges();
     this.loadingMeta.set(false);
   }
 
@@ -278,7 +249,10 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
       notes: [c.notes || ''],
       dureeMinutes: [c.dureeMinutes || 30, [Validators.min(5)]],
     });
+    this.poids.set(c.poids ?? null);
+    this.taille.set(c.taille ?? null);
     this.onSetEditModeValue(c);
+    this.globalOnChanges();
   }
 
   private loadConsultation(id: string): void {
@@ -297,10 +271,78 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
     });
   }
 
+  editionMode() {
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const id = params.get('id');
+      console.log(id);
+      if (id) {
+        this.editMode.set(true);
+        this.consultationId = id;
+        this.loadConsultation(id);
+      } else {
+        this.recuperationPatient();
+      }
+    });
+  }
+
+  globalOnChanges() {
+    this.onChangesPatient();
+    this.onChangesMedecin();
+    this.onChangesPoids();
+    this.onChangesTaille();
+  }
+  onChangesTaille() {
+    this.form
+      .get('taille')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((v) => this.taille.set(v));
+  }
+
+  onChangesPoids() {
+    this.form
+      .get('poids')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((v) => this.poids.set(v));
+  }
+
+  onChangesMedecin() {
+    this.form
+      .get('medecinId')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((id) => {
+        this.selectedMedecin.set(
+          this.medecins().find((m) => m.id === id) ?? null,
+        );
+        if (this.selectedMedecin()) {
+          this.utilisateurId = this.selectedMedecin()!.utilisateurId;
+        }
+        this.form.patchValue({ rendezVousId: '' });
+        this.selectedRdv.set(null);
+        this.chargerRdv();
+      });
+  }
+
+  onChangesPatient() {
+    this.form
+      .get('patientId')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((id) => {
+        this.selectedPatient.set(
+          this.patients().find((p) => p.id === id) ?? null,
+        );
+        this.form.patchValue({ rendezVousId: '' });
+        this.selectedRdv.set(null);
+        this.chargerRdv();
+      });
+  }
+
   // ── Chargement RDV filtrés ────────────────────────────
   chargerRdv() {
     const pid = this.form.get('patientId')?.value;
-    const mid = this.form.get('medecinId')?.value;
+    const mid =
+      this.editMode() && !this.utilisateurId
+        ? this.form.get('medecinId')?.value
+        : this.utilisateurId;
     if (!pid || !mid) {
       this.rdvDisponibles.set([]);
       return;
@@ -318,7 +360,7 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (rendezVous) => {
-          if (this.editMode()) {
+          /* if (this.editMode()) {
             this.rdvDisponibles.set(rendezVous);
           } else {
             const patient = this.patients().find((p) => p.id === pid);
@@ -329,7 +371,28 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
                 r.medecinNom.toLowerCase() ===
                   `${medecin?.nom.toLowerCase()} ${medecin?.prenom.toLowerCase()}`,
             );
+
             this.rdvDisponibles.set(filtered);
+          } */
+          this.rdvDisponibles.set(rendezVous);
+          // Vérifier si le RDV courant est encore valide après chargement
+          if (this.selectedRdv()) {
+            const rdvCourant = rendezVous.find(
+              (r) => r.id === this.selectedRdv()!.id,
+            );
+            if (!rdvCourant || this.isIndisponible(rdvCourant)) {
+              this.selectedRdv.set(null);
+              this.form.patchValue({ rendezVousId: '' });
+              if (this.editMode()) {
+                this.msg.add({
+                  severity: 'warn',
+                  summary: 'Rendez-vous indisponible',
+                  detail:
+                    "Le rendez-vous lié n'est plus disponible. Veuillez en sélectionner un nouveau.",
+                  life: 5000,
+                });
+              }
+            }
           }
           this.loadingRdv.set(false);
 
@@ -369,7 +432,7 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
       case 0:
         return ['patientId', 'medecinId'].every((f) => this.form.get(f)?.valid);
       case 1:
-        return this.form.get('rendezVousId')?.valid ?? false;
+        return !!this.selectedRdv();
       case 2:
         return (
           ['type'].every((f) => this.form.get(f)?.valid) &&
@@ -468,11 +531,17 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
     return this.commonService.getStatutIcon(s, Entite.AGENDA);
   }
 
-  isIndisponible(rdv: RendezVous) {
+  isIndisponible(rdv: RendezVous): boolean {
     const dateAComparer: Date = new Date(rdv.dateHeure);
     const dateCourante: Date = new Date();
     const indispo = dateAComparer < dateCourante;
-    return rdv.statut === 'ANNULE' || rdv.statut === 'TERMINE' || indispo;
+
+    return (
+      rdv.statut === StatutRendezVous.ANNULE ||
+      rdv.statut === StatutRendezVous.TERMINE ||
+      rdv.statut === StatutRendezVous.A_REASSIGNER ||
+      indispo
+    );
   }
   disponible(rdv: RendezVous) {
     return !this.isIndisponible(rdv);
@@ -601,6 +670,7 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
   onSetEditModeValue(c: Consultation) {
     const medecin: MedecinLight = {
       id: c.medecinId,
+      utilisateurId: this.utilisateurId,
       nom: c.medecinNom,
       prenom: '',
       poste: '',

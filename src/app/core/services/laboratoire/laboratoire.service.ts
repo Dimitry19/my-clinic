@@ -18,7 +18,7 @@ export class ExamenLaboService {
   private commonService = inject(CommonService);
   private readonly base = `${environment.apiUrl}/laboratoire`;
 
-  findByPatient(patientId: string, page = 0, size = 10) {
+  findByPatient(patientId: string, page = 0, size = 20) {
     const params = new HttpParams().set('page', page).set('size', size);
     return this.http
       .get<

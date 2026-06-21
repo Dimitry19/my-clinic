@@ -523,6 +523,7 @@
             </label>
             <p-inputNumber
               formControlName="poids"
+              (onInput)="form.get('poids')?.setValue($event.value)"
               [min]="1"
               [max]="300"
               placeholder="70"
@@ -545,6 +546,7 @@
             </label>
             <p-inputNumber
               formControlName="taille"
+              (onInput)="form.get('taille')?.setValue($event.value)"
               [min]="30"
               [max]="250"
               placeholder="170"
@@ -789,6 +791,9 @@
                 <span class="recap-label">Température</span>
                 <span class="recap-val"
                   >{{ form.get("temperature")?.value }} °C</span
+                >
+                <span class="recap-val"
+                  >{{ imc() }} — {{ imcLabel()?.label }}</span
                 >
               </div>
             }

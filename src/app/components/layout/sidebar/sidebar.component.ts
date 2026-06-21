@@ -48,7 +48,7 @@ export class SidebarComponent {
     { label: 'Dashboard', icon: 'pi pi-home', route: '/dashboard' },
     { label: 'Patients', icon: 'pi pi-users', route: '/patients' },
     { label: 'Agenda', icon: 'pi pi-calendar', route: '/agenda' },
-    { label: 'Laboratoire', icon: 'pi pi-filter-fill', route: '/labo' },
+    { label: 'Laboratoire', icon: 'pi pi-filter-fill', route: '/examens-labo' },
     { label: 'Pharmacie', icon: 'pi pi-shopping-cart', route: '/pharmacie' },
   ];
 

@@ -83,6 +83,7 @@ export interface PatientLight {
 
 export interface MedecinLight {
   id: string;
+  utilisateurId: string;
   nom: string;
   prenom: string;
   poste: string;

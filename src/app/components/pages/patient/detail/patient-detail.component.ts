@@ -41,6 +41,7 @@ import {
 } from '../../../../core/models/patient/consultation.model';
 import { AppConfirmationService } from '../../../../core/services/global/app.confirmation.service';
 import { ExamenLabo } from '../../../../core/models/laboratoire/laboratoire.model';
+import { ExamenLaboService } from '../../../../core/services/laboratoire/laboratoire.service';
 
 @Component({
   selector: 'clnt-patient-detail',
@@ -70,6 +71,7 @@ export class PatientDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private patientSvc = inject(PatientService);
   private consultationSvc = inject(ConsultationService);
+  private examenLaboSvc = inject(ExamenLaboService);
   private commonService = inject(CommonService);
   private msgSvc = inject(MessageService);
   private router = inject(Router);
@@ -81,6 +83,15 @@ export class PatientDetailComponent implements OnInit {
 
   activeTab = signal(0);
   readonly pageSize = Configuration.pageSize;
+
+  // --Examens
+
+  private destroyExams$ = new Subject<void>();
+  loadingExams = signal(true);
+  pageExams = signal<Page<ExamenLabo> | null>(null);
+  pageExamsIndex = signal(0);
+  examens = signal<ExamenLabo[]>([]);
+  totalExams = computed(() => this.pageExams()?.page.totalElements ?? 0);
 
   // --Consultations
   private destroyCons$ = new Subject<void>();
@@ -106,8 +117,6 @@ export class PatientDetailComponent implements OnInit {
     value: v,
   }));
   statutConsConfig = CONS_STATUT_CONFIG;
-
-  examens = signal<ExamenLabo[]>([]);
 
   factures = signal<Facture[]>([
     {
@@ -160,17 +169,20 @@ export class PatientDetailComponent implements OnInit {
     forkJoin({
       p: this.patientSvc.findById(id),
       cons: this.consultationSvc.findAllByPatient(page, this.pageSize, id),
+      exams: this.examenLaboSvc.findByPatient(id, page, this.pageSize),
       //cong: this.svc.getConges(id),
     }).subscribe({
-      next: ({ p, cons }) => {
+      next: ({ p, cons, exams }) => {
         this.patient.set(p);
         this.loading.set(false);
         this.successLoadConsultation(cons);
+        this.successLoadExamens(exams);
         //this.conges.set(cong);
       },
       error: (err: ServiceError) => {
         this.loading.set(false);
         this.loadingCons.set(false);
+        this.loadingExams.set(false);
         this.loadError.set(err.message);
       },
     });
@@ -183,6 +195,8 @@ export class PatientDetailComponent implements OnInit {
   ngOnDestroy() {
     this.destroyCons$.next();
     this.destroyCons$.complete();
+    this.destroyExams$.next();
+    this.destroyExams$.complete();
   }
 
   private buildTimeline() {
@@ -195,14 +209,14 @@ export class PatientDetailComponent implements OnInit {
         subtitle: c.medecinNom,
         type: 'consultation',
       })),
-      /*...this.examens().map((e) => ({
-        date: e.date,
+      ...this.examens().map((e) => ({
+        date: new Date(e.datePrescription),
         icon: 'ti ti-flask',
         color: '#0F6E56',
-        title: e.type,
-        subtitle: e.resultat ?? 'En attente',
+        title: e.typeExamen,
+        subtitle: this.getExamenStatutLabel(e.statut) ?? 'En attente',
         type: 'examen',
-      })),*/
+      })),
     ].sort((a, b) => b.date.getTime() - a.date.getTime());
     this.timeline.set(events);
   }
@@ -254,6 +268,52 @@ export class PatientDetailComponent implements OnInit {
     window.print();
   }
 
+  //------------------EXAMENS---------------------------
+  successLoadExamens(data: Page<ExamenLabo>) {
+    this.pageExams.set(data);
+    this.examens.set(data.content);
+    this.loadingExams.set(false);
+    //this.buildTimeline();
+  }
+
+  onLazyLoadExamens(e: any) {
+    this.pageConsIndex.set(e.first / this.pageSize);
+    this.loadConsultations(this.pageConsIndex());
+  }
+
+  loadExamens(p = 0) {
+    this.loadingExams.set(true);
+
+    this.examenLaboSvc
+      .findByPatient(this.patient()!.id, p, this.pageSize)
+      .pipe(takeUntil(this.destroyCons$))
+      .subscribe({
+        next: (page) => {
+          this.successLoadExamens(page);
+        },
+        error: (e: ServiceError) => {
+          this.loadingCons.set(false);
+        },
+      });
+  }
+
+  getExamenStatutLabel(s: string): string {
+    return this.commonService.getStatutLabel(s, Entite.LABORATOIRE);
+  }
+
+  getExamenStatutSeverity(s: string) {
+    return this.commonService.getStatutSeverity(s, Entite.LABORATOIRE);
+  }
+
+  getExamenStatutIcon(s: string) {
+    return this.commonService.getStatutIcon(s, Entite.LABORATOIRE);
+  }
+
+  getExamenStatutButtonSeverity(s: string): ButtonSeverity {
+    return this.commonService.getStatutButtonSeverity(s, Entite.LABORATOIRE);
+  }
+
+  //------------------CONSULTATIONS---------------------------
   openConsultationDetails(cons: Consultation) {
     /* 
       this.formError.set(null);
@@ -381,6 +441,7 @@ export class PatientDetailComponent implements OnInit {
     this.loadingCons.set(false);
     this.buildTimeline();
   }
+
   formatDate(iso: string) {
     return this.commonService.formatDate(iso);
   }

@@ -247,8 +247,8 @@ export class AgendaComponent implements OnInit {
       rendezVous: this.svc.findAgendaByPeriode(annee, mois, medecinId),
     }).subscribe({
       next: ({ rendezVous }) => {
-        this.rdvs.set(rendezVous);
         this.loading.set(false);
+        this.rdvs.set(rendezVous);
       },
       error: (err: ServiceError) => {
         this.loading.set(false);
@@ -352,43 +352,26 @@ export class AgendaComponent implements OnInit {
 
     const data = this.form.value as Partial<RdvRequest>;
 
-    if (this.editMode()) {
-      this.svc.edit(this.selectedRdv()!.id, data).subscribe({
-        next: () => {
-          this.saving.set(false);
-          this.showDialog.set(false);
-          this.msg.add({
-            severity: 'success',
-            summary: this.editMode() ? 'RDV modifié' : 'RDV créé',
-            detail: 'Rendez-vous enregistré avec succès.',
-          });
-          this.load();
-        },
-        error: (err: ServiceError) => {
-          this.saving.set(false);
-          this.loading.set(false);
-          this.loadError.set(err.message);
-        },
-      });
-    } else {
-      this.svc.create(data).subscribe({
-        next: () => {
-          this.saving.set(false);
-          this.showDialog.set(false);
-          this.msg.add({
-            severity: 'success',
-            summary: this.editMode() ? 'RDV modifié' : 'RDV créé',
-            detail: 'Rendez-vous enregistré avec succès.',
-          });
-          this.load();
-        },
-        error: (err: ServiceError) => {
-          this.saving.set(false);
-          this.loading.set(false);
-          this.loadError.set(err.message);
-        },
-      });
-    }
+    const op = this.editMode()
+      ? this.svc.edit(this.selectedRdv()!.id, data)
+      : this.svc.create(data);
+    op.subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.showDialog.set(false);
+        this.msg.add({
+          severity: 'success',
+          summary: this.editMode() ? 'RDV modifié' : 'RDV créé',
+          detail: 'Rendez-vous enregistré avec succès.',
+        });
+        this.load();
+      },
+      error: (err: ServiceError) => {
+        this.saving.set(false);
+        this.loading.set(false);
+        this.loadError.set(err.message);
+      },
+    });
   }
 
   changeStatus(rdv: RendezVous, statut: StatutRendezVous) {
@@ -510,7 +493,7 @@ export class AgendaComponent implements OnInit {
 
   onMedecinSelected(medecin: Employe): void {
     this.form.patchValue({
-      medecinId: medecin.id,
+      medecinId: medecin.utilisateurId,
       medecinNom: `${medecin.prenom} ${medecin.nom}`,
     });
     this.showSearchMedecinResults = false;

@@ -229,9 +229,173 @@
   }
 
   <!-- ══════════════════════════════════════
-       ÉTAPE 1 — Détails de l'examen
+       ÉTAPE 1 — Consultation liée
   ══════════════════════════════════════ -->
   @if (activeStep() === 1) {
+    <div
+      class="step-panel"
+      role="tabpanel"
+      aria-label="Sélection de la consultation"
+    >
+      <div class="step-panel-header">
+        <div class="step-panel-icon">
+          <i class="pi pi-stethoscope" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Consultation liée</h3>
+          <p>
+            Associez cet examen à une consultation de
+            <strong
+              >{{ selectedPatient()?.prenom }}
+              {{ selectedPatient()?.nom }}</strong
+            >
+          </p>
+        </div>
+      </div>
+
+      <!-- Chargement -->
+      @if (loadingCons()) {
+        <div class="rdv-grid">
+          @for (i of [1, 2, 3]; track i) {
+            <p-skeleton height="80px" borderRadius="12px" />
+          }
+        </div>
+      }
+
+      <!-- Aucune consultation -->
+      @if (!loadingCons() && consultations().length === 0) {
+        <div class="no-rdv-card">
+          <div class="no-rdv-icon">
+            <i class="pi pi-stethoscope" aria-hidden="true"></i>
+          </div>
+          <div class="no-rdv-body">
+            <h4>Aucune consultation trouvée</h4>
+            <p>
+              <strong
+                >{{ selectedPatient()?.prenom }}
+                {{ selectedPatient()?.nom }}</strong
+              >
+              n'a pas encore de consultation enregistrée.
+            </p>
+            <p class="no-rdv-hint">
+              Une consultation est nécessaire avant de prescrire un examen.
+              Veuillez d'abord en créer une.
+            </p>
+          </div>
+          <div class="no-rdv-actions">
+            <a
+              [routerLink]="['/consultation/create', selectedPatient()!.id]"
+              class="btn-create-rdv"
+            >
+              <i class="pi pi-plus" aria-hidden="true"></i>
+              Créer une consultation
+            </a>
+            <button class="btn-back-step" (click)="etapePrecedente()">
+              <i class="pi pi-arrow-left" aria-hidden="true"></i>
+              Changer de patient
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- Liste des consultations -->
+      @if (!loadingCons() && consultations().length > 0) {
+        <div class="rdv-count-label">
+          <i class="pi pi-list" aria-hidden="true"></i>
+          {{ consultations().length }} consultation(s) disponible(s)
+        </div>
+
+        <div class="rdv-grid">
+          @for (cons of consultations(); track cons.id) {
+            <div
+              class="rdv-card"
+              [class.rdv-card-selected]="selectedConsultation()?.id === cons.id"
+              (click)="selectionnerConsultation(cons)"
+              role="radio"
+              [attr.aria-checked]="selectedConsultation()?.id === cons.id"
+              [attr.aria-label]="
+                'Consultation du ' + formatDate(cons.dateHeure)
+              "
+              tabindex="0"
+              (keydown.enter)="selectionnerConsultation(cons)"
+              (keydown.space)="selectionnerConsultation(cons)"
+            >
+              <!-- Indicateur sélection -->
+              <div class="rdv-radio">
+                @if (selectedConsultation()?.id === cons.id) {
+                  <i
+                    class="pi pi-check-circle rdv-radio-checked"
+                    aria-hidden="true"
+                  ></i>
+                } @else {
+                  <div class="rdv-radio-empty" aria-hidden="true"></div>
+                }
+              </div>
+
+              <!-- Contenu -->
+              <div class="rdv-card-body">
+                <div class="rdv-card-date">
+                  <div class="rdv-date-icon">
+                    <i class="pi pi-stethoscope" aria-hidden="true"></i>
+                  </div>
+                  <div>
+                    <span class="rdv-date-label">{{
+                      formatDate(cons.dateHeure)
+                    }}</span>
+                    <span class="rdv-heure-label">
+                      <i class="pi pi-user" aria-hidden="true"></i>
+                      {{ cons.medecinNom }}
+                    </span>
+                  </div>
+                </div>
+                <div class="rdv-card-motif">
+                  <i class="pi pi-clipboard" aria-hidden="true"></i>
+                  {{ cons.motif }}
+                </div>
+              </div>
+
+              <!-- Statut -->
+              <div class="rdv-card-statut">
+                <p-tag
+                  [value]="getConsultationStatutLabel(cons.statut)"
+                  [severity]="$any(getConsultationStatutSeverity(cons.statut))"
+                />
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Erreur si aucune sélection -->
+        @if (hasError("consultationId")) {
+          <span class="f-err-msg mt-2" role="alert">
+            <i class="pi pi-info-circle" aria-hidden="true"></i>
+            Veuillez sélectionner une consultation.
+          </span>
+        }
+
+        <!-- Désélectionner -->
+        @if (selectedConsultation()) {
+          <div style="padding: 0 1.5rem 1rem; text-align: right">
+            <button
+              class="btn-back-step"
+              (click)="
+                selectedConsultation.set(null);
+                form.patchValue({ consultationId: '' })
+              "
+            >
+              <i class="pi pi-times" aria-hidden="true"></i>
+              Désélectionner
+            </button>
+          </div>
+        }
+      }
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 2 — Détails de l'examen
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 2) {
     <div class="step-panel" role="tabpanel" aria-label="Détails de l'examen">
       <div class="step-panel-header">
         <div class="step-panel-icon">
@@ -358,9 +522,9 @@
   }
 
   <!-- ══════════════════════════════════════
-       ÉTAPE 2 — Récapitulatif
+       ÉTAPE 3 — Récapitulatif
   ══════════════════════════════════════ -->
-  @if (activeStep() === 2) {
+  @if (activeStep() === 3) {
     <div class="step-panel" role="tabpanel" aria-label="Récapitulatif">
       <div class="step-panel-header">
         <div class="step-panel-icon step-icon-success">
@@ -373,6 +537,42 @@
       </div>
 
       <div class="recap-grid">
+        <!-- Consultation liée -->
+        <div class="recap-card">
+          <div class="recap-card-title">
+            <i class="pi pi-stethoscope" aria-hidden="true"></i>
+            Consultation liée
+          </div>
+          <div class="recap-rows">
+            @if (selectedConsultation()) {
+              <div class="recap-row">
+                <span class="recap-label">Date</span>
+                <span class="recap-val">{{
+                  formatDate(selectedConsultation()!.dateHeure)
+                }}</span>
+              </div>
+              <div class="recap-row">
+                <span class="recap-label">Médecin</span>
+                <span class="recap-val">{{
+                  selectedConsultation()!.medecinNom
+                }}</span>
+              </div>
+              <div class="recap-row">
+                <span class="recap-label">Motif</span>
+                <span class="recap-val">{{
+                  selectedConsultation()!.motif
+                }}</span>
+              </div>
+            } @else {
+              <div class="recap-row">
+                <span class="recap-val recap-empty"
+                  >Aucune consultation associée</span
+                >
+              </div>
+            }
+          </div>
+        </div>
+
         <!-- Intervenants -->
         <div class="recap-card">
           <div class="recap-card-title">
@@ -495,7 +695,11 @@
       </a>
 
       @if (activeStep() < STEPS.length - 1) {
-        <button class="btn-next" (click)="etapeSuivante()">
+        <button
+          class="btn-next"
+          (click)="etapeSuivante()"
+          [disabled]="activeStep() === 1 && consultations().length === 0"
+        >
           Suivant
           <i class="pi pi-chevron-right" aria-hidden="true"></i>
         </button>

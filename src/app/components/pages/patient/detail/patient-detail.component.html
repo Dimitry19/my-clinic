@@ -436,8 +436,15 @@
         </div>
         <p-table
           [value]="examens()"
+          [paginator]="true"
+          [totalRecords]="totalExams()"
+          [rows]="pageSize"
+          [lazy]="true"
+          (onLazyLoad)="onLazyLoadExamens($event)"
           styleClass="p-datatable-sm"
           [rowHover]="true"
+          dataKey="id"
+          aria-label="Liste des examens du patient"
         >
           <ng-template pTemplate="header">
             <tr>
@@ -450,12 +457,12 @@
           </ng-template>
           <ng-template pTemplate="body" let-e>
             <tr>
-              <td>{{ e.date | date: "dd/MM/yyyy" }}</td>
-              <td>{{ e.type }}</td>
-              <td>{{ e.resultat ?? "—" }}</td>
+              <td>{{ e.datePrescription | date: "dd/MM/yyyy" }}</td>
+              <td>{{ e.typeExamen }}</td>
+              <td>{{ getExamenStatutLabel(e.statut) }}</td>
               <td>
                 <p-tag
-                  [value]="e.statut"
+                  [value]="getExamenStatutLabel(e.statut)"
                   [severity]="getExamenSeverity(e.statut)"
                 />
               </td>

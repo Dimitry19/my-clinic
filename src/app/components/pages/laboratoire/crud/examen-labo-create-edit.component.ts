@@ -36,6 +36,7 @@ import {
   MedecinLight,
   PatientLight,
   CONS_DEPARTEMENTS,
+  Consultation,
 } from '../../../../core/models/patient/consultation.model';
 import { Configuration } from '../../../../core/models/configuration/configuration.model';
 import { CommonService } from '../../../../core/services/common.services';
@@ -49,6 +50,7 @@ import {
   ExamenLaboRequest,
 } from '../../../../core/models/laboratoire/laboratoire.model';
 import { ExamenLaboService } from '../../../../core/services/laboratoire/laboratoire.service';
+import { ConsultationService } from '../../../../core/services/patient/consultation.service';
 
 @Component({
   selector: 'clnt-examen-labo-create-edit',
@@ -80,6 +82,7 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
   private patientSvc = inject(PatientService);
   private employeSvc = inject(EmployeService);
   private commonSvc = inject(CommonService);
+  private consultationSvc = inject(ConsultationService);
   private destroy$ = new Subject<void>();
 
   form!: FormGroup;
@@ -89,6 +92,7 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
   activeStep = signal(0);
   readonly STEPS = [
     { label: 'Médecin & Patient', icon: 'pi-users' },
+    { label: 'Consultation', icon: 'pi-stethoscope' },
     { label: 'Détails examen', icon: 'pi-flask' },
     { label: 'Récapitulatif', icon: 'pi-list-check' },
   ];
@@ -107,6 +111,9 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
   medecins = signal<Employe[]>([]);
   selectedPatient = signal<PatientLight | null>(null);
   selectedMedecin = signal<MedecinLight | null>(null);
+  consultations = signal<Consultation[]>([]);
+  loadingCons = signal(false);
+  selectedConsultation = signal<Consultation | null>(null);
 
   // ── Options ──────────────────────────────────────────────
   departementOptions = [...CONS_DEPARTEMENTS];
@@ -158,6 +165,10 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
         this.selectedPatient.set(
           this.patients().find((p) => p.id === id) ?? null,
         );
+        this.selectedConsultation.set(null);
+        this.form.patchValue({ consultationId: '' });
+        this.consultations.set([]);
+        if (id) this.loadConsultations(id);
       });
 
     // Réaction changement médecin
@@ -177,9 +188,10 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
       patientId: ['', Validators.required],
       prescritPar: ['', Validators.required],
       departement: [''],
+      consultationId: ['', Validators.required],
       typeExamen: ['', [Validators.required, Validators.maxLength(150)]],
       description: [''],
-      statut: ['EN_ATTENTE' as StatutExamenLabo, Validators.required],
+      statut: [StatutExamenLabo.EN_ATTENTE, Validators.required],
       datePrescription: [now],
       dateResultat: [null as string | null],
     });
@@ -203,6 +215,7 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
         const [prenom, ...restNom] = e.prescritParNom.split(' ');
         this.selectedMedecin.set({
           id: e.prescritParId,
+          utilisateurId: e.prescritParId,
           prenom,
           nom: restNom.join(' '),
           poste: '',
@@ -247,6 +260,29 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadConsultations(patientId: string): void {
+    this.loadingCons.set(true);
+    this.consultationSvc.findAllByPatient(0, 20, patientId).subscribe({
+      next: (page) => {
+        this.consultations.set(page.content);
+        this.loadingCons.set(false);
+      },
+      error: () => {
+        this.loadingCons.set(false);
+        this.msg.add({
+          severity: 'warn',
+          summary: 'Avertissement',
+          detail: 'Impossible de charger les consultations.',
+        });
+      },
+    });
+  }
+
+  selectionnerConsultation(cons: Consultation): void {
+    this.selectedConsultation.set(cons);
+    this.form.patchValue({ consultationId: cons.id });
+  }
+
   // ── Navigation étapes ────────────────────────────────────
   etapeSuivante() {
     if (!this.etapeValide(this.activeStep())) {
@@ -273,6 +309,8 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
           (f) => this.form.get(f)?.valid,
         );
       case 1:
+        return !!this.selectedConsultation();
+      case 2:
         return ['typeExamen', 'statut'].every((f) => this.form.get(f)?.valid);
       default:
         return true;
@@ -286,7 +324,8 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
   marquerEtapeTouchee(step: number) {
     const champs: Record<number, string[]> = {
       0: ['patientId', 'prescritPar'],
-      1: ['typeExamen', 'statut'],
+      1: ['consultationId'],
+      2: ['typeExamen', 'statut'],
     };
     (champs[step] ?? []).forEach((f) => this.form.get(f)?.markAsTouched());
   }
@@ -295,7 +334,7 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
   soumettre() {
     this.form.markAllAsTouched();
     if (this.form.invalid) {
-      for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < this.STEPS.length - 1; i++) {
         if (!this.etapeValide(i)) {
           this.activeStep.set(i);
           return;
@@ -305,7 +344,7 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
     }
 
     const req: ExamenLaboRequest = {
-      consultationId: '', // optionnel si pas de consultation liée
+      consultationId: this.form.value.consultationId,
       patientId: this.form.value.patientId,
       prescritPar: this.form.value.prescritPar,
       typeExamen: this.form.value.typeExamen,
@@ -396,6 +435,14 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
   getStatutSeverity(s: string) {
     console.log(s);
     return this.commonSvc.getStatutSeverity(s, Entite.LABORATOIRE);
+  }
+  getConsultationStatutLabel(s: string): string {
+    return this.commonSvc.getStatutLabel(s, Entite.CONSULTATION);
+  }
+
+  getConsultationStatutSeverity(s: string) {
+    console.log(s);
+    return this.commonSvc.getStatutSeverity(s, Entite.CONSULTATION);
   }
 
   getInitiales(prenom: string, nom: string): string {
