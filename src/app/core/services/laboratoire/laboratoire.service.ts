@@ -18,6 +18,17 @@ export class ExamenLaboService {
   private commonService = inject(CommonService);
   private readonly base = `${environment.apiUrl}/laboratoire`;
 
+  findAll(page = 0, size = 20) {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return this.http
+      .get<ApiResponse<Page<ExamenLabo>>>(`${this.base}/all`, { params })
+      .pipe(
+        map((r) => r.data),
+        catchError((e) =>
+          this.commonService.handleError(e, Entite.LABORATOIRE),
+        ),
+      );
+  }
   findByPatient(patientId: string, page = 0, size = 20) {
     const params = new HttpParams().set('page', page).set('size', size);
     return this.http

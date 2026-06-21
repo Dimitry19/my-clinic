@@ -40,7 +40,7 @@ import { CommonService } from '../../../core/services/common.services';
 import { EmployeFormComponent } from './formulaire/employe-form.component';
 import { Configuration } from '../../../core/models/configuration/configuration.model';
 import { Page, ServiceError } from '../../../core/models/all/all.model';
-import { StatutEmploye } from '../../../core/models/enums/enums.model';
+import { Entite, StatutEmploye } from '../../../core/models/enums/enums.model';
 import { AppConfirmationService } from '../../../core/services/global/app.confirmation.service';
 
 @Component({
@@ -303,9 +303,13 @@ export class EmployesComponent implements OnInit {
   }
 
   getStatutIcon(statut: string): string {
-    return statut === 'ACTIF' ? 'pi pi-ban' : 'pi pi-check-circle';
+    return this.commonService.getStatutIcon(statut, Entite.EMPLOYE);
   }
   getStatutLabel(statut: string): string {
+    return this.commonService.getStatutLabel(statut, Entite.EMPLOYE);
+  }
+
+  getBtnStatutLabel(statut: string): string {
     return statut === 'ACTIF' ? 'Désactiver' : 'Réactiver';
   }
   getDialogTitle(): string {

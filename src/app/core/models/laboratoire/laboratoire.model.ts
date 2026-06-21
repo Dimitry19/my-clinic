@@ -4,6 +4,7 @@ export interface ExamenLabo {
   id: string;
   consultationId: string;
   patientId: string;
+  patientNom: string;
   prescritParId: string;
   prescritParNom: string;
   typeExamen: string;

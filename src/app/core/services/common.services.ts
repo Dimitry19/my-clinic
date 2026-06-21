@@ -10,6 +10,7 @@ import { ApiResponse } from '../models/response/api-response.model';
 import { ServiceError } from '../models/all/all.model';
 import {
   Entite,
+  StatutEmploye,
   StatutExamenLabo,
   StatutRendezVous,
 } from '../models/enums/enums.model';
@@ -19,6 +20,7 @@ import {
   StatutConsultation,
 } from '../models/patient/consultation.model';
 import { EXAMEN_STATUT_CONFIG } from '../models/laboratoire/laboratoire.model';
+import { EMLOYE_STATUT_CONFIG } from '../models/employe/employe.model';
 
 @Injectable({
   providedIn: 'root',
@@ -87,7 +89,11 @@ export class CommonService {
       return CONS_STATUT_CONFIG[s as StatutConsultation]?.label ?? 'Planifiée';
     }
     if (entite === Entite.LABORATOIRE) {
-      return EXAMEN_STATUT_CONFIG[s as StatutExamenLabo]?.label ?? 'secondary';
+      return EXAMEN_STATUT_CONFIG[s as StatutExamenLabo]?.label ?? 'En attente';
+    }
+
+    if (entite === Entite.EMPLOYE) {
+      return EMLOYE_STATUT_CONFIG[s as StatutEmploye]?.label ?? '-';
     }
     return '-';
   }
@@ -105,6 +111,10 @@ export class CommonService {
     if (entite === Entite.LABORATOIRE) {
       return EXAMEN_STATUT_CONFIG[s as StatutExamenLabo]?.severity ?? 'info';
     }
+
+    if (entite === Entite.EMPLOYE) {
+      return EMLOYE_STATUT_CONFIG[s as StatutEmploye]?.severity ?? 'secondary';
+    }
     return 'secondary';
   }
 
@@ -119,6 +129,11 @@ export class CommonService {
 
     if (entite === Entite.LABORATOIRE) {
       return EXAMEN_STATUT_CONFIG[s as StatutExamenLabo]?.icon ?? 'pi-clock';
+    }
+    if (entite === Entite.EMPLOYE) {
+      return (
+        EMLOYE_STATUT_CONFIG[s as StatutEmploye]?.icon ?? 'pi pi-check-circle'
+      );
     }
     return 'pi-clock';
   }

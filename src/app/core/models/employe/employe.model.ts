@@ -71,6 +71,14 @@ export const ROLES: { label: string; value: RoleEmploye }[] = [
   { label: 'Urgentiste', value: 'URGENTISTE' },
 ];
 
+export const EMLOYE_STATUT_CONFIG: Record<
+  StatutEmploye,
+  { label: string; severity: string; icon: string }
+> = {
+  ACTIF: { label: 'Actif', severity: 'success', icon: 'pi pi-ban' },
+  INACTIF: { label: 'Inactif', severity: 'danger', icon: 'pi pi-check-circle' },
+};
+
 export interface FicheDePaie {
   id: string;
   mois: number;

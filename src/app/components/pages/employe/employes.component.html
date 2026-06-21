@@ -110,7 +110,7 @@
 
         <!-- Skeleton rows pendant le chargement -->
         <ng-template pTemplate="loadingbody">
-          @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+          @for (i of [1, 2, 3, 4, 5, 6]; track i) {
             <tr>
               <td>
                 <div class="skel-cell">
@@ -189,7 +189,7 @@
             <!-- Statut -->
             <td>
               <p-tag
-                [value]="emp.statut"
+                [value]="getStatutLabel(emp.statut)"
                 [severity]="getStatutSeverity(emp.statut)"
               />
             </td>
@@ -219,7 +219,7 @@
                 <p-button
                   [class.action-toggle-off]="emp.statut === 'ACTIF'"
                   [class.action-toggle-on]="emp.statut !== 'ACTIF'"
-                  [pTooltip]="getStatutLabel(emp.statut)"
+                  [pTooltip]="getBtnStatutLabel(emp.statut)"
                   [icon]="getStatutIcon(emp.statut)"
                   [text]="true"
                   size="small"

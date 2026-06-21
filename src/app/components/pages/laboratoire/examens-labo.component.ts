@@ -1,4 +1,5 @@
-﻿import {
+﻿import { Configuration } from './../../../core/models/configuration/configuration.model';
+import {
   Component,
   inject,
   input,
@@ -27,7 +28,10 @@ import { InputTextModule } from 'primeng/inputtext';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { StatutExamenLabo } from '../../../core/models/enums/enums.model';
+import {
+  Entite,
+  StatutExamenLabo,
+} from '../../../core/models/enums/enums.model';
 import {
   EXAMEN_STATUT_CONFIG,
   ExamenLabo,
@@ -36,6 +40,7 @@ import {
 
 import { AppConfirmationService } from '../../../core/services/global/app.confirmation.service';
 import { ExamenLaboService } from '../../../core/services/laboratoire/laboratoire.service';
+import { CommonService } from '../../../core/services/common.services';
 
 @Component({
   selector: 'clnt-examen-labo-list',
@@ -67,6 +72,7 @@ export class ExamensLaboComponent implements OnInit {
 
   private svc = inject(ExamenLaboService);
   private msg = inject(MessageService);
+  private commonService = inject(CommonService);
   private confirmSvc = inject(AppConfirmationService);
   private fb = inject(FormBuilder);
 
@@ -78,7 +84,7 @@ export class ExamensLaboComponent implements OnInit {
   dialogVisible = signal(false);
   editTarget = signal<ExamenLabo | null>(null);
 
-  readonly pageSize = 10;
+  readonly pageSize = Configuration.pageSize;
   page = 0;
 
   statutOptions = Object.entries(EXAMEN_STATUT_CONFIG).map(([value, cfg]) => ({
@@ -90,7 +96,7 @@ export class ExamensLaboComponent implements OnInit {
   form = this.fb.group({
     typeExamen: ['', [Validators.required, Validators.maxLength(150)]],
     description: [''],
-    statut: ['EN_ATTENTE' as StatutExamenLabo, Validators.required],
+    statut: [StatutExamenLabo.EN_ATTENTE, Validators.required],
     datePrescription: [new Date().toISOString()],
     dateResultat: [null as string | null],
   });
@@ -106,23 +112,21 @@ export class ExamensLaboComponent implements OnInit {
 
   loadExamens() {
     this.loading.set(true);
-    this.svc
-      .findByPatient(this.patientId(), this.page, this.pageSize)
-      .subscribe({
-        next: (p) => {
-          this.examens.set(p.content);
-          this.total.set(p.page.totalElements);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.loading.set(false);
-          this.msg.add({
-            severity: 'error',
-            summary: 'Erreur',
-            detail: 'Impossible de charger les examens.',
-          });
-        },
-      });
+    this.svc.findAll(this.page, this.pageSize).subscribe({
+      next: (p) => {
+        this.examens.set(p.content);
+        this.total.set(p.page.totalElements);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.msg.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de charger les examens.',
+        });
+      },
+    });
   }
 
   onLazyLoad(event: any) {
@@ -247,5 +251,16 @@ export class ExamensLaboComponent implements OnInit {
     if (c.errors?.['maxlength'])
       return `Maximum ${c.errors['maxlength'].requiredLength} caractères.`;
     return '';
+  }
+
+  getStatutLabel(s: string): string {
+    return this.commonService.getStatutLabel(s, Entite.LABORATOIRE);
+  }
+
+  getStatutSeverity(s: string) {
+    return this.commonService.getStatutSeverity(s, Entite.LABORATOIRE);
+  }
+  getStatutIcon(s: string): string {
+    return this.commonService.getStatutIcon(s, Entite.LABORATOIRE);
   }
 }

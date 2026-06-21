@@ -1,1 +1,220 @@
-﻿
+﻿<p-toast position="top-right" />
+
+<div class="examen-labo-section">
+  <!-- ── En-tête ── -->
+  <div class="section-header">
+    <div class="section-header-left">
+      <i class="pi pi-flask" aria-hidden="true"></i>
+      <div>
+        <h3>Examens de laboratoire</h3>
+        <p>{{ total() }} examen(s) enregistré(s)</p>
+      </div>
+    </div>
+
+    <p-button
+      icon="pi pi-plus"
+      label="Nouvel examen"
+      size="small"
+      (onClick)="openCreate()"
+    />
+  </div>
+
+  <!-- ── Tableau ── -->
+  <p-table
+    [value]="examens()"
+    [loading]="loading()"
+    [paginator]="true"
+    [rows]="pageSize"
+    [totalRecords]="total()"
+    [lazy]="true"
+    (onLazyLoad)="onLazyLoad($event)"
+    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+    styleClass="p-datatable-sm"
+    [rowHover]="true"
+    dataKey="id"
+    aria-label="Liste des examens de laboratoire"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Patient</th>
+        <th>Type d'examen</th>
+        <th>Prescrit par</th>
+        <th>Date prescription</th>
+        <th>Date résultat</th>
+        <th>Statut</th>
+        <th style="width: 100px">Actions</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-e>
+      <tr>
+        <td>{{ e.patientNom }}</td>
+        <td>
+          <span class="examen-type">
+            <i class="pi pi-file-edit"></i>
+            {{ e.typeExamen }}
+          </span>
+          @if (e.description) {
+            <span class="examen-desc">{{ e.description }}</span>
+          }
+        </td>
+        <td>{{ e.prescritParNom }}</td>
+        <td>{{ formatDate(e.datePrescription) }}</td>
+        <td>{{ e.dateResultat ? formatDate(e.dateResultat) : "—" }}</td>
+        <td>
+          <p-tag
+            [value]="getStatutLabel(e.statut)"
+            [severity]="$any(getStatutSeverity(e.statut))"
+          >
+            <ng-template pTemplate="icon">
+              <i
+                class="pi {{ getStatutIcon(e.statut) }}"
+                style="margin-right: 4px"
+              ></i>
+            </ng-template>
+          </p-tag>
+        </td>
+        <td>
+          <div class="action-btns">
+            <p-button
+              icon="pi pi-pencil"
+              [text]="true"
+              size="small"
+              severity="secondary"
+              pTooltip="Modifier"
+              tooltipPosition="top"
+              (onClick)="openEdit(e)"
+            />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              size="small"
+              severity="danger"
+              pTooltip="Supprimer"
+              tooltipPosition="top"
+              (onClick)="confirmDelete(e)"
+            />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="6" class="empty-state">
+          <i class="pi pi-flask"></i>
+          <p>Aucun examen de laboratoire</p>
+          <p-button
+            label="Prescrire un examen"
+            icon="pi pi-plus"
+            size="small"
+            (onClick)="openCreate()"
+          />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- ══════════════════════════════════════
+     DIALOG — Créer / Modifier
+══════════════════════════════════════ -->
+<p-dialog
+  [header]="dialogTitle()"
+  [visible]="dialogVisible()"
+  (visibleChange)="dialogVisible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="examen-dialog"
+  [style]="{ width: '560px' }"
+>
+  <form [formGroup]="form" class="step-form">
+    <!-- Type d'examen -->
+    <div class="f-field" [class.f-err]="hasError('typeExamen')">
+      <label class="f-label">
+        <i class="pi pi-tag" aria-hidden="true"></i>
+        Type d'examen
+        <span class="req" aria-hidden="true">*</span>
+      </label>
+      <input
+        pInputText
+        formControlName="typeExamen"
+        placeholder="Ex: Numération formule sanguine (NFS)..."
+        class="f-input"
+      />
+      @if (fieldError("typeExamen")) {
+        <span class="f-err-msg" role="alert">
+          <i class="pi pi-info-circle"></i>
+          {{ fieldError("typeExamen") }}
+        </span>
+      }
+    </div>
+
+    <!-- Description -->
+    <div class="form-field">
+      <label class="form-label">
+        <i class="pi pi-align-left" aria-hidden="true"></i>
+        Description / Observations
+      </label>
+      <textarea
+        pTextarea
+        formControlName="description"
+        rows="3"
+        placeholder="Instructions, contexte clinique..."
+        class="form-control f-textarea"
+      ></textarea>
+    </div>
+
+    <!-- Statut -->
+    <div class="form-field" [class.f-err]="hasError('statut')">
+      <label class="form-label required">
+        <i class="pi pi-info-circle" aria-hidden="true"></i>
+        Statut
+      </label>
+      <p-select
+        formControlName="statut"
+        [options]="statutOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Sélectionner un statut"
+        styleClass="w-full"
+      />
+    </div>
+
+    <!-- Date résultat (si en cours ou terminé) -->
+    @if (
+      form.get("statut")?.value === "TERMINE" ||
+      form.get("statut")?.value === "EN_COURS"
+    ) {
+      <div class="form-field">
+        <label class="form-label">
+          <i class="pi pi-calendar-check" aria-hidden="true"></i>
+          Date du résultat
+        </label>
+        <input
+          pInputText
+          type="datetime-local"
+          formControlName="dateResultat"
+          class="form-control"
+        />
+      </div>
+    }
+  </form>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Annuler"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="closeDialog()"
+      [disabled]="saving()"
+    />
+    <p-button
+      [label]="saving() ? 'Enregistrement...' : 'Enregistrer'"
+      [icon]="saving() ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+      (onClick)="soumettre()"
+      [disabled]="saving()"
+    />
+  </ng-template>
+</p-dialog>
