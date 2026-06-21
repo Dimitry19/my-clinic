@@ -2,13 +2,10 @@ package it.solutions.services.trinity.agenda.controller;
 
 import it.solutions.services.trinity.agenda.services.AgendaService;
 import it.solutions.services.trinity.contracts.dto.AgendaDto;
-import it.solutions.services.trinity.core.security.services.CookieUtils;
 import it.solutions.services.trinity.core.security.services.JwtService;
 import it.solutions.services.trinity.core.shared.api.ApiResponse;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

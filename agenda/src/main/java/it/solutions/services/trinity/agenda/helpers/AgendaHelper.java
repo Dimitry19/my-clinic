@@ -37,14 +37,10 @@ public class AgendaHelper extends CoreHelper {
          return patientLookupPort.findPatientLight(patientId);
 
     }
-    public UserLight findUserLight(UUID medecinId, boolean isEdit){
-        UUID utilisateurId=medecinId;
-        if(!isEdit){
-            EmployeDto.Response employe=employeLookupPort.findById(medecinId);
-            utilisateurId=employe.getUtilisateurId();
-        }
+    public UserLight findUserLight(UUID medecinId){
 
-         return userDao.findUserLight(utilisateurId).orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable " ));
+
+         return userDao.findUserLight(medecinId).orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable " ));
 
     }
 

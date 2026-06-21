@@ -62,7 +62,7 @@ public class AgendaService {
     public AgendaDto.Response create(AgendaDto.Request req) {
 
         helper.validDate(req.getDateHeure());
-        UserLight user=helper.findUserLight(req.getMedecinId(),false);
+        UserLight user=helper.findUserLight(req.getMedecinId());
         PatientLight patient=helper.findPatientLight(req.getPatientId());
         Agenda agenda = Agenda.builder()
                 .medecin(user)
@@ -83,7 +83,7 @@ public class AgendaService {
         Agenda agenda = dao.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Agenda introuvable : " + id));
 
-        UserLight user=helper.findUserLight(req.getMedecinId(),true);
+        UserLight user=helper.findUserLight(req.getMedecinId());
         PatientLight patient=helper.findPatientLight(req.getPatientId());
         agenda.setMedecin(user);
         agenda.setPatient(patient);
