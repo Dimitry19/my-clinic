@@ -3,6 +3,7 @@ package it.solutions.services.trinity.employe.controller;
 import it.solutions.services.trinity.core.shared.api.ApiResponse;
 
 import it.solutions.services.trinity.core.shared.enums.Departement;
+import it.solutions.services.trinity.core.shared.utils.GenericUtils;
 import it.solutions.services.trinity.employe.dto.CongeDto;
 import it.solutions.services.trinity.contracts.dto.EmployeDto;
 import it.solutions.services.trinity.employe.dto.FicheDePaieDto;
@@ -32,8 +33,8 @@ public class EmployeController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE')")
     public ResponseEntity<ApiResponse<Page<EmployeDto.Response>>> all(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = GenericUtils.PAGE) int page,
+            @RequestParam(defaultValue = GenericUtils.SIZE) int size) {
         return ResponseEntity.ok(ApiResponse.ok(service.findAll(page, size)));
     }
 
@@ -42,8 +43,8 @@ public class EmployeController {
     public ResponseEntity<ApiResponse<Page<EmployeDto.Response>>> search(
             @RequestParam String q,
             @RequestParam(required = false) String departement,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = GenericUtils.PAGE) int page,
+            @RequestParam(defaultValue = GenericUtils.SIZE) int size) {
         return ResponseEntity.ok(ApiResponse.ok(service.search(q,departement, page, size)));
     }
 
@@ -51,8 +52,8 @@ public class EmployeController {
     @PreAuthorize("hasAnyRole('ADMIN','MEDECIN')")
     public ResponseEntity<ApiResponse<Page<EmployeDto.Response>>> searchMedecin(
             @RequestParam String q,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = GenericUtils.PAGE) int page,
+            @RequestParam(defaultValue = GenericUtils.SIZE) int size) {
         return ResponseEntity.ok(ApiResponse.ok(service.searchMedecin(q, page, size)));
     }
 
@@ -61,8 +62,8 @@ public class EmployeController {
     @PreAuthorize("hasAnyRole('ADMIN','MEDECIN')")
     public ResponseEntity<ApiResponse<Page<EmployeDto.Response>>> findEmployesByDepartement(
             @RequestParam(required = false) Departement departement,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = GenericUtils.PAGE) int page,
+            @RequestParam(defaultValue = GenericUtils.SIZE) int size) {
         return ResponseEntity.ok(ApiResponse.ok(service.findEmployesByDepartement(departement, page, size)));
     }
 
@@ -70,8 +71,8 @@ public class EmployeController {
     @PreAuthorize("hasAnyRole('ADMIN','MEDECIN')")
     public ResponseEntity<ApiResponse<Page<EmployeDto.Response>>> findEmployesByDepartementConsultation(
             @RequestParam(required = false) Departement departement,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = GenericUtils.PAGE) int page,
+            @RequestParam(defaultValue = GenericUtils.SIZE) int size) {
         return ResponseEntity.ok(ApiResponse.ok(service.findEmployesByDepartementConsultation(departement, page, size)));
     }
 

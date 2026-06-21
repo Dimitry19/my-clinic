@@ -30,6 +30,12 @@ public class ExamenLaboService {
     private final UserService userService;
     private final ExamenLaboHelper helper;
 
+
+    @Transactional(readOnly = true)
+    public Page<ExamenLaboDto.Response> all(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return dao.findAll(pageable).map(helper::toResponse);
+    }
     @Transactional(readOnly = true)
     public Page<ExamenLaboDto.Response> findByPatient(UUID patientId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);

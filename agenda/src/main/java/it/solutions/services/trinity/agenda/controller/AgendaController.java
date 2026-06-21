@@ -29,7 +29,8 @@ public class AgendaController {
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE')")
     public ResponseEntity<ApiResponse<List<AgendaDto.Response>>> findAgendaByPeriode(
                                                                                      @RequestParam  int annee,
-                                                                                     @RequestParam int mois, @CookieValue(name = COOKIE_ACCESS_TOKEN) String accessToken) {
+                                                                                     @RequestParam int mois,
+                                                                                     @CookieValue(name = COOKIE_ACCESS_TOKEN) String accessToken) {
 
         return ResponseEntity.ok(ApiResponse.ok(service.findAgendaByPeriode(jwtService.extraireEmail(accessToken),annee, mois)));
     }

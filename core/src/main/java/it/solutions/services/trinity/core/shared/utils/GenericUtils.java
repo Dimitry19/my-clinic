@@ -5,6 +5,9 @@ import java.util.stream.Stream;
 
 public class GenericUtils {
 
+    public static final String PAGE="0";
+    public static final String SIZE="20";
+
     public static String formatMedecinNom(String nom, String prenom) {
         return Stream.of(nom, prenom)
                 .filter(s -> s != null && !s.isBlank())

@@ -51,9 +51,7 @@ public class AuthController {
 
 
     @GetMapping(value = "/logout")
-    public  ResponseEntity<ApiResponse<Boolean>> logout() throws Exception {
-
-
+    public  ResponseEntity<ApiResponse<Boolean>> logout()  {
 
         ApiResponse<Boolean> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(true);

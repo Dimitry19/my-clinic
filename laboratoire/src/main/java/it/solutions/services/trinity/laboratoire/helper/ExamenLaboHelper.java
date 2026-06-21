@@ -3,13 +3,17 @@ package it.solutions.services.trinity.laboratoire.helper;
 import it.solutions.services.trinity.contracts.dto.ConsultationDto;
 import it.solutions.services.trinity.contracts.dto.EmployeDto;
 import it.solutions.services.trinity.contracts.dto.ExamenLaboDto;
+import it.solutions.services.trinity.contracts.dto.PatientDto;
+import it.solutions.services.trinity.contracts.entities.PatientLight;
 import it.solutions.services.trinity.contracts.port.EmployeLookupPort;
+import it.solutions.services.trinity.contracts.port.PatientLookupPort;
 import it.solutions.services.trinity.core.helpers.CoreHelper;
 import it.solutions.services.trinity.core.security.services.UserService;
 import it.solutions.services.trinity.core.shared.dao.UserDao;
 import it.solutions.services.trinity.core.shared.entities.User;
 import it.solutions.services.trinity.core.shared.enums.StatutConsultation;
 import it.solutions.services.trinity.core.shared.enums.StatutExamenLabo;
+import it.solutions.services.trinity.core.shared.utils.GenericUtils;
 import it.solutions.services.trinity.laboratoire.dao.ExamenLaboDao;
 import it.solutions.services.trinity.laboratoire.entities.ExamenLabo;
 import jakarta.persistence.EntityNotFoundException;
@@ -23,13 +27,15 @@ public class ExamenLaboHelper extends CoreHelper {
 
     private final ExamenLaboDao dao;
     private final EmployeLookupPort employeLookupPort;
+    private final PatientLookupPort patientLookupPort;
     private final UserService userService;
 
-    public ExamenLaboHelper(UserDao userDao, ExamenLaboDao dao,UserService userService,EmployeLookupPort employeLookupPort) {
+    public ExamenLaboHelper(UserDao userDao, ExamenLaboDao dao,UserService userService,PatientLookupPort patientLookupPort,EmployeLookupPort employeLookupPort) {
         super(userDao);
         this.dao = dao;
         this.userService = userService;
         this.employeLookupPort = employeLookupPort;
+        this.patientLookupPort = patientLookupPort;
     }
 
 
@@ -63,13 +69,15 @@ public class ExamenLaboHelper extends CoreHelper {
                 .build();
     }
     public ExamenLaboDto.Response toResponse(ExamenLabo e) {
+        PatientLight patient=patientLookupPort.findPatientLight(e.getPatientId());
         User u = e.getPrescritPar();
         return ExamenLaboDto.Response.builder()
                 .id(e.getId())
                 .consultationId(e.getConsultationId())
                 .patientId(e.getPatientId())
+                .patientNom(u != null ? GenericUtils.formatMedecinNom(patient.getNom(),patient.getPrenom()) : "—")
                 .prescritParId(u != null ? u.getId() : null)
-                .prescritParNom(u != null ? u.getPrenom() + " " + u.getNom() : "—")
+                .prescritParNom(u != null ? GenericUtils.formatMedecinNom(u.getNom(),u.getPrenom()) : "—")
                 .typeExamen(e.getTypeExamen())
                 .description(e.getDescription())
                 .statut(e.getStatut().name())

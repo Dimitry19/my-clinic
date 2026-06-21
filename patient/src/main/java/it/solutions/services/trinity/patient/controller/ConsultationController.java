@@ -4,6 +4,7 @@ import it.solutions.services.trinity.contracts.dto.AgendaDto;
 import it.solutions.services.trinity.core.shared.api.ApiResponse;
 import it.solutions.services.trinity.contracts.dto.ConsultationDto;
 import it.solutions.services.trinity.contracts.dto.PatientDto;
+import it.solutions.services.trinity.core.shared.utils.GenericUtils;
 import it.solutions.services.trinity.patient.services.ConsultationService;
 import it.solutions.services.trinity.patient.services.PatientService;
 import jakarta.validation.Valid;
@@ -27,8 +28,8 @@ public class ConsultationController {
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE')")
     public ResponseEntity<ApiResponse<Page<PatientDto.Response>>> all(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = GenericUtils.PAGE) int page,
+            @RequestParam(defaultValue = GenericUtils.SIZE) int size) {
         return ResponseEntity.ok(ApiResponse.ok(patientService.findAll(page, size)));
     }
 
@@ -36,8 +37,8 @@ public class ConsultationController {
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER')")
     public ResponseEntity<ApiResponse<Page<ConsultationDto.Response>>> findAllByPatient(
             @PathVariable UUID id,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = GenericUtils.PAGE) int page,
+            @RequestParam(defaultValue = GenericUtils.SIZE) int size) {
         return ResponseEntity.ok(ApiResponse.ok(service.findAllByPatient(id, page, size)));
     }
 
@@ -45,8 +46,8 @@ public class ConsultationController {
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE')")
     public ResponseEntity<ApiResponse<Page<PatientDto.Response>>> search(
             @RequestParam String q,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = GenericUtils.PAGE) int page,
+            @RequestParam(defaultValue = GenericUtils.SIZE) int size){
         return ResponseEntity.ok(ApiResponse.ok(patientService.search(q, page, size)));
     }
 

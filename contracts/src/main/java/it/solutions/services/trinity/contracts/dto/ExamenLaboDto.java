@@ -38,6 +38,7 @@ public class ExamenLaboDto {
         private UUID id;
         private UUID consultationId;
         private UUID patientId;
+        private String patientNom;
         private UUID prescritParId;
         private String prescritParNom;
         private String typeExamen;
