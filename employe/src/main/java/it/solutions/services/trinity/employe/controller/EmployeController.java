@@ -4,6 +4,7 @@ import it.solutions.services.trinity.core.shared.api.ApiResponse;
 
 import it.solutions.services.trinity.core.shared.enums.Departement;
 import it.solutions.services.trinity.core.shared.utils.GenericUtils;
+import it.solutions.services.trinity.employe.adapters.EmployeAdapter;
 import it.solutions.services.trinity.employe.dto.CongeDto;
 import it.solutions.services.trinity.contracts.dto.EmployeDto;
 import it.solutions.services.trinity.employe.dto.FicheDePaieDto;
@@ -29,6 +30,7 @@ public class EmployeController {
     private final EmployeService service;
     private final FicheDePaieService ficheDePaieService;
     private final CongeService congeService;
+    private final EmployeAdapter adapter;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE')")
@@ -80,6 +82,11 @@ public class EmployeController {
     @PreAuthorize("hasAnyRole('ADMIN','MEDECIN','INFIRMIER')")
     public ResponseEntity<ApiResponse<EmployeDto.Response>> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(service.findById(id)));
+    }
+    @GetMapping("/user/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MEDECIN','INFIRMIER')")
+    public ResponseEntity<ApiResponse<EmployeDto.Response>> findByUtilisateurId(@PathVariable UUID id) {
+        return ResponseEntity.ok(ApiResponse.ok(adapter.findEmployeByUtilisateur(id)));
     }
 
     @PostMapping

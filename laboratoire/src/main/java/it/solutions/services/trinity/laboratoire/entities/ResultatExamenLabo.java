@@ -1,6 +1,5 @@
 package it.solutions.services.trinity.laboratoire.entities;
 
-import it.solutions.services.trinity.core.shared.entities.BaseEntity;
 import it.solutions.services.trinity.core.shared.entities.UserLight;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,25 +13,20 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "resultats_labo")
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ResultatExamenLabo   {
-
+@Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+public class ResultatExamenLabo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "examen_id", nullable = false, unique = true)
+    private ExamenLabo examen;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "laborantin_id", nullable = false)
     private UserLight laborantin;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "examen_id", nullable = false)
-    private ExamenLabo examenLabo;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")

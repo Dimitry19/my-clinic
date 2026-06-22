@@ -4,6 +4,7 @@ import it.solutions.services.trinity.core.security.services.UserService;
 import it.solutions.services.trinity.core.shared.entities.User;
 import it.solutions.services.trinity.core.shared.enums.StatutEmploye;
 import it.solutions.services.trinity.core.shared.utils.GenericUtils;
+import it.solutions.services.trinity.employe.adapters.EmployeAdapter;
 import it.solutions.services.trinity.employe.dao.EmployeDao;
 import it.solutions.services.trinity.contracts.dto.EmployeDto;
 import it.solutions.services.trinity.employe.entities.Employe;
@@ -21,10 +22,13 @@ public class EmployeHelper {
     private final UserService userService;
     private final EmployeDao dao;
 
+
     public Employe findEmployeOrThrow(UUID id) {
         return dao.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Employé introuvable : " + id));
     }
+
+
 
     public EmployeDto.Response toResponse(Employe e) {
         User user = e.getUtilisateur();

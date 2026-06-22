@@ -37,6 +37,7 @@ public class EmployeService {
         return helper.toResponse(helper.findEmployeOrThrow(id));
     }
 
+
     // readOnly = true garde la session Hibernate ouverte pendant tout le mapping
     // .map(helper::toResponse), ce qui évite le LazyInitializationException
     // sur le proxy `User` (relation @OneToOne LAZY). Combiné aux requêtes

@@ -65,10 +65,14 @@ public class ExamenLaboService {
         ExamenLabo examen = helper.findOrThrow(id);
         User prescripteur = userService.findById(req.getPrescritPar());
 
+
+        //TODO Faire les validations entre les dates de prescription , consultation et resultats
+
         examen.setPrescritPar(prescripteur);
         examen.setTypeExamen(req.getTypeExamen());
         examen.setDescription(req.getDescription());
         examen.setStatut(req.getStatut() != null ? req.getStatut() : examen.getStatut());
+        examen.setDatePrescription(req.getDatePrescription());
         examen.setDateResultat(req.getDateResultat());
 
         return helper.toResponse(dao.save(examen));
@@ -80,6 +84,9 @@ public class ExamenLaboService {
         examen.setStatut(req.getStatut());
         if (req.getStatut() == StatutExamenLabo.TERMINE && examen.getDateResultat() == null) {
             examen.setDateResultat(LocalDateTime.now());
+        }
+        if (req.getStatut() == StatutExamenLabo.ANNULE) {
+            examen.setDateResultat(null);
         }
         return helper.toResponse(dao.save(examen));
     }
