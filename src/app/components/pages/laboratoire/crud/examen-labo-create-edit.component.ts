@@ -15,7 +15,7 @@ import {
   FormsModule,
   FormGroup,
 } from '@angular/forms';
-import { Subject } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { SelectLazyLoadEvent, SelectModule } from 'primeng/select';
@@ -47,10 +47,14 @@ import {
 } from '../../../../core/models/enums/enums.model';
 import {
   EXAMEN_STATUT_CONFIG,
+  ExamenLabo,
   ExamenLaboRequest,
 } from '../../../../core/models/laboratoire/laboratoire.model';
 import { ExamenLaboService } from '../../../../core/services/laboratoire/laboratoire.service';
 import { ConsultationService } from '../../../../core/services/patient/consultation.service';
+import { environment } from '../../../../../environments/environment.prod';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'clnt-examen-labo-create-edit',
@@ -118,6 +122,10 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
   // ── Options ──────────────────────────────────────────────
   departementOptions = [...CONS_DEPARTEMENTS];
 
+  readonly pageSize = Configuration.pageSize;
+  page = 0;
+  pagePatients = 0;
+
   statutOptions = Object.entries(EXAMEN_STATUT_CONFIG).map(([value, cfg]) => ({
     label: cfg.label,
     value,
@@ -151,8 +159,13 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
         this.loadExamen(id);
       } else {
         this.loading.set(false);
-        if (patientId) {
+        if (environment.fakePatientId === patientId) {
+          this.loadMeta();
+          return;
+        }
+        if (patientId && environment.fakePatientId != patientId) {
           this.loadPatient(patientId);
+          return;
         }
       }
     });
@@ -194,6 +207,27 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
       statut: [StatutExamenLabo.EN_ATTENTE, Validators.required],
       datePrescription: [now],
       dateResultat: [null as string | null],
+    });
+  }
+
+  private loadMeta(): void {
+    this.loadingMeta.set(true);
+    forkJoin({
+      patients: this.patientSvc.findAll(this.pagePatients, this.pageSize),
+    }).subscribe({
+      next: ({ patients }) => {
+        this.patients.set(patients.content);
+
+        this.loadingMeta.set(false);
+      },
+      error: () => {
+        this.loadingMeta.set(false);
+        this.msg.add({
+          severity: 'warn',
+          summary: 'Avertissement',
+          detail: 'Impossible de charger les  patients.',
+        });
+      },
     });
   }
 
@@ -280,6 +314,14 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
 
   selectionnerConsultation(cons: Consultation): void {
     this.selectedConsultation.set(cons);
+    if (cons.medecinId != this.selectedMedecin()!.utilisateurId) {
+      this.msg.add({
+        severity: 'warn',
+        summary: 'Avertissement',
+        detail:
+          "Le médécin de la consultation est different de celui qui prescrit l'examen.",
+      });
+    }
     this.form.patchValue({ consultationId: cons.id });
   }
 
@@ -381,6 +423,30 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
         this.saving.set(false);
         this.globalError.set(err.message);
       },
+    });
+  }
+
+  onPatientsLazyLoad(event: SelectLazyLoadEvent) {
+    this.loadPatients(event.first ?? 0);
+  }
+
+  private loadPatients(startIndex: number) {
+    this.patientSvc.findAll(startIndex, Configuration.pageSize, '').subscribe({
+      next: (data: Page<Patient>) => {
+        this.patients.update((items) => {
+          const updated = [...items];
+          data.content.forEach((item, i) => {
+            updated[startIndex + i] = item;
+          });
+          return updated;
+        });
+      },
+      error: () =>
+        this.msg.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Aucun patient trouvé.',
+        }),
     });
   }
 

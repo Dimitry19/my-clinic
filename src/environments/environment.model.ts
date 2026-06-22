@@ -5,6 +5,7 @@ export interface ClinicTrinityEnvironment {
   hostUrl: string;
   mobileFeatureUrl: string;
   context: string;
+  fakePatientId: string;
 
   inProgressIconUrl: string;
   insertedIconUrl: string;

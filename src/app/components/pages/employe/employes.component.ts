@@ -1,21 +1,8 @@
-﻿import {
-  Component,
-  inject,
-  OnInit,
-  OnDestroy,
-  signal,
-  computed,
-} from '@angular/core';
+﻿import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import {
-  Subject,
-  debounceTime,
-  distinctUntilChanged,
-  switchMap,
-  of,
-} from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { TableModule } from 'primeng/table';
@@ -29,7 +16,7 @@ import { ToastModule } from 'primeng/toast';
 import { SkeletonModule } from 'primeng/skeleton';
 import { DialogModule } from 'primeng/dialog';
 import { TooltipModule } from 'primeng/tooltip';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 
 import {
   DEPARTEMENTS,

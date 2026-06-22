@@ -499,7 +499,9 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
         this.saving.set(false);
         this.msg.add({
           severity: 'success',
-          summary: 'Consultation créée',
+          summary: this.editMode()
+            ? 'Consultation modifiée'
+            : 'Consultation créée',
           detail: `Consultation de ${this.selectedPatient()?.prenom} ${this.selectedPatient()?.nom} enregistrée.`,
         });
         setTimeout(

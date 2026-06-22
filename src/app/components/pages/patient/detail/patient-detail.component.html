@@ -468,11 +468,14 @@
               </td>
               <td>
                 <p-button
-                  icon="pi pi-file"
+                  icon="pi pi-file-pdf"
                   [text]="true"
                   size="small"
-                  pTooltip="Voir rapport"
+                  severity="danger"
+                  pTooltip="Télécharger le rapport PDF"
+                  tooltipPosition="top"
                   [disabled]="e.statut !== 'TERMINE'"
+                  (onClick)="genererRapportPdf(e)"
                 />
               </td>
             </tr>

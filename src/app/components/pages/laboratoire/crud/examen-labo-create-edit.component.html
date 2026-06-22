@@ -116,6 +116,7 @@
                 placeholder="Filtrer par département"
                 (onChange)="onFilterDept($event.value)"
                 styleClass="w-full"
+                appendTo="body"
               />
             </div>
 
@@ -136,8 +137,9 @@
                 filterPlaceholder="Rechercher..."
                 [showClear]="true"
                 [virtualScroll]="true"
-                [virtualScrollItemSize]="38"
+                [virtualScrollItemSize]="pageSize"
                 [lazy]="true"
+                appendTo="body"
                 (onLazyLoad)="onMedecinsLazyLoad($event)"
               />
               @if (fieldError("prescritPar")) {
@@ -189,6 +191,11 @@
                 [filter]="true"
                 filterPlaceholder="Rechercher..."
                 [showClear]="true"
+                [virtualScroll]="true"
+                [virtualScrollItemSize]="pageSize"
+                [lazy]="true"
+                appendTo="body"
+                (onLazyLoad)="onPatientsLazyLoad($event)"
               />
               @if (fieldError("patientId")) {
                 <span class="f-err-msg" role="alert">

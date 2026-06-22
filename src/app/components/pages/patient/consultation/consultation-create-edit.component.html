@@ -111,6 +111,7 @@
                 placeholder="Département"
                 (onChange)="onFilterDept($event.value)"
                 styleClass="w-full"
+                appendTo="body"
                 aria-label="Filtrer par département"
               />
               <!-- Carte departement sélectionné -->
@@ -152,6 +153,7 @@
                 [virtualScroll]="true"
                 [virtualScrollItemSize]="38"
                 [lazy]="true"
+                appendTo="body"
                 (onLazyLoad)="onMedecinsLazyLoad($event)"
               >
               </p-select>

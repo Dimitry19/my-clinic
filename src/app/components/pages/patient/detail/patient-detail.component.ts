@@ -27,7 +27,6 @@ import {
 } from '../../../../core/models/patient/patient.model';
 import {
   Entite,
-  StatutExamenLabo,
   StatutFacture,
 } from '../../../../core/models/enums/enums.model';
 import { forkJoin, Subject, takeUntil } from 'rxjs';
@@ -467,5 +466,9 @@ export class PatientDetailComponent implements OnInit {
 
   getInitiales(c: Consultation): string {
     return this.commonService.getInitiales(c.patientPrenom, c.patientNom);
+  }
+
+  genererRapportPdf(examen: ExamenLabo) {
+    this.examenLaboSvc.genererRapportPdf(examen);
   }
 }

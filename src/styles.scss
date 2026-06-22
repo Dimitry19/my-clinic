@@ -893,3 +893,9 @@ select.form-control {
   padding-top: 0.75rem;
   border-top: 0.5px solid $border;
 }
+
+.p-select,
+.p-select-label,
+.p-select-option {
+  font-family: "system-ui", sans-serif !important;
+}

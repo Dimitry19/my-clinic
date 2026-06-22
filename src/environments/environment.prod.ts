@@ -7,6 +7,7 @@ export const environment: ClinicTrinityEnvironment = {
   hostUrl: 'https://parcel-demo.travelpostservices.eu',
   mobileFeatureUrl: 'https://mobiles-apps-features.vercel.app/admin/file',
   context: '/trinity',
+  fakePatientId: '12020d5sd00ds-sds1d5158dsd-1d1sd85d12sd-1s1dsdsd',
   inProgressIconUrl: '/assets/images/tracking/delivery-step.jpg',
   insertedIconUrl: '/assets/images/tracking/inserted-step.png',
   stopOverIconUrl: '/assets/images/tracking/room_time_waiting.png',

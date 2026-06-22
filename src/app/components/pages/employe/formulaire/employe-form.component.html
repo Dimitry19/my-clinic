@@ -257,6 +257,7 @@
               optionValue="value"
               placeholder="Sélectionner..."
               styleClass="w-full"
+              appendTo="body"
               [attr.aria-invalid]="hasError('departement')"
             />
             @if (hasError("departement")) {
@@ -315,6 +316,7 @@
               optionLabel="label"
               optionValue="value"
               styleClass="w-full"
+              appendTo="body"
             />
           </div>
 
@@ -332,6 +334,7 @@
               optionValue="value"
               placeholder="Sélectionner..."
               styleClass="w-full"
+              appendTo="body"
               [attr.aria-invalid]="hasError('role')"
             />
             @if (hasError("role")) {

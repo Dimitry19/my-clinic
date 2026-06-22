@@ -41,6 +41,12 @@ import {
 import { AppConfirmationService } from '../../../core/services/global/app.confirmation.service';
 import { ExamenLaboService } from '../../../core/services/laboratoire/laboratoire.service';
 import { CommonService } from '../../../core/services/common.services';
+import { EmployeService } from '../../../core/services/employe/employe.service';
+import { PatientService } from '../../../core/services/patient/patient.service';
+import { Employe } from '../../../core/models/employe/employe.model';
+import { Patient } from '../../../core/models/patient/patient.model';
+import { forkJoin } from 'rxjs';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'clnt-examen-labo-list',
@@ -48,6 +54,7 @@ import { CommonService } from '../../../core/services/common.services';
   imports: [
     CommonModule,
     FormsModule,
+    RouterLink,
     ReactiveFormsModule,
     ButtonModule,
     TableModule,
@@ -75,6 +82,8 @@ export class ExamensLaboComponent implements OnInit {
   private commonService = inject(CommonService);
   private confirmSvc = inject(AppConfirmationService);
   private fb = inject(FormBuilder);
+  private patientSvc = inject(PatientService);
+  private employeSvc = inject(EmployeService);
 
   // ── État ────────────────────────────────────────────────
   examens = signal<ExamenLabo[]>([]);
@@ -84,8 +93,14 @@ export class ExamensLaboComponent implements OnInit {
   dialogVisible = signal(false);
   editTarget = signal<ExamenLabo | null>(null);
 
+  patients = signal<Patient[]>([]);
+  medecins = signal<Employe[]>([]);
+  loadingMeta = signal(false);
+
   readonly pageSize = Configuration.pageSize;
   page = 0;
+  pagePatients = 0;
+  pageMedecins = 0;
 
   statutOptions = Object.entries(EXAMEN_STATUT_CONFIG).map(([value, cfg]) => ({
     label: cfg.label,
@@ -94,6 +109,8 @@ export class ExamensLaboComponent implements OnInit {
 
   // ── Formulaire ──────────────────────────────────────────
   form = this.fb.group({
+    patientId: ['', Validators.required],
+    prescritPar: ['', Validators.required],
     typeExamen: ['', [Validators.required, Validators.maxLength(150)]],
     description: [''],
     statut: [StatutExamenLabo.EN_ATTENTE, Validators.required],
@@ -106,8 +123,23 @@ export class ExamensLaboComponent implements OnInit {
     this.editTarget() ? "Modifier l'examen" : 'Nouvel examen de laboratoire',
   );
 
+  patientOptions = computed(() =>
+    this.patients().map((p) => ({
+      label: `${p.prenom} ${p.nom}`,
+      value: p.id,
+    })),
+  );
+
+  medecinOptions = computed(() =>
+    this.medecins().map((m) => ({
+      label: `${m.prenom} ${m.nom} — ${m.poste}`,
+      value: m.id,
+    })),
+  );
+
   ngOnInit() {
     this.loadExamens();
+    this.loadMeta();
   }
 
   loadExamens() {
@@ -124,6 +156,28 @@ export class ExamensLaboComponent implements OnInit {
           severity: 'error',
           summary: 'Erreur',
           detail: 'Impossible de charger les examens.',
+        });
+      },
+    });
+  }
+
+  private loadMeta(): void {
+    this.loadingMeta.set(true);
+    forkJoin({
+      patients: this.patientSvc.findAll(this.pagePatients, this.pageSize),
+      medecins: this.employeSvc.findAll(this.pageMedecins, this.pageSize),
+    }).subscribe({
+      next: ({ patients, medecins }) => {
+        this.patients.set(patients.content);
+        this.medecins.set(medecins.content);
+        this.loadingMeta.set(false);
+      },
+      error: () => {
+        this.loadingMeta.set(false);
+        this.msg.add({
+          severity: 'warn',
+          summary: 'Avertissement',
+          detail: 'Impossible de charger les médecins et patients.',
         });
       },
     });
@@ -147,6 +201,8 @@ export class ExamensLaboComponent implements OnInit {
   openEdit(examen: ExamenLabo) {
     this.editTarget.set(examen);
     this.form.patchValue({
+      patientId: examen.patientId,
+      prescritPar: examen.prescritParId,
       typeExamen: examen.typeExamen,
       description: examen.description,
       statut: examen.statut,
@@ -171,8 +227,8 @@ export class ExamensLaboComponent implements OnInit {
 
     const req: ExamenLaboRequest = {
       consultationId: this.consultationId() ?? '',
-      patientId: this.patientId(),
-      prescritPar: '', // À passer depuis le contexte utilisateur connecté
+      patientId: this.form.value.patientId!,
+      prescritPar: this.form.value.prescritPar!,
       typeExamen: this.form.value.typeExamen!,
       description: this.form.value.description ?? '',
       statut: this.form.value.statut as StatutExamenLabo,
