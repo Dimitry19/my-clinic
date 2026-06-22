@@ -454,11 +454,10 @@
 
         <div class="form-row-2">
           <!-- Statut -->
-          <div class="f-field" [class.f-err]="hasError('statut')">
-            <label class="f-label">
+          <div class="form-field" [class.f-err]="hasError('statut')">
+            <label class="form-label require">
               <i class="pi pi-info-circle" aria-hidden="true"></i>
               Statut
-              <span class="req" aria-hidden="true">*</span>
             </label>
             <div class="type-options" role="radiogroup">
               @for (s of statutOptions; track s.value) {
@@ -479,8 +478,8 @@
           </div>
 
           <!-- Date de prescription -->
-          <div class="f-field">
-            <label class="f-label">
+          <div class="form-field">
+            <label class="form-label">
               <i class="pi pi-calendar" aria-hidden="true"></i>
               Date de prescription
             </label>
@@ -488,7 +487,8 @@
               pInputText
               type="datetime-local"
               formControlName="datePrescription"
-              class="f-input"
+              class="f-input form-control"
+              [min]="minDatePrescription"
             />
           </div>
         </div>
@@ -498,8 +498,8 @@
           form.get("statut")?.value === "TERMINE" ||
           form.get("statut")?.value === "EN_COURS"
         ) {
-          <div class="f-field">
-            <label class="f-label">
+          <div class="form-field">
+            <label class="form-label">
               <i class="pi pi-calendar-check" aria-hidden="true"></i>
               Date du résultat
               @if (form.get("statut")?.value === "TERMINE") {
@@ -512,8 +512,15 @@
               pInputText
               type="datetime-local"
               formControlName="dateResultat"
-              class="f-input"
+              class="f-input form-control"
+              [min]="minDatePrescription"
             />
+            @if (form.get("dateResultat")?.hasError("minDate")) {
+              <small class="p-error">
+                La date de resultat ne peut pas être antérieure à la date de la
+                consultation.
+              </small>
+            }
           </div>
         }
 

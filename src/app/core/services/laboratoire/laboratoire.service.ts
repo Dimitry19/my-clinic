@@ -13,6 +13,7 @@ import { CommonService } from '../common.services';
 import { ApiResponse } from '../../models/response/api-response.model';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { ResultatLabo } from '../../models/laboratoire/resultat.labo.model';
 
 @Injectable({ providedIn: 'root' })
 export class ExamenLaboService {
@@ -101,33 +102,30 @@ export class ExamenLaboService {
     );
   }
 
-  genererRapportPdf(examen: ExamenLabo): void {
+  genererRapportPdf(
+    examen: ExamenLabo & { resultat?: ResultatLabo | null },
+  ): void {
     const doc = new jsPDF();
-    const primaryColor: [number, number, number] = [24, 95, 165]; // $primary #185fa5
-    const successColor: [number, number, number] = [15, 110, 86]; // $success #0f6e56
-    const textMuted: [number, number, number] = [95, 94, 90]; // $text-muted
-    const borderColor: [number, number, number] = [211, 209, 199]; // $border
+    const primaryColor: [number, number, number] = [24, 95, 165];
+    const textMuted: [number, number, number] = [95, 94, 90];
+    const borderColor: [number, number, number] = [211, 209, 199];
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    // ── En-tête avec logo et nom clinique ──────────────────
-    // Bande de couleur en haut
+    // ── En-tête ────────────────────────────────────────────
     doc.setFillColor(...primaryColor);
     doc.rect(0, 0, pageWidth, 28, 'F');
 
-    // Nom clinique
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
     doc.setTextColor(255, 255, 255);
     doc.text('Clinique Trinité', 14, 12);
 
-    // Sous-titre clinique
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(200, 220, 245);
     doc.text('Centre Médical — Service de Laboratoire', 14, 19);
 
-    // Date d'impression (coin droit)
     doc.setFontSize(8);
     doc.setTextColor(200, 220, 245);
     const datePrint = new Date().toLocaleDateString('fr-FR', {
@@ -139,7 +137,7 @@ export class ExamenLaboService {
     });
     doc.text(`Imprimé le ${datePrint}`, pageWidth - 14, 19, { align: 'right' });
 
-    // ── Titre du rapport ───────────────────────────────────
+    // ── Titre ──────────────────────────────────────────────
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
     doc.setTextColor(...primaryColor);
@@ -147,7 +145,6 @@ export class ExamenLaboService {
       align: 'center',
     });
 
-    // Ligne de séparation sous le titre
     doc.setDrawColor(...primaryColor);
     doc.setLineWidth(0.5);
     doc.line(14, 44, pageWidth - 14, 44);
@@ -155,7 +152,7 @@ export class ExamenLaboService {
     // ── Bloc Patient ───────────────────────────────────────
     let y = 52;
 
-    doc.setFillColor(241, 239, 232); // $bg-light
+    doc.setFillColor(241, 239, 232);
     doc.roundedRect(14, y, pageWidth - 28, 28, 3, 3, 'F');
 
     doc.setFont('helvetica', 'bold');
@@ -165,10 +162,9 @@ export class ExamenLaboService {
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
-    doc.setTextColor(44, 44, 42); // $text
+    doc.setTextColor(44, 44, 42);
     doc.text(examen.patientNom ?? '—', 18, y + 15);
 
-    // Colonne droite du bloc patient
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(...textMuted);
@@ -191,7 +187,6 @@ export class ExamenLaboService {
     doc.setFontSize(10);
     doc.setTextColor(...primaryColor);
     doc.text("INFORMATIONS DE L'EXAMEN", 14, y);
-
     y += 4;
 
     autoTable(doc, {
@@ -269,32 +264,69 @@ export class ExamenLaboService {
     doc.text('RÉSULTATS', 14, y);
     y += 4;
 
-    if (examen.statut === 'TERMINE') {
+    if (examen.statut === 'TERMINE' && examen.resultat?.parametres?.length) {
       autoTable(doc, {
         startY: y,
         margin: { left: 14, right: 14 },
-        head: [['Résultat', 'Valeur', 'Norme', 'Interprétation']],
-        body: [
-          // Ligne de résultats — à remplacer par vos vraies données
-          // si votre modèle ExamenLabo contient un champ résultats structuré
-          ['—', '—', '—', '—'],
-        ],
+        head: [['Paramètre', 'Valeur', 'Unité', 'Norme', 'État']],
+        body: examen.resultat.parametres.map((p) => [
+          p.libelle,
+          p.valeur,
+          p.unite || '—',
+          p.norme || '—',
+          p.anormal ? 'ANORMAL ⚠' : 'Normal',
+        ]),
         headStyles: {
           fillColor: primaryColor,
           textColor: [255, 255, 255],
           fontStyle: 'bold',
           fontSize: 9,
         },
+        bodyStyles: { fontSize: 9 },
+        didParseCell: (data: any) => {
+          if (data.section === 'body') {
+            const param = examen.resultat!.parametres[data.row.index];
+            if (param?.anormal) {
+              data.cell.styles.textColor = [163, 45, 45]; // $danger
+              data.cell.styles.fontStyle = 'bold';
+            }
+          }
+        },
         styles: {
-          fontSize: 9,
           cellPadding: { top: 4, bottom: 4, left: 6, right: 6 },
           lineColor: borderColor,
           lineWidth: 0.3,
         },
         theme: 'grid',
       });
+
+      // Interprétation
+      if (examen.resultat.interpretation) {
+        y = (doc as any).lastAutoTable.finalY + 6;
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(...textMuted);
+        doc.text('INTERPRÉTATION :', 14, y);
+        y += 4;
+
+        autoTable(doc, {
+          startY: y,
+          margin: { left: 14, right: 14 },
+          head: [],
+          body: [[examen.resultat.interpretation]],
+          styles: {
+            fontSize: 9,
+            cellPadding: { top: 5, bottom: 5, left: 6, right: 6 },
+            textColor: [44, 44, 42],
+            fontStyle: 'italic',
+            lineColor: borderColor,
+            lineWidth: 0.3,
+          },
+          theme: 'grid',
+        });
+      }
     } else {
-      // Résultats non encore disponibles
       autoTable(doc, {
         startY: y,
         margin: { left: 14, right: 14 },
@@ -315,7 +347,6 @@ export class ExamenLaboService {
     // ── Zone de signature ──────────────────────────────────
     y = (doc as any).lastAutoTable.finalY + 16;
 
-    // Vérifier qu'il y a assez de place, sinon nouvelle page
     if (y > pageHeight - 50) {
       doc.addPage();
       y = 20;
@@ -352,7 +383,7 @@ export class ExamenLaboService {
       { align: 'center' },
     );
 
-    // ── Téléchargement ────────────────────────────────────
+    // ── Téléchargement ─────────────────────────────────────
     const fileName = `rapport-examen-${examen.typeExamen.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().slice(0, 10)}.pdf`;
     doc.save(fileName);
   }

@@ -1,0 +1,246 @@
+﻿<p-toast position="top-right" />
+
+<div class="resultat-labo-section">
+  <!-- ── En-tête section ── -->
+  <div class="resultat-header">
+    <div class="resultat-header-left">
+      <div class="resultat-icon" [class.resultat-icon-success]="hasResultat()">
+        <i
+          class="pi"
+          [class.pi-chart-bar]="hasResultat()"
+          [class.pi-clock]="!hasResultat()"
+          aria-hidden="true"
+        ></i>
+      </div>
+      <div>
+        <h4>Résultats de l'examen</h4>
+        <p>
+          @if (hasResultat()) {
+            Saisi le {{ formatDate(resultat()!.createdAt) }} par
+            {{ resultat()!.laborantinNom }}
+          } @else {
+            Aucun résultat enregistré
+          }
+        </p>
+      </div>
+    </div>
+
+    @if (!editMode()) {
+      <p-button
+        [icon]="hasResultat() ? 'pi pi-pencil' : 'pi pi-plus'"
+        [label]="hasResultat() ? 'Modifier' : 'Saisir les résultats'"
+        size="small"
+        [severity]="hasResultat() ? 'secondary' : 'primary'"
+        [outlined]="hasResultat()"
+        (onClick)="ouvrirEdition()"
+      />
+    }
+  </div>
+
+  <!-- ── Skeleton ── -->
+  @if (loading()) {
+    <div class="resultat-skeleton">
+      <p-skeleton height="40px" borderRadius="8px" />
+      <p-skeleton height="40px" borderRadius="8px" />
+      <p-skeleton height="40px" borderRadius="8px" />
+    </div>
+  }
+
+  <!-- ── Affichage résultat ── -->
+  @if (!loading() && hasResultat() && !editMode()) {
+    <!-- Alerte si valeurs anormales -->
+    @if (anyAnormal()) {
+      <div class="resultat-alerte">
+        <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+        <span
+          >Certaines valeurs sont <strong>hors normes</strong> — consultez
+          l'interprétation.</span
+        >
+      </div>
+    }
+
+    <!-- Tableau des paramètres -->
+    <div class="resultat-table-wrapper">
+      <table class="resultat-table">
+        <thead>
+          <tr>
+            <th>Paramètre</th>
+            <th>Valeur</th>
+            <th>Unité</th>
+            <th>Norme</th>
+            <th>État</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of parametres(); track $index) {
+            <tr [class.row-anormal]="p.anormal">
+              <td class="param-libelle">{{ p.libelle }}</td>
+              <td class="param-valeur" [class.val-anormal]="p.anormal">
+                {{ p.valeur }}
+                @if (p.anormal) {
+                  <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+                }
+              </td>
+              <td class="param-unite">{{ p.unite || "—" }}</td>
+              <td class="param-norme">{{ p.norme || "—" }}</td>
+              <td>
+                <p-tag
+                  [value]="p.anormal ? 'Anormal' : 'Normal'"
+                  [severity]="p.anormal ? 'danger' : 'success'"
+                />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Interprétation -->
+    @if (resultat()!.interpretation) {
+      <div class="resultat-interpretation">
+        <div class="interpretation-title">
+          <i class="pi pi-clipboard" aria-hidden="true"></i>
+          Interprétation du laborantin
+        </div>
+        <p>{{ resultat()!.interpretation }}</p>
+      </div>
+    }
+  }
+
+  <!-- ── Aucun résultat ── -->
+  @if (!loading() && !hasResultat() && !editMode()) {
+    <div class="resultat-empty">
+      <i class="pi pi-clock" aria-hidden="true"></i>
+      <p>Les résultats n'ont pas encore été saisis.</p>
+    </div>
+  }
+
+  <!-- ── Formulaire saisie ── -->
+  @if (editMode()) {
+    <form [formGroup]="form" class="resultat-form">
+      <!-- Paramètres -->
+      <div class="section-label">
+        <i class="pi pi-list" aria-hidden="true"></i>
+        Paramètres analysés
+      </div>
+
+      <div class="parametres-list" formArrayName="parametres">
+        @for (ctrl of parametresArray.controls; track trackByIndex($index)) {
+          <div class="parametre-row" [formGroupName]="$index">
+            <!-- Libellé -->
+            <div class="f-field param-libelle-field">
+              <label class="f-label">
+                Paramètre
+                <span class="req">*</span>
+              </label>
+              <input
+                pInputText
+                formControlName="libelle"
+                placeholder="Ex: Hémoglobine"
+                class="f-input"
+              />
+            </div>
+
+            <!-- Valeur -->
+            <div class="f-field param-val-field">
+              <label class="f-label">
+                Valeur
+                <span class="req">*</span>
+              </label>
+              <input
+                pInputText
+                formControlName="valeur"
+                placeholder="Ex: 12.5"
+                class="f-input"
+              />
+            </div>
+
+            <!-- Unité -->
+            <div class="f-field param-unite-field">
+              <label class="f-label">Unité</label>
+              <input
+                pInputText
+                formControlName="unite"
+                placeholder="Ex: g/dL"
+                class="f-input"
+              />
+            </div>
+
+            <!-- Norme -->
+            <div class="f-field param-norme-field">
+              <label class="f-label">Norme</label>
+              <input
+                pInputText
+                formControlName="norme"
+                placeholder="Ex: 12-16"
+                class="f-input"
+              />
+            </div>
+
+            <!-- Anormal -->
+            <div class="f-field param-anormal-field">
+              <label class="f-label">Anormal</label>
+              <p-checkbox formControlName="anormal" [binary]="true" />
+            </div>
+
+            <!-- Supprimer -->
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              size="small"
+              severity="danger"
+              pTooltip="Supprimer ce paramètre"
+              [disabled]="parametresArray.length === 1"
+              (onClick)="supprimerParametre($index)"
+              class="param-delete-btn"
+            />
+          </div>
+        }
+      </div>
+
+      <!-- Ajouter paramètre -->
+      <p-button
+        icon="pi pi-plus"
+        label="Ajouter un paramètre"
+        [text]="true"
+        size="small"
+        (onClick)="ajouterParametre()"
+        styleClass="mb-3"
+      />
+
+      <!-- Interprétation -->
+      <div class="section-label">
+        <i class="pi pi-clipboard" aria-hidden="true"></i>
+        Interprétation
+        <span class="optional-hint">(optionnel)</span>
+      </div>
+
+      <div class="f-field">
+        <textarea
+          pTextarea
+          formControlName="interpretation"
+          rows="4"
+          placeholder="Interprétation clinique des résultats, observations du laborantin..."
+          class="f-input f-textarea"
+        ></textarea>
+      </div>
+
+      <!-- Actions -->
+      <div class="resultat-form-footer">
+        <p-button
+          label="Annuler"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="annuler()"
+          [disabled]="saving()"
+        />
+        <p-button
+          [label]="saving() ? 'Enregistrement...' : 'Enregistrer les résultats'"
+          [icon]="saving() ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+          (onClick)="soumettre()"
+          [disabled]="saving()"
+        />
+      </div>
+    </form>
+  }
+</div>

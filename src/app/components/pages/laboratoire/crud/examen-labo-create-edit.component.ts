@@ -53,8 +53,7 @@ import {
 import { ExamenLaboService } from '../../../../core/services/laboratoire/laboratoire.service';
 import { ConsultationService } from '../../../../core/services/patient/consultation.service';
 import { environment } from '../../../../../environments/environment.prod';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { minDateValidator } from '../../../../core/validators/form.validator';
 
 @Component({
   selector: 'clnt-examen-labo-create-edit',
@@ -91,6 +90,7 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
 
   form!: FormGroup;
   examenId = '';
+  minDatePrescription!: string;
 
   // ── Étapes ───────────────────────────────────────────────
   activeStep = signal(0);
@@ -161,16 +161,24 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
         this.loading.set(false);
         if (environment.fakePatientId === patientId) {
           this.loadMeta();
-          return;
         }
         if (patientId && environment.fakePatientId != patientId) {
           this.loadPatient(patientId);
-          return;
         }
       }
     });
 
     // Réaction changement patient
+    this.onChangePatient();
+
+    // Réaction changement médecin
+    this.onChangeMedecin();
+
+    // Réaction changement statut
+    this.onChangeStatut();
+  }
+
+  onChangePatient() {
     this.form
       .get('patientId')!
       .valueChanges.pipe(takeUntil(this.destroy$))
@@ -183,8 +191,8 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
         this.consultations.set([]);
         if (id) this.loadConsultations(id);
       });
-
-    // Réaction changement médecin
+  }
+  onChangeMedecin() {
     this.form
       .get('prescritPar')!
       .valueChanges.pipe(takeUntil(this.destroy$))
@@ -194,126 +202,28 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
         );
       });
   }
-
-  private initForm(): void {
-    const now = new Date().toISOString().slice(0, 16);
-    this.form = this.fb.group({
-      patientId: ['', Validators.required],
-      prescritPar: ['', Validators.required],
-      departement: [''],
-      consultationId: ['', Validators.required],
-      typeExamen: ['', [Validators.required, Validators.maxLength(150)]],
-      description: [''],
-      statut: [StatutExamenLabo.EN_ATTENTE, Validators.required],
-      datePrescription: [now],
-      dateResultat: [null as string | null],
-    });
-  }
-
-  private loadMeta(): void {
-    this.loadingMeta.set(true);
-    forkJoin({
-      patients: this.patientSvc.findAll(this.pagePatients, this.pageSize),
-    }).subscribe({
-      next: ({ patients }) => {
-        this.patients.set(patients.content);
-
-        this.loadingMeta.set(false);
-      },
-      error: () => {
-        this.loadingMeta.set(false);
-        this.msg.add({
-          severity: 'warn',
-          summary: 'Avertissement',
-          detail: 'Impossible de charger les  patients.',
-        });
-      },
-    });
-  }
-
-  private loadExamen(id: string): void {
-    this.loading.set(true);
-    this.svc.findById(id).subscribe({
-      next: (e) => {
-        this.form.patchValue({
-          patientId: e.patientId,
-          prescritPar: e.prescritParId,
-          typeExamen: e.typeExamen,
-          description: e.description,
-          statut: e.statut,
-          datePrescription: e.datePrescription?.slice(0, 16),
-          dateResultat: e.dateResultat?.slice(0, 16) ?? null,
-        });
-
-        // Reconstruire les objets light pour l'affichage
-        const [prenom, ...restNom] = e.prescritParNom.split(' ');
-        this.selectedMedecin.set({
-          id: e.prescritParId,
-          utilisateurId: e.prescritParId,
-          prenom,
-          nom: restNom.join(' '),
-          poste: '',
-          departement: '',
-        });
-
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.msg.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Examen introuvable.',
-        });
-        this.router.navigate(['/examens-labo']);
-      },
-    });
-  }
-
-  private loadPatient(patientId: string): void {
-    this.patientSvc.findById(patientId).subscribe({
-      next: (p) => {
-        this.patient.set(p);
-        const light: PatientLight = {
-          id: p.id,
-          nom: p.nom,
-          prenom: p.prenom,
-          dateNaissance: p.dateNaissance,
-          age: p.age,
-        };
-        this.patients.set([light]);
-        this.selectedPatient.set(light);
-        this.form.patchValue({ patientId: p.id });
-      },
-      error: () =>
-        this.msg.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Patient introuvable.',
-        }),
-    });
-  }
-
-  private loadConsultations(patientId: string): void {
-    this.loadingCons.set(true);
-    this.consultationSvc.findAllByPatient(0, 20, patientId).subscribe({
-      next: (page) => {
-        this.consultations.set(page.content);
-        this.loadingCons.set(false);
-      },
-      error: () => {
-        this.loadingCons.set(false);
-        this.msg.add({
-          severity: 'warn',
-          summary: 'Avertissement',
-          detail: 'Impossible de charger les consultations.',
-        });
-      },
-    });
+  onChangeStatut() {
+    this.form
+      .get('statut')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((s) => {
+        if (s === StatutExamenLabo.EN_COURS || s === StatutExamenLabo.TERMINE) {
+          this.form
+            .get('dateResultat')
+            ?.setValue(this.selectedConsultation()!.dateHeure.slice(0, 16));
+        } else {
+          this.form.get('dateResultat')?.setValue(null);
+        }
+      });
   }
 
   selectionnerConsultation(cons: Consultation): void {
     this.selectedConsultation.set(cons);
+    this.minDatePrescription = this.selectedConsultation()!.dateHeure.slice(
+      0,
+      16,
+    );
+    this.form.get('datePrescription')?.setValue(this.minDatePrescription);
     if (cons.medecinId != this.selectedMedecin()!.utilisateurId) {
       this.msg.add({
         severity: 'warn',
@@ -450,6 +360,145 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
     });
   }
 
+  private initForm(): void {
+    const now = new Date().toISOString().slice(0, 16);
+    this.form = this.fb.group({
+      patientId: ['', Validators.required],
+      prescritPar: ['', Validators.required],
+      departement: [''],
+      consultationId: ['', Validators.required],
+      typeExamen: ['', [Validators.required, Validators.maxLength(150)]],
+      description: [''],
+      statut: [StatutExamenLabo.EN_ATTENTE, Validators.required],
+      datePrescription: [
+        now,
+        [Validators.required, minDateValidator.bind(this)],
+      ],
+      dateResultat: [null as string | null, [minDateValidator.bind(this)]],
+    });
+  }
+
+  private loadMeta(): void {
+    this.loadingMeta.set(true);
+    forkJoin({
+      patients: this.patientSvc.findAll(this.pagePatients, this.pageSize),
+    }).subscribe({
+      next: ({ patients }) => {
+        this.patients.set(patients.content);
+
+        this.loadingMeta.set(false);
+      },
+      error: () => {
+        this.loadingMeta.set(false);
+        this.msg.add({
+          severity: 'warn',
+          summary: 'Avertissement',
+          detail: 'Impossible de charger les  patients.',
+        });
+      },
+    });
+  }
+
+  private loadExamen(id: string): void {
+    this.loading.set(true);
+    this.svc.findById(id).subscribe({
+      next: (e) => {
+        this.form.patchValue({
+          patientId: e.patientId,
+          prescritPar: e.prescritParId,
+          typeExamen: e.typeExamen,
+          description: e.description,
+          statut: e.statut,
+          datePrescription: e.datePrescription?.slice(0, 16),
+          dateResultat: e.dateResultat?.slice(0, 16) ?? null,
+        });
+
+        this.onSetEditModeValue(e);
+
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.msg.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Examen introuvable.',
+        });
+        this.router.navigate(['/examens-labo']);
+      },
+    });
+  }
+
+  private loadPatient(patientId: string): void {
+    this.patientSvc.findById(patientId).subscribe({
+      next: (p) => {
+        this.patient.set(p);
+        const light: PatientLight = {
+          id: p.id,
+          nom: p.nom,
+          prenom: p.prenom,
+          dateNaissance: p.dateNaissance,
+          age: p.age,
+        };
+        this.patients.set([light]);
+        this.selectedPatient.set(light);
+        this.form.patchValue({ patientId: p.id });
+      },
+      error: () =>
+        this.msg.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Patient introuvable.',
+        }),
+    });
+  }
+
+  private loadMedecin(id: string): void {
+    this.employeSvc.findByUtilisateurId(id).subscribe({
+      next: (m) => {
+        const light: MedecinLight = {
+          id: m.id,
+          utilisateurId: m.utilisateurId,
+          prenom: m.prenom,
+          nom: m.nom,
+          poste: m.poste,
+          departement: m.departement,
+        };
+
+        this.medecins.update((items) =>
+          items.some((x) => x.id === m.id) ? items : [...items, m],
+        );
+
+        this.selectedMedecin.set(light);
+        this.form.patchValue({ prescritParId: id });
+      },
+      error: () =>
+        this.msg.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Medecin introuvable.',
+        }),
+    });
+  }
+
+  private loadConsultations(patientId: string): void {
+    this.loadingCons.set(true);
+    this.consultationSvc.findAllByPatient(0, 20, patientId).subscribe({
+      next: (page) => {
+        this.consultations.set(page.content);
+        this.loadingCons.set(false);
+      },
+      error: () => {
+        this.loadingCons.set(false);
+        this.msg.add({
+          severity: 'warn',
+          summary: 'Avertissement',
+          detail: 'Impossible de charger les consultations.',
+        });
+      },
+    });
+  }
+
   // ── Chargement médecins ──────────────────────────────────
   onMedecinsLazyLoad(event: SelectLazyLoadEvent) {
     this.loadMedecins(event.first ?? 0, false);
@@ -491,6 +540,13 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
             detail: 'Aucun médecin trouvé.',
           }),
       });
+  }
+
+  onSetEditModeValue(e: ExamenLabo) {
+    if (this.editMode()) {
+      this.loadPatient(e.patientId);
+      this.loadMedecin(e.prescritParId);
+    }
   }
 
   // ── Helpers ──────────────────────────────────────────────

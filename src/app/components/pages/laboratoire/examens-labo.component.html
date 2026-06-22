@@ -86,6 +86,15 @@
         <td>
           <div class="action-btns">
             <p-button
+              icon="pi pi-eye"
+              [text]="true"
+              size="small"
+              pTooltip="Voir les details"
+              aria-label="Voir les details"
+              tooltipPosition="top"
+              [routerLink]="['/examens-labo', e.id]"
+            />
+            <p-button
               icon="pi pi-pencil"
               [text]="true"
               size="small"

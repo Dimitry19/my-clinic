@@ -468,6 +468,15 @@
               </td>
               <td>
                 <p-button
+                  icon="pi pi-eye"
+                  [text]="true"
+                  size="small"
+                  pTooltip="Voir les details"
+                  aria-label="Voir les details"
+                  tooltipPosition="top"
+                  [routerLink]="['/examens-labo', e.id]"
+                />
+                <p-button
                   icon="pi pi-file-pdf"
                   [text]="true"
                   size="small"

@@ -77,6 +77,24 @@ export class CommonService {
     return `${this.formatDate(iso)} à ${this.formatHeure(iso)}`;
   }
 
+  formatDateToLocalDatetimeInput(date: string | Date): string {
+    const d = new Date(date);
+
+    const pad = (n: number) => n.toString().padStart(2, '0');
+
+    return (
+      d.getFullYear() +
+      '-' +
+      pad(d.getMonth() + 1) +
+      '-' +
+      pad(d.getDate()) +
+      'T' +
+      pad(d.getHours()) +
+      ':' +
+      pad(d.getMinutes())
+    );
+  }
+
   public getInitiales(prenom?: string | null, nom?: string | null): string {
     const initialePrenom = prenom?.charAt(0) ?? '';
     const initialeNom = nom?.charAt(0) ?? '';

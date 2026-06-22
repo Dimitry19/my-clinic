@@ -21,6 +21,9 @@ import {
   EXAMEN_STATUT_CONFIG,
 } from '../../../../core/models/laboratoire/laboratoire.model';
 import { ExamenLaboService } from '../../../../core/services/laboratoire/laboratoire.service';
+import { ResultatLabo } from '../../../../core/models/laboratoire/resultat.labo.model';
+import { ResultatLaboComponent } from '../resultat/resultat-labo.component';
+import { AuthService } from '../../../../core/services/auth/auth.service';
 
 @Component({
   selector: 'clnt-examen-labo-detail',
@@ -35,6 +38,7 @@ import { ExamenLaboService } from '../../../../core/services/laboratoire/laborat
     TooltipModule,
     DividerModule,
     ConfirmDialogModule,
+    ResultatLaboComponent,
   ],
   providers: [MessageService, AppConfirmationService],
   templateUrl: './examen-labo-detail.component.html',
@@ -47,12 +51,19 @@ export class ExamenLaboDetailComponent implements OnInit {
   private commonSvc = inject(CommonService);
   private msgSvc = inject(MessageService);
   private confirmSvc = inject(AppConfirmationService);
+  private auth = inject(AuthService);
 
   // ── État ─────────────────────────────────────────────────
   examen = signal<ExamenLabo | null>(null);
   loading = signal(true);
   loadError = signal<string | null>(null);
   saving = signal(false);
+  currentUserId = signal<string>('');
+
+  onResultatSaved(r: ResultatLabo): void {
+    // Optionnel : mettre à jour le statut local si besoin
+    this.examen.update((e) => (e ? { ...e, dateResultat: r.createdAt } : e));
+  }
 
   // Options de statut pour le changement rapide
   statutOptions = Object.entries(EXAMEN_STATUT_CONFIG).map(([value, cfg]) => ({
@@ -68,6 +79,7 @@ export class ExamenLaboDetailComponent implements OnInit {
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.loadExamen(id);
+    this.currentUserId.set(this.auth.currentUser()?.id ?? '');
   }
 
   private loadExamen(id: string): void {
@@ -180,5 +192,20 @@ export class ExamenLaboDetailComponent implements OnInit {
   isEditable(): boolean {
     const s = this.examen()?.statut;
     return s === StatutExamenLabo.EN_ATTENTE || s === StatutExamenLabo.EN_COURS;
+  }
+
+  changeStatus(): boolean {
+    const s = this.examen()?.statut;
+    return s != StatutExamenLabo.ANNULE;
+  }
+
+  showResults(): boolean {
+    const s = this.examen()?.statut;
+    return s === StatutExamenLabo.TERMINE;
+  }
+
+  genererPdf(): void {
+    const e = this.examen();
+    if (e) this.svc.genererRapportPdf(e);
   }
 }

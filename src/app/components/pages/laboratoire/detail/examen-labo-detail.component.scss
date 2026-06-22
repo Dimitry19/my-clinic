@@ -161,3 +161,10 @@
     font-size: 0.9rem;
   }
 }
+
+.resultat-panel {
+  background: $bg;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  padding: 1.25rem 1.5rem;
+}

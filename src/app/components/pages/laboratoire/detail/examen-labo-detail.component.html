@@ -46,7 +46,6 @@
               {{ formatDate(examen()!.datePrescription) }}
             </span>
           </div>
-          <!-- Statut courant -->
           <div class="examen-statut-row">
             <p-tag
               [value]="getStatutLabel(examen()!.statut)"
@@ -65,6 +64,16 @@
 
       <!-- Actions -->
       <div class="hero-actions">
+        <p-button
+          icon="pi pi-file-pdf"
+          label="Rapport PDF"
+          severity="secondary"
+          [outlined]="true"
+          pTooltip="Générer le rapport PDF"
+          tooltipPosition="top"
+          [disabled]="examen()!.statut !== 'TERMINE'"
+          (onClick)="genererPdf()"
+        />
         <p-button
           icon="pi pi-pencil"
           label="Modifier"
@@ -198,7 +207,7 @@
     </div>
 
     <!-- ── Changement de statut ── -->
-    @if (examen()!.statut !== "ANNULE") {
+    @if (changeStatus()) {
       <div class="examen-statut-panel">
         <div class="info-card-title">
           <i class="pi pi-arrow-right-arrow-left" aria-hidden="true"></i>
@@ -220,6 +229,19 @@
             </p-button>
           }
         </div>
+      </div>
+    }
+
+    <!-- ══════════════════════════════════════
+         RÉSULTATS DE L'EXAMEN
+    ══════════════════════════════════════ -->
+    @if (showResults()) {
+      <div class="resultat-panel">
+        <clnt-resultat-labo
+          [examen]="examen()!"
+          [laborantinId]="currentUserId()"
+          (saved)="onResultatSaved($event)"
+        />
       </div>
     }
 

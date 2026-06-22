@@ -69,6 +69,13 @@ export class EmployeService {
     );
   }
 
+  findByUtilisateurId(id: string): Observable<Employe> {
+    return this.http.get<ApiResponse<Employe>>(`${this.API}/user/${id}`).pipe(
+      map((r) => r.data),
+      catchError((e) => this.commonService.handleError(e, Entite.EMPLOYE)),
+    );
+  }
+
   create(e: Partial<Employe>): Observable<Employe> {
     return this.http.post<ApiResponse<Employe>>(this.API, e).pipe(
       map((r) => r.data),
