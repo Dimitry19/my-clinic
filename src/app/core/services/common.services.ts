@@ -1,13 +1,12 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
 import type { ButtonSeverity } from 'primeng/button';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 import { ApiResponseService } from '../models/response/api.service';
 import { ApiResponse } from '../models/response/api-response.model';
-import { ServiceError } from '../models/all/all.model';
 import {
   Entite,
   StatutEmploye,
@@ -21,11 +20,15 @@ import {
 } from '../models/patient/consultation.model';
 import { EXAMEN_STATUT_CONFIG } from '../models/laboratoire/laboratoire.model';
 import { EMLOYE_STATUT_CONFIG } from '../models/employe/employe.model';
+import { AuthService } from './auth/auth.service';
+import { ErrorService } from './error.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CommonService {
+  private authService = inject(AuthService);
+  private errorService = inject(ErrorService);
   menuRoles: string = '/assets/json/menu-roles.json';
   delivery: string = '/assets/mock/delivery.json';
 
@@ -184,90 +187,22 @@ export class CommonService {
     err: HttpErrorResponse,
     entite: Entite,
   ): Observable<never> {
-    let error: ServiceError;
-    let label404 = '';
-    let label409 = '';
-    let field = '';
-
-    if (entite === Entite.EMPLOYE) {
-      label404 = 'Employé introuvable.';
-      label409 = 'Un employé avec cet email existe déjà.';
-      field = 'email';
-    }
-
-    if (entite === Entite.AGENDA) {
-      label404 = 'Rendez-vous introuvable.';
-      label409 = 'Ce créneau est déjà occupé.';
-    }
-    if (entite === Entite.CONSULTATION) {
-      label404 = 'Consultation introuvable.';
-    }
-    if (entite === Entite.PATIENT) {
-      label404 = 'Patient introuvable.';
-    }
-
-    if (err.status === 0) {
-      error = {
-        code: 'NETWORK',
-        message:
-          'Impossible de contacter le serveur. Vérifiez votre connexion.',
-      };
-    } else if (err.status === 403) {
-      error = {
-        code: 'FORBIDDEN',
-        message: "Vous n'avez pas les droits pour effectuer cette action.",
-      };
-    } else if (err.status === 404) {
-      error = {
-        code: 'NOT_FOUND',
-        message: err.error ?? label404,
-      };
-    } else if (err.status === 409) {
-      error = {
-        code: 'CONFLICT',
-        message: err.error ?? label409,
-        field: field,
-      };
-    } else if (err.status >= 500) {
-      error = {
-        code: 'SERVER',
-        message: 'Erreur serveur. Réessayez dans quelques instants.',
-      };
-    } else {
-      error = {
-        code: 'UNKNOWN',
-        message: err.error ?? 'Une erreur inattendue est survenue.',
-      };
-    }
-    return throwError(() => error);
+    return this.errorService.handleError(err, entite);
   }
 
   public globalErrorHandler(error: any): Observable<any> {
-    if (error instanceof HttpErrorResponse) {
-      return this.globalStatusErrorHandler(error);
-    }
-    if (typeof error === 'object') {
-      return of(error);
-    }
-    if (typeof error.error === 'object') {
-      return of(error.error);
-    }
-
-    if (typeof error === 'string') {
-      return of(error);
-    }
-    if (error.error instanceof ErrorEvent) {
-      return of(error.error.message);
-    }
-    return of(error);
+    return this.errorService.globalErrorHandler(error);
   }
 
   public globalStatusErrorHandler(error: HttpErrorResponse) {
-    return throwError(() => ({
-      status: error.status,
-      message:
-        error.error?.message ?? error.message ?? 'Une erreur est survenue',
-      error: error.error,
-    }));
+    return this.errorService.globalStatusErrorHandler(error);
+  }
+
+  hasRole(requiredRoles: string[]): boolean {
+    const user = this.authService.currentUser();
+    if (!user || !user.role) {
+      return false;
+    }
+    return requiredRoles.some((role) => user.role.includes(role));
   }
 }

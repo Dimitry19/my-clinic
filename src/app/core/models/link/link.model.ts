@@ -7,10 +7,8 @@ export enum ServiceLink {
   auth = '/auth',
 }
 
-export class FooterPartElement{
-     label:string;
-     target:string="_blank";
-     link:string;
-     iconUrl:string;
-     hover:boolean=false;
+export class FooterPartElement {
+  target: string = '_blank';
+
+  hover: boolean = false;
 }

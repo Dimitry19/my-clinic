@@ -36,7 +36,9 @@ import { CommonService } from '../../../core/services/common.services';
       <!-- En-tête -->
       <div class="page-header">
         <div>
-          <h2>Bonjour, Dr. {{ auth.currentUser()?.prenom }} 👋</h2>
+          <h2>
+            Bonjour, {{ auth.userLabel() }} {{ auth.currentUser()?.prenom }} 👋
+          </h2>
           <p>
             {{ today | date: 'EEEE d MMMM yyyy' : '' : 'fr' }} · Voici votre
             tableau de bord

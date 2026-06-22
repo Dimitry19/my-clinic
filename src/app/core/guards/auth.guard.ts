@@ -15,13 +15,13 @@ export const authGuard: CanActivateFn = (
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  /*if (!authService.isAuth()) {
+  if (!authService.isAuth()) {
     return router.createUrlTree(['/login']);
   }
-   const requiredRoles = route.data['roles'] as string[] | undefined;
+  const requiredRoles = route.data['roles'] as string[] | undefined;
 
-  if (requiredRoles?.length && !authService.hasRole(requiredRoles)) {
-    return router.createUrlTree(['/unauthorized']);
+  /* if (requiredRoles?.length && !authService.hasRole(requiredRoles)) {
+    return router.createUrlTree(['/login']);
   }*/
 
   return true;

@@ -7,7 +7,7 @@
     <div>
       <h2><i class="pi pi-calendar" aria-hidden="true"></i> Agenda</h2>
       <p>
-        {{ totalRdvsMois() }} RDV ce mois
+        {{ totalRdvsMois() }} rendez-vous ce mois
         <span class="inline-badge badge-success">
           <i class="pi pi-check-circle" aria-hidden="true"></i>
           {{ rdvConfirmes() }} confirmés
@@ -23,7 +23,7 @@
       </p>
     </div>
     <p-button
-      label="Nouveau RDV"
+      label="Nouveau rendez-vous"
       icon="pi pi-plus"
       (onClick)="openCreation()"
     />
@@ -39,7 +39,8 @@
     <div class="stat-chip">
       <i class="pi pi-sun" aria-hidden="true"></i>
       <span
-        >Aujourd'hui : <strong>{{ rdvAujourdhui().length }} RDV</strong></span
+        >Aujourd'hui :
+        <strong>{{ rdvAujourdhui().length }} rendez-vous</strong></span
       >
     </div>
     @for (rdv of rdvAujourdhui().slice(0, 3); track rdv.id) {
@@ -182,8 +183,8 @@
                 <button
                   class="cell-add-btn"
                   (click)="$event.stopPropagation(); openCreation(day.date)"
-                  aria-label="Ajouter un RDV"
-                  pTooltip="Ajouter un RDV"
+                  aria-label="Ajouter un rendez-vous"
+                  pTooltip="Ajouter un rendez-vous"
                   tooltipPosition="top"
                 >
                   <i class="pi pi-plus" aria-hidden="true"></i>
@@ -220,7 +221,7 @@
           <i class="pi pi-calendar-times" aria-hidden="true"></i>
           <span>Aucun rendez-vous ce jour.</span>
           <p-button
-            label="Planifier un RDV"
+            label="Planifier un rendez-vous"
             icon="pi pi-plus"
             [text]="true"
             size="small"

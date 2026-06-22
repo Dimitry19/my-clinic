@@ -1,5 +1,12 @@
 ﻿import { CommonService } from './../../../core/services/common.services';
-import { Component, input, output, inject, signal } from '@angular/core';
+import {
+  Component,
+  input,
+  output,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -7,12 +14,13 @@ import { TooltipModule } from 'primeng/tooltip';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { ApiResponse } from '../../../core/models/response/api-response.model';
 import { ErrorType } from '../../../core/models/all/all.model';
+import { environment } from '../../../../environments/environment.prod';
 
 interface NavItem {
   label: string;
   icon: string;
   route: string;
-  roles?: string[];
+  roles: string[];
 }
 
 @Component({
@@ -39,23 +47,84 @@ export class SidebarComponent {
   errorType = signal<ErrorType>(null);
   errorMsg = signal('');
 
+  visibleNavItems = computed(() => {
+    const role = this.auth.currentUser()?.role;
+    if (!role) return [];
+
+    return this.navItems.filter(
+      (item) => !item.roles || item.roles.includes(role),
+    );
+  });
+
+  visibleAdminNavItems = computed(() => {
+    const role = this.auth.currentUser()?.role;
+
+    if (!role) return [];
+
+    const roles = this.adminItems.filter(
+      (item) => !item.roles || item.roles.includes(role),
+    );
+
+    return roles;
+  });
+
   get initiales() {
     const u = this.auth.currentUser();
     return u ? this.commonService.getInitiales(u.prenom, u.nom) : 'DR';
   }
 
   navItems: NavItem[] = [
-    { label: 'Dashboard', icon: 'pi pi-home', route: '/dashboard' },
-    { label: 'Patients', icon: 'pi pi-users', route: '/patients' },
-    { label: 'Agenda', icon: 'pi pi-calendar', route: '/agenda' },
-    { label: 'Laboratoire', icon: 'pi pi-filter-fill', route: '/examens-labo' },
-    { label: 'Pharmacie', icon: 'pi pi-shopping-cart', route: '/pharmacie' },
+    {
+      label: 'Dashboard',
+      icon: 'pi pi-home',
+      route: '/dashboard',
+      roles: environment.dashboardRoles,
+    },
+    {
+      label: 'Patients',
+      icon: 'pi pi-users',
+      route: '/patients',
+      roles: environment.patientsRoles,
+    },
+    {
+      label: 'Agenda',
+      icon: 'pi pi-calendar',
+      route: '/agenda',
+      roles: environment.agendaRoles,
+    },
+    {
+      label: 'Laboratoire',
+      icon: 'pi pi-filter-fill',
+      route: '/examens-labo',
+      roles: environment.laboratoireRoles,
+    },
+    {
+      label: 'Pharmacie',
+      icon: 'pi pi-shopping-cart',
+      route: '/pharmacie',
+      roles: environment.pharmacieRoles,
+    },
   ];
 
   adminItems: NavItem[] = [
-    { label: 'Facturation', icon: 'pi pi-receipt', route: '/facturation' },
-    { label: 'RH', icon: 'pi pi-users', route: '/employes' },
-    { label: 'Paramètres', icon: 'pi pi-cog', route: '/settings' },
+    {
+      label: 'Facturation',
+      icon: 'pi pi-receipt',
+      route: '/facturation',
+      roles: environment.facturationRoles,
+    },
+    {
+      label: 'RH',
+      icon: 'pi pi-users',
+      route: '/employes',
+      roles: environment.ressourcesHumainesRoles,
+    },
+    {
+      label: 'Paramètres',
+      icon: 'pi pi-cog',
+      route: '/settings',
+      roles: environment.adminRoles,
+    },
   ];
 
   logout() {
@@ -91,5 +160,9 @@ export class SidebarComponent {
         }
       },
     });
+  }
+
+  autorizedAdmin() {
+    return this.commonService.hasRole(environment.adminRoles);
   }
 }

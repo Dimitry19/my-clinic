@@ -6,6 +6,14 @@ export interface ClinicTrinityEnvironment {
   mobileFeatureUrl: string;
   context: string;
   fakePatientId: string;
+  dashboardRoles: string[];
+  patientsRoles: string[];
+  agendaRoles: string[];
+  adminRoles: string[];
+  laboratoireRoles: string[];
+  pharmacieRoles: string[];
+  facturationRoles: string[];
+  ressourcesHumainesRoles: string[];
 
   inProgressIconUrl: string;
   insertedIconUrl: string;

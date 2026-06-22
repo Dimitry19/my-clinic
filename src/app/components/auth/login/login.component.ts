@@ -113,7 +113,7 @@ export class LoginComponent {
       next: (response: ApiResponse<User>) => {
         if (this.commonService.isSuccessResponse(response)) {
           const user = response.data;
-          this.authService.setUser(user);
+          this.authService.setCurrentUser(user);
           this.step.set('success');
           setTimeout(() => this.router.navigate(['/dashboard']), 800);
         } else {

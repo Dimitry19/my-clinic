@@ -6,11 +6,14 @@ export interface User {
   prenom: string;
   email: string;
   role:
+    | 'SUPER_ADMIN'
     | 'ADMIN'
     | 'MEDECIN'
     | 'INFIRMIER'
     | 'LABORANTIN'
     | 'COMPTABLE'
+    | 'PHARMACIEN'
+    | 'URGENTISTE'
     | 'RECEPTIONNISTE';
   avatar?: string;
 }

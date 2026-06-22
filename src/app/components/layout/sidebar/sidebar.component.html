@@ -19,7 +19,7 @@
       <div class="nav-section-label">CLINIQUE</div>
     }
 
-    @for (item of navItems; track item.route) {
+    @for (item of visibleNavItems(); track item.route) {
       <a
         [routerLink]="item.route"
         routerLinkActive="active"
@@ -34,11 +34,13 @@
       </a>
     }
 
-    <div class="nav-divider"></div>
-    @if (!collapsed()) {
-      <div class="nav-section-label">ADMINISTRATION</div>
+    @if (autorizedAdmin()) {
+      <div class="nav-divider"></div>
+      @if (!collapsed()) {
+        <div class="nav-section-label">ADMINISTRATION</div>
+      }
     }
-    @for (item of adminItems; track item) {
+    @for (item of visibleAdminNavItems(); track item.route) {
       <a
         [routerLink]="item.route"
         routerLinkActive="active"

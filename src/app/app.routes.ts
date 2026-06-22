@@ -34,6 +34,7 @@ export const routes: Routes = [
             (m) => m.DashboardComponent,
           ),
         title: 'Dashboard — Centre  Médical la Trinité',
+        data: { roles: ['MEDECIN', 'SUPER_ADMIN', 'ADMIN'] },
       },
       ...patientRoutes,
       ...employeRoutes,
