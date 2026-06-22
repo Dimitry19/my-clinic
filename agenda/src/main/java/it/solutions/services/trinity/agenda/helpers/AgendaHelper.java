@@ -2,13 +2,11 @@ package it.solutions.services.trinity.agenda.helpers;
 
 import it.solutions.services.trinity.agenda.entities.Agenda;
 import it.solutions.services.trinity.contracts.dto.AgendaDto;
-import it.solutions.services.trinity.contracts.dto.EmployeDto;
 import it.solutions.services.trinity.contracts.port.EmployeLookupPort;
 import it.solutions.services.trinity.contracts.port.PatientLookupPort;
 import it.solutions.services.trinity.core.exception.ValidationException;
 import it.solutions.services.trinity.core.helpers.CoreHelper;
 import it.solutions.services.trinity.core.shared.dao.UserDao;
-import it.solutions.services.trinity.core.shared.entities.User;
 import it.solutions.services.trinity.core.shared.entities.UserLight;
 import it.solutions.services.trinity.contracts.entities.PatientLight;
 import it.solutions.services.trinity.core.shared.utils.GenericUtils;
@@ -66,7 +64,7 @@ public class AgendaHelper extends CoreHelper {
                 .patientNom(p.getNom())
                 .patientPrenom(p.getPrenom())
                 .medecinId(m.getId())
-                .medecinNom(GenericUtils.formatMedecinNom(nom,prenom))
+                .medecinNom(GenericUtils.formatNomPrenom(nom,prenom))
                 .dateHeure(a.getDateHeure())
                 .dureeMinutes(a.getDureeMinutes())
                 .motif(a.getMotif())

@@ -108,7 +108,7 @@ public class ConsultationHelper extends CoreHelper{
                 .patientNom(patient.getNom())
                 .patientPrenom(patient.getPrenom())
                 .age(age)
-                .medecinNom(GenericUtils.formatMedecinNom(nom,prenom))
+                .medecinNom(GenericUtils.formatNomPrenom(nom,prenom))
                 .departement(medecin.getDepartement())
                 .dateHeure(agendaLookupPort.findById(c.getRendezVousId()).getDateHeure())
                 .type(c.getType().name())

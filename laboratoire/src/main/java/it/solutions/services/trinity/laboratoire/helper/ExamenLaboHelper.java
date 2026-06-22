@@ -1,9 +1,7 @@
 package it.solutions.services.trinity.laboratoire.helper;
 
-import it.solutions.services.trinity.contracts.dto.ConsultationDto;
 import it.solutions.services.trinity.contracts.dto.EmployeDto;
 import it.solutions.services.trinity.contracts.dto.ExamenLaboDto;
-import it.solutions.services.trinity.contracts.dto.PatientDto;
 import it.solutions.services.trinity.contracts.entities.PatientLight;
 import it.solutions.services.trinity.contracts.port.EmployeLookupPort;
 import it.solutions.services.trinity.contracts.port.PatientLookupPort;
@@ -11,7 +9,6 @@ import it.solutions.services.trinity.core.helpers.CoreHelper;
 import it.solutions.services.trinity.core.security.services.UserService;
 import it.solutions.services.trinity.core.shared.dao.UserDao;
 import it.solutions.services.trinity.core.shared.entities.User;
-import it.solutions.services.trinity.core.shared.enums.StatutConsultation;
 import it.solutions.services.trinity.core.shared.enums.StatutExamenLabo;
 import it.solutions.services.trinity.core.shared.utils.GenericUtils;
 import it.solutions.services.trinity.laboratoire.dao.ExamenLaboDao;
@@ -75,9 +72,9 @@ public class ExamenLaboHelper extends CoreHelper {
                 .id(e.getId())
                 .consultationId(e.getConsultationId())
                 .patientId(e.getPatientId())
-                .patientNom(u != null ? GenericUtils.formatMedecinNom(patient.getNom(),patient.getPrenom()) : "—")
+                .patientNom(u != null ? GenericUtils.formatNomPrenom(patient.getNom(),patient.getPrenom()) : "—")
                 .prescritParId(u != null ? u.getId() : null)
-                .prescritParNom(u != null ? GenericUtils.formatMedecinNom(u.getNom(),u.getPrenom()) : "—")
+                .prescritParNom(u != null ? GenericUtils.formatNomPrenom(u.getNom(),u.getPrenom()) : "—")
                 .typeExamen(e.getTypeExamen())
                 .description(e.getDescription())
                 .statut(e.getStatut().name())
