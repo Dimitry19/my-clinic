@@ -57,6 +57,11 @@
             <artifactId>laboratoire</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>it.solutions.services</groupId>
+            <artifactId>ordonnance</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
 
         <!--
             Modules domaine — décommente au fur et à mesure que tu les crées

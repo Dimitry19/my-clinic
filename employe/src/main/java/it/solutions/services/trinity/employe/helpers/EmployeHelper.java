@@ -1,6 +1,8 @@
 package it.solutions.services.trinity.employe.helpers;
 
+import it.solutions.services.trinity.core.helpers.CoreHelper;
 import it.solutions.services.trinity.core.security.services.UserService;
+import it.solutions.services.trinity.core.shared.dao.UserDao;
 import it.solutions.services.trinity.core.shared.entities.User;
 import it.solutions.services.trinity.core.shared.enums.StatutEmploye;
 import it.solutions.services.trinity.core.shared.utils.GenericUtils;
@@ -16,15 +18,26 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Component
-@RequiredArgsConstructor
-public class EmployeHelper {
+
+public class EmployeHelper extends CoreHelper {
 
     private final UserService userService;
     private final EmployeDao dao;
 
+    public EmployeHelper(UserDao userDao,UserService userService,EmployeDao dao) {
+        super(userDao);
+        this.dao=dao;
+        this.userService=userService;
+    }
+
 
     public Employe findEmployeOrThrow(UUID id) {
         return dao.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Employé introuvable : " + id));
+    }
+
+    public Employe findUtilisateurOrThrow(UUID id) {
+        return dao.findEmployeByUtilisateur(userService.findById(id))
                 .orElseThrow(() -> new EntityNotFoundException("Employé introuvable : " + id));
     }
 

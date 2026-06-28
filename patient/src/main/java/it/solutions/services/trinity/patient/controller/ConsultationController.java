@@ -1,6 +1,5 @@
 package it.solutions.services.trinity.patient.controller;
 
-import it.solutions.services.trinity.contracts.dto.AgendaDto;
 import it.solutions.services.trinity.core.shared.api.ApiResponse;
 import it.solutions.services.trinity.contracts.dto.ConsultationDto;
 import it.solutions.services.trinity.contracts.dto.PatientDto;

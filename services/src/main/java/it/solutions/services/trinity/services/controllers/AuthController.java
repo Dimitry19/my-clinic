@@ -1,11 +1,16 @@
 package it.solutions.services.trinity.services.controllers;
 
+import it.solutions.services.trinity.contracts.dto.EmployeDto;
+import it.solutions.services.trinity.core.helpers.CoreHelper;
 import it.solutions.services.trinity.core.security.services.CookieUtils;
 import it.solutions.services.trinity.core.security.services.JwtService;
 import it.solutions.services.trinity.core.security.services.UserService;
 import it.solutions.services.trinity.core.shared.api.ApiResponse;
 import it.solutions.services.trinity.core.shared.entities.User;
 
+import it.solutions.services.trinity.employe.entities.Employe;
+import it.solutions.services.trinity.employe.helpers.EmployeHelper;
+import it.solutions.services.trinity.employe.services.EmployeService;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -24,14 +29,17 @@ public class AuthController {
 
     private final AuthenticationManager authManager;
     private final UserService userService;
+    private final EmployeService employeService;
     private final JwtService jwtService;
     private final CookieUtils cookieUtil;
+    private final EmployeHelper helper;
+
 
 
 
 
     record LoginRequest(@Email String email, String password) {}
-    record AuthResponse(UUID id, @Email String email, String role, String nom, String prenom) {}
+    record AuthResponse(UUID id,UUID employeId, @Email String email, String role, String nom, String prenom) {}
     record Registration(@Email String email,String password,String name, String surname,String role) {}
 
     @PostMapping("/registration")
@@ -65,10 +73,15 @@ public class AuthController {
         return  ResponseEntity.ok().headers(responseHeaders).body(apiResponse);
     }
 
-    private ResponseEntity<ApiResponse<AuthResponse>> successLogin(User user) throws Exception{
+    private ResponseEntity<ApiResponse<AuthResponse>> successLogin(User user) {
         HttpHeaders responseHeaders = new HttpHeaders();
         jwtService.createNewTokens(user.getUsername(),null,null,responseHeaders);
-        AuthResponse dto=new AuthResponse(user.getId(),user.getEmail(),user.getRole().name(),user.getNom(), user.getPrenom());
+        UUID id=null;
+        if(!helper.isAdmin(user)){
+            id=employeService.findByUtilisateurId(user.getId()).getId();
+        }
+
+        AuthResponse dto=new AuthResponse(user.getId(),id,user.getEmail(),user.getRole().name(),user.getNom(), user.getPrenom());
         return ResponseEntity.ok().headers(responseHeaders).body(ApiResponse.ok(dto));
     }
 }

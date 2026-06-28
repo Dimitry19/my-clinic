@@ -2,21 +2,17 @@ package it.solutions.services.trinity.core.security.services;
 
 import it.solutions.services.trinity.core.exception.ValidationException;
 import it.solutions.services.trinity.core.security.PasswordUtils;
-import it.solutions.services.trinity.core.shared.dao.UserDao;
 import it.solutions.services.trinity.core.shared.entities.User;
 import it.solutions.services.trinity.core.shared.enums.Role;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.MessageFormat;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service

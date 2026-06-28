@@ -25,6 +25,7 @@
         <module>agenda</module>
         <module>contracts</module>
         <module>laboratoire</module>
+        <module>ordonnance</module>
         <module>services</module> <!-- toujours en dernier -->
     </modules>
 

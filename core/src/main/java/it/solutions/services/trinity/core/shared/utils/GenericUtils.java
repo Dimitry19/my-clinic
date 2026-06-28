@@ -29,4 +29,14 @@ public class GenericUtils {
         return  !dateHeure.isBefore(LocalDateTime.now());
 
     }
+
+    public static boolean isExpiree(LocalDateTime dateEmission,Integer validiteJours) {
+        if (dateEmission == null || validiteJours == null) {
+            return false;
+        }
+
+        return dateEmission
+                .plusDays(validiteJours)
+                .isBefore(LocalDateTime.now());
+    }
 }

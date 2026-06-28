@@ -131,4 +131,9 @@ public class EmployeService {
         }
         dao.deleteById(id);
     }
+
+    @Transactional(readOnly = true)
+    public EmployeDto.Response findByUtilisateurId(UUID id) {
+        return helper.toResponse(helper.findUtilisateurOrThrow(id));
+    }
 }

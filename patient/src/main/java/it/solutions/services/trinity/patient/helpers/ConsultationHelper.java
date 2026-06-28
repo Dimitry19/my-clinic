@@ -21,7 +21,6 @@ import java.time.Period;
 import java.util.UUID;
 
 @Component
-
 public class ConsultationHelper extends CoreHelper{
 
 
