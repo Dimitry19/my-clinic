@@ -51,7 +51,11 @@ import { Configuration } from '../../../../core/models/configuration/configurati
 import { Employe } from '../../../../core/models/employe/employe.model';
 import { RendezVous } from '../../../../core/models/agenda/agenda.model';
 import { AgendaService } from '../../../../core/services/agenda/agenda.service';
-import { Page, ServiceError } from '../../../../core/models/all/all.model';
+import {
+  CONS_STEPS,
+  Page,
+  ServiceError,
+} from '../../../../core/models/all/all.model';
 import { CommonService } from '../../../../core/services/common.services';
 import {
   Entite,
@@ -106,13 +110,7 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
 
   // ── Étapes ────────────────────────────────────────────
   activeStep = signal(0);
-  readonly STEPS = [
-    { label: 'Médecin & Patient', icon: 'pi-users' },
-    { label: 'Rendez-vous', icon: 'pi-calendar' },
-    { label: 'Examen clinique', icon: 'pi-heart-rate-monitor' },
-    { label: 'Diagnostic', icon: 'pi-clipboard' },
-    { label: 'Récapitulatif', icon: 'pi-list-check' },
-  ];
+  readonly STEPS = [...CONS_STEPS];
 
   departementOptions = [...CONS_DEPARTEMENTS];
 

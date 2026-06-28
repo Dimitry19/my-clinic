@@ -105,6 +105,8 @@ export class ExamenLaboService {
   genererRapportPdf(
     examen: ExamenLabo & { resultat?: ResultatLabo | null },
   ): void {
+   
+
     const doc = new jsPDF();
     const primaryColor: [number, number, number] = [24, 95, 165];
     const textMuted: [number, number, number] = [95, 94, 90];
@@ -274,7 +276,7 @@ export class ExamenLaboService {
           p.valeur,
           p.unite || '—',
           p.norme || '—',
-          p.anormal ? 'ANORMAL ⚠' : 'Normal',
+          p.anormal ? 'ANORMAL' : 'Normal',
         ]),
         headStyles: {
           fillColor: primaryColor,

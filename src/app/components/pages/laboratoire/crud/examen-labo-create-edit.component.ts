@@ -40,7 +40,11 @@ import {
 } from '../../../../core/models/patient/consultation.model';
 import { Configuration } from '../../../../core/models/configuration/configuration.model';
 import { CommonService } from '../../../../core/services/common.services';
-import { ServiceError, Page } from '../../../../core/models/all/all.model';
+import {
+  ServiceError,
+  Page,
+  EXAMEN_LABO_STEPS,
+} from '../../../../core/models/all/all.model';
 import {
   Entite,
   StatutExamenLabo,
@@ -94,12 +98,7 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
 
   // ── Étapes ───────────────────────────────────────────────
   activeStep = signal(0);
-  readonly STEPS = [
-    { label: 'Médecin & Patient', icon: 'pi-users' },
-    { label: 'Consultation', icon: 'pi-stethoscope' },
-    { label: 'Détails examen', icon: 'pi-flask' },
-    { label: 'Récapitulatif', icon: 'pi-list-check' },
-  ];
+  readonly STEPS = [...EXAMEN_LABO_STEPS];
 
   // ── État ─────────────────────────────────────────────────
   editMode = signal(false);

@@ -698,9 +698,7 @@
 
     <div class="footer-right">
       <a
-        [routerLink]="
-          patient() ? ['/patients', patient()!.id] : ['/examens-labo']
-        "
+        [routerLink]="['/examens-labo']"
         class="btn-cancel"
         [class.disabled]="saving()"
       >

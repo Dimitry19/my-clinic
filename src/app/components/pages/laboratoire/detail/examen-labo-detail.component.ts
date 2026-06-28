@@ -21,6 +21,7 @@ import {
   EXAMEN_STATUT_CONFIG,
 } from '../../../../core/models/laboratoire/laboratoire.model';
 import { ExamenLaboService } from '../../../../core/services/laboratoire/laboratoire.service';
+import { ResultatLaboService } from '../../../../core/services/laboratoire/resultat.labo.service';
 import { ResultatLabo } from '../../../../core/models/laboratoire/resultat.labo.model';
 import { ResultatLaboComponent } from '../resultat/resultat-labo.component';
 import { AuthService } from '../../../../core/services/auth/auth.service';
@@ -52,9 +53,11 @@ export class ExamenLaboDetailComponent implements OnInit {
   private msgSvc = inject(MessageService);
   private confirmSvc = inject(AppConfirmationService);
   private auth = inject(AuthService);
+  private resultatSvc = inject(ResultatLaboService);
 
   // ── État ─────────────────────────────────────────────────
   examen = signal<ExamenLabo | null>(null);
+  resultat = signal<ResultatLabo | null>(null);
   loading = signal(true);
   loadError = signal<string | null>(null);
   saving = signal(false);
@@ -64,6 +67,10 @@ export class ExamenLaboDetailComponent implements OnInit {
     // Optionnel : mettre à jour le statut local si besoin
     this.examen.update((e) => (e ? { ...e, dateResultat: r.createdAt } : e));
   }
+
+  onResultatLoaded(r: ResultatLabo | null): void {
+  this.resultat.set(r);
+}
 
   // Options de statut pour le changement rapide
   statutOptions = Object.entries(EXAMEN_STATUT_CONFIG).map(([value, cfg]) => ({
@@ -81,6 +88,7 @@ export class ExamenLaboDetailComponent implements OnInit {
     this.loadExamen(id);
     this.currentUserId.set(this.auth.currentUser()?.id ?? '');
   }
+
 
   private loadExamen(id: string): void {
     this.loading.set(true);
@@ -169,16 +177,11 @@ export class ExamenLaboDetailComponent implements OnInit {
     return this.commonSvc.getStatutIcon(s, Entite.LABORATOIRE);
   }
 
-  getStatutColorClass(statut: string): string {
-    return (
-      {
-        TERMINE: 'sc-green',
-        EN_COURS: 'sc-blue',
-        EN_ATTENTE: 'sc-amber',
-        ANNULE: 'sc-red',
-      }[statut] ?? 'sc-blue'
-    );
+  getStatutColorClass(s: string): string {
+    return this.commonSvc.getStatutColorClass(s);
   }
+
+ 
 
   formatDate(iso: string | null): string {
     if (!iso) return '—';
@@ -205,7 +208,11 @@ export class ExamenLaboDetailComponent implements OnInit {
   }
 
   genererPdf(): void {
-    const e = this.examen();
-    if (e) this.svc.genererRapportPdf(e);
-  }
+  const e = this.examen();
+  const r = this.resultat();
+  console.log('examen:', e);
+  console.log('resultat:', r); // null ici = problème de chargement
+  if (!e) return;
+  this.svc.genererRapportPdf({ ...e, resultat: r });
+}
 }

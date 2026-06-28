@@ -33,9 +33,3 @@ export interface Facture {
   paye: number;
   statut: StatutFacture;
 }
-export interface Ordonnance {
-  id: string;
-  date: Date;
-  medecin: string;
-  medicaments: string[];
-}

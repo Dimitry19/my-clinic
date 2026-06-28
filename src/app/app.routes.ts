@@ -4,6 +4,7 @@ import { authGuard } from './core/guards/auth.guard';
 import { employeRoutes } from './core/routes/employe/employe.routes';
 import { consultationRoutes } from './core/routes/patient/consultation.routes';
 import { examenLaboRoutes } from './core/routes/laboratoire/laboratoire.routes';
+import { ordonnanceRoutes } from './core/routes/ordonnance/ordonnance.routes';
 
 export const routes: Routes = [
   {
@@ -40,6 +41,7 @@ export const routes: Routes = [
       ...employeRoutes,
       ...consultationRoutes,
       ...examenLaboRoutes,
+      ...ordonnanceRoutes,
       {
         path: 'agenda',
         loadComponent: () =>

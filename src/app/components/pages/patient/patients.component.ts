@@ -19,6 +19,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { Configuration } from '../../../core/models/configuration/configuration.model';
 import { Patient } from '../../../core/models/patient/patient.model';
 import { AppConfirmationService } from '../../../core/services/global/app.confirmation.service';
+import { CommonService } from '../../../core/services/common.services';
 
 @Component({
   selector: 'clnt-patients',
@@ -45,6 +46,7 @@ export class PatientsComponent implements OnInit {
   private service = inject(PatientService);
   private confirmService = inject(AppConfirmationService);
   private messageService = inject(MessageService);
+  private commonService = inject(CommonService);
 
   patients = signal<Patient[]>([]);
   page = signal<Page<Patient> | null>(null);
@@ -125,5 +127,9 @@ export class PatientsComponent implements OnInit {
       : sexe === 'F'
         ? { background: '#FAEEDA', color: '#633806' }
         : { background: '#EEEDFE', color: '#26215C' };
+  }
+
+  getSexeLabel(s: string) {
+    return this.commonService.getSexeLabel(s);
   }
 }

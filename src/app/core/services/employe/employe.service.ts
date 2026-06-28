@@ -101,7 +101,7 @@ export class EmployeService {
 
   delete(id: string): Observable<void> {
     return this.http.delete<ApiResponse<void>>(`${this.API}/${id}`).pipe(
-      map(() => void 0),
+      map((r) => r.data),
       catchError((e) => this.commonService.handleError(e, Entite.EMPLOYE)),
     );
   }

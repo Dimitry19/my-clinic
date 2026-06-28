@@ -60,6 +60,7 @@ export class ResultatLaboComponent implements OnInit {
   examen = input.required<ExamenLabo>();
   laborantinId = input.required<string>(); // ID de l'utilisateur connecté
   saved = output<ResultatLabo>(); // notifie le parent après sauvegarde
+  loaded = output<ResultatLabo | null>();
 
   private svc = inject(ResultatLaboService);
   private msg = inject(MessageService);
@@ -118,11 +119,13 @@ export class ResultatLaboComponent implements OnInit {
       next: (r) => {
         this.resultat.set(r);
         this.loading.set(false);
+         this.loaded.emit(r); 
       },
       error: () => {
         // Pas de résultat encore — état normal
         this.resultat.set(null);
         this.loading.set(false);
+         this.loaded.emit(null); 
       },
     });
   }

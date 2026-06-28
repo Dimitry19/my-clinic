@@ -71,7 +71,7 @@
           [outlined]="true"
           pTooltip="Générer le rapport PDF"
           tooltipPosition="top"
-          [disabled]="examen()!.statut !== 'TERMINE'"
+          [disabled]="!showResults()"
           (onClick)="genererPdf()"
         />
         <p-button
@@ -84,14 +84,17 @@
           pTooltip="Modifier l'examen"
           tooltipPosition="top"
         />
-        <p-button
-          icon="pi pi-trash"
-          severity="danger"
-          [outlined]="true"
-          pTooltip="Supprimer"
-          tooltipPosition="top"
-          (onClick)="confirmDelete()"
-        />
+        @if(!showResults()){
+          <p-button
+            icon="pi pi-trash"
+            severity="danger"
+            [outlined]="true"
+            pTooltip="Supprimer"
+            tooltipPosition="top"
+            (onClick)="confirmDelete()"
+          />
+        }
+       
       </div>
     </div>
 
@@ -240,6 +243,7 @@
         <clnt-resultat-labo
           [examen]="examen()!"
           [laborantinId]="currentUserId()"
+          (loaded)="onResultatLoaded($event)"
           (saved)="onResultatSaved($event)"
         />
       </div>

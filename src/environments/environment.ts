@@ -20,7 +20,7 @@ export const environment: ClinicTrinityEnvironment = {
     'RECEPTIONNISTE',
   ],
   laboratoireRoles: ['ADMIN', 'SUPER_ADMIN', 'LABORANTIN', 'MEDECIN'],
-  pharmacieRoles: ['ADMIN', 'SUPER_ADMIN', 'PHARMACIEN', 'MEDECIN'],
+  pharmacieRoles: ['ADMIN', 'SUPER_ADMIN', 'PHARMACIEN'],
   facturationRoles: ['ADMIN', 'SUPER_ADMIN', 'COMPTABLE'],
   ressourcesHumainesRoles: ['ADMIN', 'SUPER_ADMIN'],
   inProgressIconUrl: '/assets/images/tracking/delivery-step.jpg',

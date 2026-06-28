@@ -22,7 +22,6 @@ import { TooltipModule } from 'primeng/tooltip';
 import { CommonService } from '../../../../core/services/common.services';
 import {
   Facture,
-  Ordonnance,
   Patient,
 } from '../../../../core/models/patient/patient.model';
 import {
@@ -41,6 +40,8 @@ import {
 import { AppConfirmationService } from '../../../../core/services/global/app.confirmation.service';
 import { ExamenLabo } from '../../../../core/models/laboratoire/laboratoire.model';
 import { ExamenLaboService } from '../../../../core/services/laboratoire/laboratoire.service';
+import { OrdonnanceService } from '../../../../core/services/ordonnance/ordonnance.service';
+import { Ordonnance } from '../../../../core/models/ordonnance/ordonnance.model';
 
 @Component({
   selector: 'clnt-patient-detail',
@@ -68,13 +69,14 @@ import { ExamenLaboService } from '../../../../core/services/laboratoire/laborat
 })
 export class PatientDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private patientSvc = inject(PatientService);
   private consultationSvc = inject(ConsultationService);
   private examenLaboSvc = inject(ExamenLaboService);
   private commonService = inject(CommonService);
-  private msgSvc = inject(MessageService);
-  private router = inject(Router);
+  private ordonnanceSvc = inject(OrdonnanceService);
   private confirmService = inject(AppConfirmationService);
+  private msgSvc = inject(MessageService);
 
   patient = signal<Patient | null>(null);
   loadError = signal<string | null>(null);
@@ -99,6 +101,11 @@ export class PatientDetailComponent implements OnInit {
   pageConsIndex = signal(0);
   consultations = signal<Consultation[]>([]);
   totalConsultations = computed(() => this.pageCons()?.page.totalElements ?? 0);
+
+  // Ordonnances
+  private destroyOrd$ = new Subject<void>();
+  loadingOrdonnances = signal(true);
+  ordonnances = signal<Ordonnance[]>([]);
 
   // ── Dialog Consultation ────────────────────────────────────────
   showDetailConsultation = signal(false);
@@ -141,47 +148,30 @@ export class PatientDetailComponent implements OnInit {
     },
   ]);
 
-  ordonnances = signal<Ordonnance[]>([
-    {
-      id: '1',
-      date: new Date('2026-05-20'),
-      medecin: 'Dr. Martin',
-      medicaments: [
-        'Artéméther-Luméfantrine 80/480mg — 1cp matin et soir 3j',
-        'Paracétamol 1g — 1cp toutes les 8h si fièvre',
-      ],
-    },
-    {
-      id: '2',
-      date: new Date('2026-04-10'),
-      medecin: 'Dr. Dupont',
-      medicaments: [
-        'Oméprazole 20mg — 1cp avant repas 14j',
-        'Antiacide — 2cp après repas 7j',
-      ],
-    },
-  ]);
-
   timeline = signal<any[]>([]);
 
   recuperationsParallesDesDonnees(page: number, id: string) {
     forkJoin({
       p: this.patientSvc.findById(id),
-      cons: this.consultationSvc.findAllByPatient(page, this.pageSize, id),
-      exams: this.examenLaboSvc.findByPatient(id, page, this.pageSize),
+      ords: this.ordonnanceSvc.findByPatient(id),
+      //cons: this.consultationSvc.findAllByPatient(page, this.pageSize, id),
+      //exams: this.examenLaboSvc.findByPatient(id, page, this.pageSize),
       //cong: this.svc.getConges(id),
     }).subscribe({
-      next: ({ p, cons, exams }) => {
+      next: ({ p, ords }) => {
         this.patient.set(p);
         this.loading.set(false);
-        this.successLoadConsultation(cons);
-        this.successLoadExamens(exams);
+        this.successLoadOrdonnances(ords);
+        // this.successLoadConsultation(cons);
+        // this.successLoadExamens(exams);
         //this.conges.set(cong);
       },
       error: (err: ServiceError) => {
         this.loading.set(false);
-        this.loadingCons.set(false);
-        this.loadingExams.set(false);
+        //this.loadingCons.set(false);
+        // this.loadingExams.set(false);
+        this.loadingOrdonnances.set(false);
+
         this.loadError.set(err.message);
       },
     });
@@ -196,6 +186,8 @@ export class PatientDetailComponent implements OnInit {
     this.destroyCons$.complete();
     this.destroyExams$.next();
     this.destroyExams$.complete();
+    this.destroyOrd$.next();
+    this.destroyOrd$.complete();
   }
 
   private buildTimeline() {
@@ -239,7 +231,7 @@ export class PatientDetailComponent implements OnInit {
   }
 
   getSexeLabel(s: string) {
-    return s === 'M' ? 'Homme' : s === 'F' ? 'Femme' : 'Autre';
+    return this.commonService.getSexeLabel(s);
   }
 
   getFactureSeverity(s: string) {
@@ -266,6 +258,28 @@ export class PatientDetailComponent implements OnInit {
   imprimerFiche() {
     window.print();
   }
+  //------------------ORDONNANCES---------------------------
+
+  loadOrdonnances() {
+    console.log('loadOrdonnances');
+    this.loadingOrdonnances.set(true);
+
+    this.ordonnanceSvc
+      .findByPatient(this.patient()!.id)
+      .pipe(takeUntil(this.destroyOrd$))
+      .subscribe({
+        next: (data) => {
+          this.successLoadOrdonnances(data);
+        },
+        error: (e: ServiceError) => {
+          this.loadingOrdonnances.set(false);
+        },
+      });
+  }
+  successLoadOrdonnances(data: Ordonnance[]) {
+    this.ordonnances.update((current) => [...current, ...data]);
+    this.loadingOrdonnances.set(false);
+  }
 
   //------------------EXAMENS---------------------------
   successLoadExamens(data: Page<ExamenLabo>) {
@@ -276,8 +290,8 @@ export class PatientDetailComponent implements OnInit {
   }
 
   onLazyLoadExamens(e: any) {
-    this.pageConsIndex.set(e.first / this.pageSize);
-    this.loadConsultations(this.pageConsIndex());
+    this.pageExamsIndex.set(e.first / this.pageSize);
+    this.loadExamens(this.pageExamsIndex());
   }
 
   loadExamens(p = 0) {
@@ -387,6 +401,36 @@ export class PatientDetailComponent implements OnInit {
     );
   }
 
+  confirmDeleteOrdonnance(o: Ordonnance) {
+    this.confirmService.action(
+      `Suppression de l'ordonnance`,
+      `Supprimer de l'ordonnance donc la date d'emission est ${this.formatDate(o.dateEmission)} du patient ${o.patientNom} ?`,
+      () => {
+        this.ordonnanceSvc.delete(o.id).subscribe({
+          next: () => {
+            this.ordonnances.update((list) =>
+              list.filter((r) => r.id !== o.id),
+            );
+            this.msgSvc.add({
+              severity: 'success',
+              summary: 'Supprimé',
+              detail: 'Ordonnance supprimée.',
+            });
+            this.loadOrdonnances();
+          },
+          error: (err: ServiceError) => {
+            this.msgSvc.add({
+              severity: 'error',
+              summary: 'Erreur',
+              detail: err.message,
+              life: 5000,
+            });
+          },
+        });
+      },
+    );
+  }
+
   changeConsultationStatus(cons: Consultation, statut: StatutConsultation) {
     this.consultationSvc.updateStatus(cons.id, statut).subscribe({
       next: () => {
@@ -470,5 +514,8 @@ export class PatientDetailComponent implements OnInit {
 
   genererRapportPdf(examen: ExamenLabo) {
     this.examenLaboSvc.genererRapportPdf(examen);
+  }
+  genererOrdonnancePdf(ordonnance: Ordonnance) {
+    this.ordonnanceSvc.genererPdf(ordonnance);
   }
 }

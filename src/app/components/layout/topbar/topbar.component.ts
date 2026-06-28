@@ -153,8 +153,8 @@ export class TopbarComponent {
   }
 
   userMenuItems: MenuItem[] = [
-    { label: 'Mon profil', icon: 'pi pi-user', command: () => {} },
-    { label: 'Paramètres', icon: 'pi pi-cog', command: () => {} },
+    { label: 'Mon profil', icon: 'pi pi-user', command: () => this.profil() },
+    // { label: 'Paramètres', icon: 'pi pi-cog', command: () => {} },
     { separator: true },
     {
       label: 'Déconnexion',
@@ -162,6 +162,10 @@ export class TopbarComponent {
       command: () => this.logout(),
     },
   ];
+
+  profil() {
+    this.router.navigate(['/employes', this.auth.currentUser()?.employeId]);
+  }
 
   logout() {
     this.auth.logout().subscribe({

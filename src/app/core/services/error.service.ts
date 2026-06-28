@@ -36,6 +36,10 @@ export class ErrorService {
       label404 = 'Patient introuvable.';
     }
 
+    if (entite === Entite.ORDONNANCE) {
+      label404 = 'Ordonnance introuvable.';
+    }
+
     if (err.status === 0) {
       error = {
         code: 'NETWORK',

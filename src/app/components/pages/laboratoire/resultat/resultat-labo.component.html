@@ -128,58 +128,56 @@
         @for (ctrl of parametresArray.controls; track trackByIndex($index)) {
           <div class="parametre-row" [formGroupName]="$index">
             <!-- Libellé -->
-            <div class="f-field param-libelle-field">
-              <label class="f-label">
+            <div class="form-field param-libelle-field">
+              <label class="form-label required">
                 Paramètre
-                <span class="req">*</span>
               </label>
               <input
                 pInputText
                 formControlName="libelle"
                 placeholder="Ex: Hémoglobine"
-                class="f-input"
+                class="f-input form-control"
               />
             </div>
 
             <!-- Valeur -->
-            <div class="f-field param-val-field">
-              <label class="f-label">
+            <div class="form-field param-val-field">
+              <label class="form-label required">
                 Valeur
-                <span class="req">*</span>
               </label>
               <input
                 pInputText
                 formControlName="valeur"
                 placeholder="Ex: 12.5"
-                class="f-input"
+                class="f-input form-control"
               />
             </div>
 
             <!-- Unité -->
-            <div class="f-field param-unite-field">
-              <label class="f-label">Unité</label>
+            <div class="form-field param-unite-field">
+              <label class="form-label">Unité</label>
               <input
                 pInputText
                 formControlName="unite"
                 placeholder="Ex: g/dL"
-                class="f-input"
+                class="f-input form-control"
               />
             </div>
 
             <!-- Norme -->
-            <div class="f-field param-norme-field">
-              <label class="f-label">Norme</label>
+            <div class="form-field param-norme-field">
+              <label class="form-label">Norme</label>
               <input
                 pInputText
                 formControlName="norme"
                 placeholder="Ex: 12-16"
-                class="f-input"
+                class="f-input form-control"
               />
             </div>
 
             <!-- Anormal -->
-            <div class="f-field param-anormal-field">
-              <label class="f-label">Anormal</label>
+            <div class="form-field param-anormal-field">
+              <label class="form-label">Anormal</label>
               <p-checkbox formControlName="anormal" [binary]="true" />
             </div>
 
@@ -215,13 +213,13 @@
         <span class="optional-hint">(optionnel)</span>
       </div>
 
-      <div class="f-field">
+      <div class="form-field">
         <textarea
           pTextarea
           formControlName="interpretation"
           rows="4"
           placeholder="Interprétation clinique des résultats, observations du laborantin..."
-          class="f-input f-textarea"
+          class="f-input f-textarea form-control"
         ></textarea>
       </div>
 

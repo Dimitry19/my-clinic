@@ -176,6 +176,21 @@ export class CommonService {
     return 'secondary';
   }
 
+  getSexeLabel(s: string) {
+    return s === 'M' ? 'Homme' : s === 'F' ? 'Femme' : 'Autre';
+  }
+
+  getStatutColorClass(statut: string): string {
+    return (
+      {
+        TERMINE: 'sc-green',
+        EN_COURS: 'sc-blue',
+        EN_ATTENTE: 'sc-amber',
+        ANNULE: 'sc-red',
+      }[statut] ?? 'sc-blue'
+    );
+  }
+
   public isSuccessResponse(response: ApiResponse): boolean {
     return this.apiService.isSuccessResponse(response);
   }

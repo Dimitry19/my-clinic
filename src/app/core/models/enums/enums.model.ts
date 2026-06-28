@@ -50,4 +50,5 @@ export enum Entite {
   CONSULTATION,
   PATIENT,
   LABORATOIRE,
+  ORDONNANCE,
 }

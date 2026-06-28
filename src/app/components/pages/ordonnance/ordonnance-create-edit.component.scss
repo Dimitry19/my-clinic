@@ -1,0 +1,113 @@
+﻿@use "sass:color";
+@use "../../../../variables.scss" as *;
+
+// ── Spécifique ordonnance ─────────────────────────────────
+
+// Bloc médicament
+.medicaments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.medicament-bloc {
+  background: $bg-light;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: color.adjust($border, $lightness: -10%);
+  }
+}
+
+.medicament-bloc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 0.5px solid $border;
+}
+
+.medicament-num {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  color: $primary;
+
+  i {
+    font-size: 15px;
+  }
+}
+
+// Bouton ajouter médicament
+.ord-add-btn {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+}
+
+// Récapitulatif — carte pleine largeur
+.recap-card-full {
+  grid-column: 1 / -1;
+}
+
+// Liste médicaments dans le récapitulatif
+.ord-recap-meds {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.ord-recap-med-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 0.5px solid $bg-light;
+  font-size: 13px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+  &:hover {
+    background: rgba($primary-lt, 0.3);
+  }
+}
+
+.ord-recap-med-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: $primary;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ord-recap-med-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ord-recap-med-nom {
+  font-weight: 500;
+  color: $text;
+}
+
+.ord-recap-med-sub {
+  font-size: 12px;
+  color: $text-muted;
+}

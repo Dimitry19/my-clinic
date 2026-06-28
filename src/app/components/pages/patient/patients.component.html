@@ -75,13 +75,7 @@
                 </div>
                 <div class="patient-age">
                   {{ patient.age }} ans ·
-                  {{
-                    patient.sexe === "M"
-                      ? "Homme"
-                      : patient.sexe === "F"
-                        ? "Femme"
-                        : "Autre"
-                  }}
+                  {{ getSexeLabel(patient.sexe) }}
                 </div>
               </div>
             </div>

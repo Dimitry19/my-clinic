@@ -94,6 +94,8 @@
               tooltipPosition="top"
               [routerLink]="['/examens-labo', e.id]"
             />
+
+         
             <p-button
               icon="pi pi-pencil"
               [text]="true"
@@ -101,7 +103,7 @@
               severity="secondary"
               pTooltip="Modifier"
               tooltipPosition="top"
-              (onClick)="openEdit(e)"
+              [routerLink]="['/examens-labo', e.id, 'edit']"
             />
             <p-button
               icon="pi pi-trash"

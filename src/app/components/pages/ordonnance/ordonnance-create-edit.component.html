@@ -1,0 +1,748 @@
+﻿<p-toast position="top-right" />
+
+<div class="cons-ord-create">
+  <!-- ── Breadcrumb ── -->
+  <nav class="breadcrumb" aria-label="Navigation">
+    @if (patient()) {
+      <a [routerLink]="['/patients', patient()!.id]" class="bc-link">
+        <i class="pi pi-arrow-left" aria-hidden="true"></i>
+        {{ patient()!.prenom }} {{ patient()!.nom }}
+      </a>
+    } @else {
+      <a routerLink="/ordonnances" class="bc-link">
+        <i class="pi pi-arrow-left" aria-hidden="true"></i>
+        Ordonnances
+      </a>
+    }
+    <span class="bc-sep" aria-hidden="true">/</span>
+    <span class="bc-current">{{ getPageTitle() }}</span>
+  </nav>
+
+  <!-- ── En-tête ── -->
+  <div class="page-header">
+    <div>
+      <h2>
+        <i class="pi pi-file-edit" aria-hidden="true"></i>
+        {{ getPageTitle() }}
+      </h2>
+      <p>{{ getPageSubtitle() }}</p>
+    </div>
+  </div>
+
+  <!-- ── Erreur globale ── -->
+  @if (globalError()) {
+    <p-message severity="error" [text]="globalError()!" styleClass="w-full" />
+  }
+
+  <!-- ── Indicateur d'étapes ── -->
+  <div class="steps-nav" role="tablist" aria-label="Étapes de création">
+    @for (step of STEPS; track $index) {
+      <div class="step-wrapper">
+        <button
+          class="step-btn"
+          [class.step-active]="activeStep() === $index"
+          [class.step-done]="etapeComplete($index)"
+          [class.step-disabled]="$index > activeStep()"
+          (click)="allerEtape($index)"
+          role="tab"
+          [attr.aria-selected]="activeStep() === $index"
+          [attr.aria-label]="'Étape ' + ($index + 1) + ' : ' + step.label"
+          [disabled]="$index > activeStep()"
+        >
+          <div class="step-circle">
+            @if (etapeComplete($index)) {
+              <i class="pi pi-check" aria-hidden="true"></i>
+            } @else {
+              <span>{{ $index + 1 }}</span>
+            }
+          </div>
+          <div class="step-info">
+            <span class="step-num">Étape {{ $index + 1 }}</span>
+            <span class="step-label">{{ step.label }}</span>
+          </div>
+        </button>
+        @if ($index < STEPS.length - 1) {
+          <div
+            class="step-connector"
+            [class.connector-done]="etapeComplete($index)"
+            aria-hidden="true"
+          ></div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 0 — Médecin & Patient
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 0) {
+    <div class="step-panel" role="tabpanel" aria-label="Médecin et patient">
+      <div class="step-panel-header">
+        <div class="step-panel-icon">
+          <i class="pi pi-users" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Médecin & Patient</h3>
+          <p>Sélectionnez le médecin prescripteur et le patient concerné</p>
+        </div>
+      </div>
+
+      <form [formGroup]="form" class="step-form">
+        <div class="form-row">
+          <!-- Département -->
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fa-solid fa-building"></i>
+              Département
+            </label>
+            <p-select
+              formControlName="departement"
+              [options]="departementOptions"
+              [(ngModel)]="filterDept"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Filtrer par département"
+              (onChange)="onFilterDept($event.value)"
+              styleClass="w-full"
+            ></p-select>
+          </div>
+
+          <!-- Médecin -->
+          <div class="form-group" [class.f-err]="hasError('medecinId')">
+            <label class="form-label required">
+              <i class="pi pi-user-plus" aria-hidden="true"></i>
+              Médecin prescripteur
+            </label>
+            <p-select
+              formControlName="medecinId"
+              [options]="medecinOptions()"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Sélectionner un médecin"
+              styleClass="w-full"
+              [filter]="true"
+              filterPlaceholder="Rechercher..."
+              [showClear]="true"
+              [virtualScroll]="true"
+              [virtualScrollItemSize]="38"
+              [lazy]="true"
+              (onLazyLoad)="onMedecinsLazyLoad($event)"
+            ></p-select>
+            @if (fieldError("medecinId")) {
+              <span class="f-err-msg" role="alert">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                {{ fieldError("medecinId") }}
+              </span>
+            }
+            @if (selectedMedecin()) {
+              <div class="selection-card selection-card-medecin">
+                <div class="selection-avatar">
+                  {{
+                    getInitiales(
+                      selectedMedecin()!.prenom,
+                      selectedMedecin()!.nom
+                    )
+                  }}
+                </div>
+                <div class="selection-info">
+                  <span class="selection-nom"
+                    >{{ selectedMedecin()!.prenom }}
+                    {{ selectedMedecin()!.nom }}</span
+                  >
+                  <span class="selection-sub">{{
+                    selectedMedecin()!.poste
+                  }}</span>
+                </div>
+                <i
+                  class="pi pi-check-circle selection-check"
+                  aria-hidden="true"
+                ></i>
+              </div>
+            }
+          </div>
+
+          <!-- Patient -->
+          <div class="form-group" [class.f-err]="hasError('patientId')">
+            <label class="form-label required">
+              <i class="pi pi-user" aria-hidden="true"></i>
+              Patient
+            </label>
+            <p-select
+              formControlName="patientId"
+              [options]="patientOptions()"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Sélectionner un patient"
+              styleClass="w-full"
+              [filter]="true"
+              filterPlaceholder="Rechercher..."
+              [showClear]="true"
+            ></p-select>
+            @if (fieldError("patientId")) {
+              <span class="f-err-msg" role="alert">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                {{ fieldError("patientId") }}
+              </span>
+            }
+            @if (selectedPatient()) {
+              <div class="selection-card selection-card-patient">
+                <div class="selection-avatar avatar-patient">
+                  {{
+                    getInitiales(
+                      selectedPatient()!.prenom,
+                      selectedPatient()!.nom
+                    )
+                  }}
+                </div>
+                <div class="selection-info">
+                  <span class="selection-nom"
+                    >{{ selectedPatient()!.prenom }}
+                    {{ selectedPatient()!.nom }}</span
+                  >
+                  <span class="selection-sub"
+                    >{{ selectedPatient()!.age }} ans</span
+                  >
+                </div>
+                <i
+                  class="pi pi-check-circle selection-check"
+                  aria-hidden="true"
+                ></i>
+              </div>
+            }
+          </div>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 1 — Consultation
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 1) {
+    <div
+      class="step-panel"
+      role="tabpanel"
+      aria-label="Sélection de la consultation"
+    >
+      <div class="step-panel-header">
+        <div class="step-panel-icon">
+          <i class="pi pi-stethoscope" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Consultation liée</h3>
+          <p>
+            Associez l'ordonnance à une consultation de
+            <strong
+              >{{ selectedPatient()?.prenom }}
+              {{ selectedPatient()?.nom }}</strong
+            >
+          </p>
+        </div>
+      </div>
+
+      @if (loadingCons()) {
+        <div class="clnt-grid">
+          @for (i of [1, 2, 3]; track i) {
+            <p-skeleton height="80px" borderRadius="12px" />
+          }
+        </div>
+      }
+
+      @if (!loadingCons() && consultations().length === 0) {
+        <div class="no-clnt-card">
+          <div class="no-clnt-icon">
+            <i class="pi pi-stethoscope" aria-hidden="true"></i>
+          </div>
+          <div class="no-clnt-body">
+            <h4>Aucune consultation trouvée</h4>
+            <p>
+              <strong
+                >{{ selectedPatient()?.prenom }}
+                {{ selectedPatient()?.nom }}</strong
+              >
+              n'a pas encore de consultation enregistrée.
+            </p>
+            <p class="no-clnt-hint">
+              Une consultation est nécessaire pour émettre une ordonnance.
+            </p>
+          </div>
+          <div class="no-clnt-actions">
+            <a
+              [routerLink]="['/consultation/create', selectedPatient()!.id]"
+              class="btn-create-rdv"
+            >
+              <i class="pi pi-plus" aria-hidden="true"></i>
+              Créer une consultation
+            </a>
+            <button class="btn-back-step" (click)="etapePrecedente()">
+              <i class="pi pi-arrow-left" aria-hidden="true"></i>
+              Changer de patient
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (!loadingCons() && consultations().length > 0) {
+        <div class="clnt-count-label">
+          <i class="pi pi-list" aria-hidden="true"></i>
+          {{ consultations().length }} consultation(s) disponible(s)
+        </div>
+
+        <div class="clnt-grid">
+          @for (cons of consultations(); track cons.id) {
+            <div
+              class="clnt-card"
+              [class.clnt-card-selected]="
+                selectedConsultation()?.id === cons.id
+              "
+              (click)="selectionnerConsultation(cons)"
+              role="radio"
+              [attr.aria-checked]="selectedConsultation()?.id === cons.id"
+              tabindex="0"
+              (keydown.enter)="selectionnerConsultation(cons)"
+              (keydown.space)="selectionnerConsultation(cons)"
+            >
+              <div class="clnt-radio">
+                @if (selectedConsultation()?.id === cons.id) {
+                  <i
+                    class="pi pi-check-circle clnt-radio-checked"
+                    aria-hidden="true"
+                  ></i>
+                } @else {
+                  <div class="clnt-radio-empty" aria-hidden="true"></div>
+                }
+              </div>
+              <div class="clnt-card-body">
+                <div class="clnt-card-date">
+                  <div class="clnt-date-icon">
+                    <i class="pi pi-stethoscope" aria-hidden="true"></i>
+                  </div>
+                  <div>
+                    <span class="clnt-date-label">{{
+                      formatDate(cons.dateHeure)
+                    }}</span>
+                    <span class="clnt-heure-label">
+                      <i class="pi pi-user" aria-hidden="true"></i>
+                      {{ cons.medecinNom }}
+                    </span>
+                  </div>
+                </div>
+                <div class="clnt-card-motif">
+                  <i class="pi pi-clipboard" aria-hidden="true"></i>
+                  {{ cons.motif }}
+                </div>
+              </div>
+              <div class="clnt-card-statut">
+                <p-tag [value]="getConsultationStatutLabel(cons.statut)" />
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (hasError("consultationId")) {
+          <span class="f-err-msg mt-2" role="alert">
+            <i class="pi pi-info-circle" aria-hidden="true"></i>
+            Veuillez sélectionner une consultation.
+          </span>
+        }
+      }
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 2 — Médicaments
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 2) {
+    <div class="step-panel" role="tabpanel" aria-label="Médicaments">
+      <div class="step-panel-header">
+        <div class="step-panel-icon">
+          <i class="pi pi-pills" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Médicaments prescrits</h3>
+          <p>
+            Ajoutez les médicaments, dosages et instructions pour le patient
+          </p>
+        </div>
+      </div>
+
+      <form [formGroup]="form" class="step-form">
+        <!-- Liste des médicaments -->
+        <div formArrayName="medicaments" class="medicaments-list">
+          @for (ctrl of medicamentsArray.controls; track trackByIndex($index)) {
+            <div class="medicament-bloc" [formGroupName]="$index">
+              <!-- En-tête ligne -->
+              <div class="medicament-bloc-header">
+                <span class="medicament-num">
+                  <i class="pi pi-pills" aria-hidden="true"></i>
+                  Médicament {{ $index + 1 }}
+                </span>
+                <p-button
+                  icon="pi pi-trash"
+                  [text]="true"
+                  size="small"
+                  severity="danger"
+                  pTooltip="Supprimer ce médicament"
+                  tooltipPosition="top"
+                  [disabled]="medicamentsArray.length === 1"
+                  (onClick)="supprimerMedicament($index)"
+                />
+              </div>
+
+              <!-- Champs -->
+              <div class="form-row-2">
+                <!-- Nom du médicament -->
+                <div
+                  class="f-field"
+                  [class.f-err]="medicamentHasError($index, 'medicamentNom')"
+                >
+                  <label class="f-label">
+                    <i class="pi pi-tag" aria-hidden="true"></i>
+                    Nom du médicament
+                    <span class="req" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    pInputText
+                    formControlName="medicamentNom"
+                    placeholder="Ex: Paracétamol 1g"
+                    class="f-input"
+                  />
+                  @if (medicamentHasError($index, "medicamentNom")) {
+                    <span class="f-err-msg" role="alert">
+                      <i class="pi pi-info-circle" aria-hidden="true"></i>
+                      Ce champ est obligatoire.
+                    </span>
+                  }
+                </div>
+
+                <!-- Dosage -->
+                <div class="f-field">
+                  <label class="f-label">
+                    <i class="pi pi-chart-bar" aria-hidden="true"></i>
+                    Dosage
+                  </label>
+                  <input
+                    pInputText
+                    formControlName="dosage"
+                    placeholder="Ex: 1 comprimé"
+                    class="f-input"
+                  />
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <!-- Fréquence -->
+                <div class="f-field">
+                  <label class="f-label">
+                    <i class="pi pi-clock" aria-hidden="true"></i>
+                    Fréquence
+                  </label>
+                  <input
+                    pInputText
+                    formControlName="frequence"
+                    placeholder="Ex: 3 fois par jour"
+                    class="f-input"
+                  />
+                </div>
+
+                <!-- Durée -->
+                <div class="f-field">
+                  <label class="f-label">
+                    <i class="pi pi-calendar" aria-hidden="true"></i>
+                    Durée
+                  </label>
+                  <input
+                    pInputText
+                    formControlName="duree"
+                    placeholder="Ex: 5 jours"
+                    class="f-input"
+                  />
+                </div>
+              </div>
+
+              <!-- Instructions spécifiques -->
+              <div class="f-field">
+                <label class="f-label">
+                  <i class="pi pi-align-left" aria-hidden="true"></i>
+                  Instructions spécifiques
+                  <span class="optional-hint">(optionnel)</span>
+                </label>
+                <textarea
+                  pTextarea
+                  formControlName="instructions"
+                  rows="2"
+                  placeholder="Ex: À prendre pendant les repas, éviter l'alcool..."
+                  class="f-input f-textarea"
+                ></textarea>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Ajouter médicament -->
+        <p-button
+          icon="pi pi-plus"
+          label="Ajouter un médicament"
+          [text]="true"
+          (onClick)="ajouterMedicament()"
+          styleClass="ord-add-btn"
+        />
+
+        <!-- Séparateur -->
+        <div class="section-label" style="margin-top: 1.5rem">
+          <i class="pi pi-align-left" aria-hidden="true"></i>
+          Paramètres de l'ordonnance
+        </div>
+
+        <div class="form-row-2">
+          <!-- Validité -->
+          <div class="f-field" [class.f-err]="hasError('validiteJours')">
+            <label class="f-label">
+              <i class="pi pi-calendar-clock" aria-hidden="true"></i>
+              Validité (jours)
+              <span class="req" aria-hidden="true">*</span>
+            </label>
+            <p-inputNumber
+              formControlName="validiteJours"
+              [min]="1"
+              [max]="365"
+              [step]="1"
+              styleClass="w-full"
+              suffix=" jours"
+            />
+            @if (fieldError("validiteJours")) {
+              <span class="f-err-msg" role="alert">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                {{ fieldError("validiteJours") }}
+              </span>
+            }
+          </div>
+
+          <!-- Date d'émission -->
+          <div class="f-field">
+            <label class="f-label">
+              <i class="pi pi-calendar" aria-hidden="true"></i>
+              Date d'émission
+            </label>
+            <input
+              pInputText
+              type="datetime-local"
+              formControlName="dateEmission"
+              class="f-input"
+            />
+          </div>
+        </div>
+
+        <!-- Instructions générales -->
+        <div class="f-field">
+          <label class="f-label">
+            <i class="pi pi-clipboard" aria-hidden="true"></i>
+            Instructions générales
+            <span class="optional-hint">(optionnel)</span>
+          </label>
+          <textarea
+            pTextarea
+            formControlName="instructions"
+            rows="3"
+            placeholder="Conseils généraux, recommandations complémentaires..."
+            class="f-input f-textarea"
+          ></textarea>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 3 — Récapitulatif
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 3) {
+    <div class="step-panel" role="tabpanel" aria-label="Récapitulatif">
+      <div class="step-panel-header">
+        <div class="step-panel-icon step-icon-success">
+          <i class="pi pi-list-check" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Récapitulatif</h3>
+          <p>Vérifiez les informations avant d'enregistrer l'ordonnance</p>
+        </div>
+      </div>
+
+      <div class="recap-grid">
+        <!-- Intervenants -->
+        <div class="recap-card">
+          <div class="recap-card-title">
+            <i class="pi pi-users" aria-hidden="true"></i>
+            Intervenants
+          </div>
+          <div class="recap-rows">
+            <div class="recap-row">
+              <span class="recap-label">Médecin</span>
+              <span class="recap-val">
+                {{ selectedMedecin()?.prenom }} {{ selectedMedecin()?.nom }}
+                <span class="recap-sub">{{ selectedMedecin()?.poste }}</span>
+              </span>
+            </div>
+            <div class="recap-row">
+              <span class="recap-label">Patient</span>
+              <span class="recap-val">
+                {{ selectedPatient()?.prenom }} {{ selectedPatient()?.nom }}
+                <span class="recap-sub">{{ selectedPatient()?.age }} ans</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ordonnance -->
+        <div class="recap-card">
+          <div class="recap-card-title">
+            <i class="pi pi-file-edit" aria-hidden="true"></i>
+            Ordonnance
+          </div>
+          <div class="recap-rows">
+            <div class="recap-row">
+              <span class="recap-label">Date</span>
+              <span class="recap-val">{{
+                formatDate(form.get("dateEmission")?.value)
+              }}</span>
+            </div>
+            <div class="recap-row">
+              <span class="recap-label">Validité</span>
+              <span class="recap-val"
+                >{{ form.get("validiteJours")?.value }} jours</span
+              >
+            </div>
+            <div class="recap-row">
+              <span class="recap-label">Consultation</span>
+              <span class="recap-val">{{
+                formatDate(selectedConsultation()?.dateHeure ?? "")
+              }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Médicaments -->
+        <div class="recap-card recap-card-full">
+          <div class="recap-card-title">
+            <i class="pi pi-pills" aria-hidden="true"></i>
+            Médicaments prescrits ({{ medicamentsArray.length }})
+          </div>
+          <div class="ord-recap-meds">
+            @for (m of medicamentsArray.controls; track trackByIndex($index)) {
+              <div class="ord-recap-med-row">
+                <div class="ord-recap-med-num">{{ $index + 1 }}</div>
+                <div class="ord-recap-med-info">
+                  <span class="ord-recap-med-nom">{{
+                    m.get("medicamentNom")?.value
+                  }}</span>
+                  <span class="ord-recap-med-sub">
+                    @if (m.get("dosage")?.value) {
+                      {{ m.get("dosage")?.value }} ·
+                    }
+                    @if (m.get("frequence")?.value) {
+                      {{ m.get("frequence")?.value }} ·
+                    }
+                    @if (m.get("duree")?.value) {
+                      {{ m.get("duree")?.value }}
+                    }
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Instructions générales -->
+        @if (form.get("instructions")?.value) {
+          <div class="recap-card recap-card-full">
+            <div class="recap-card-title">
+              <i class="pi pi-clipboard" aria-hidden="true"></i>
+              Instructions générales
+            </div>
+            <div class="recap-rows">
+              <div class="recap-row">
+                <span class="recap-val">{{
+                  form.get("instructions")?.value
+                }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ── Navigation ── -->
+  <div class="step-footer">
+    <div class="footer-left">
+      @if (activeStep() > 0) {
+        <button
+          class="btn-prev"
+          (click)="etapePrecedente()"
+          [disabled]="saving()"
+        >
+          <i class="pi pi-chevron-left" aria-hidden="true"></i>
+          Précédent
+        </button>
+      }
+    </div>
+
+    <div class="footer-progress">
+      <span class="progress-label"
+        >Étape {{ activeStep() + 1 }} / {{ STEPS.length }}</span
+      >
+      <div
+        class="progress-bar"
+        role="progressbar"
+        [attr.aria-valuenow]="activeStep() + 1"
+        [attr.aria-valuemin]="1"
+        [attr.aria-valuemax]="STEPS.length"
+      >
+        <div
+          class="progress-fill"
+          [style.width.%]="((activeStep() + 1) / STEPS.length) * 100"
+        ></div>
+      </div>
+    </div>
+
+    <div class="footer-right">
+      <a
+        [routerLink]="
+          patient() ? ['/patients', patient()!.id] : ['/ordonnances']
+        "
+        class="btn-cancel"
+        [class.disabled]="saving()"
+      >
+        <i class="pi pi-times" aria-hidden="true"></i>
+        Annuler
+      </a>
+
+      @if (activeStep() < STEPS.length - 1) {
+        <button
+          class="btn-next"
+          (click)="etapeSuivante()"
+          [disabled]="activeStep() === 1 && consultations().length === 0"
+        >
+          Suivant
+          <i class="pi pi-chevron-right" aria-hidden="true"></i>
+        </button>
+      } @else {
+        <button
+          class="btn-submit"
+          (click)="soumettre()"
+          [disabled]="saving()"
+          [attr.aria-busy]="saving()"
+        >
+          @if (saving()) {
+            <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+            Enregistrement...
+          } @else {
+            <i class="pi pi-check" aria-hidden="true"></i>
+            {{
+              editMode() ? "Modifier l'ordonnance" : "Enregistrer l'ordonnance"
+            }}
+          }
+        </button>
+      }
+    </div>
+  </div>
+</div>

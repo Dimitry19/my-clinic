@@ -2,6 +2,7 @@
 
 export interface User {
   id: UUID;
+  employeId: UUID | null;
   nom: string;
   prenom: string;
   email: string;

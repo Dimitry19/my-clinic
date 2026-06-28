@@ -429,7 +429,7 @@
           <span>{{ examens().length }} examen(s)</span>
           <p-button
             label="Prescrire un examen"
-            icon="pi pi-plus"
+            icon="fa-solid fa-flask"
             size="small"
             [routerLink]="['/examens-labo/new', patient()!.id]"
           />
@@ -498,32 +498,88 @@
           <span>{{ ordonnances().length }} ordonnance(s)</span>
           <p-button
             label="Nouvelle ordonnance"
-            icon="pi pi-plus"
             size="small"
-          />
+            [routerLink]="['/ordonnance/create', patient()!.id]"
+          >
+            <ng-template pTemplate="icon">
+              <i class="fa-solid fa-pills"></i>
+            </ng-template>
+          </p-button>
         </div>
-        <div class="ordonnances-list">
-          <div *ngFor="let o of ordonnances()" class="ordonnance-card">
-            <div class="ord-header">
-              <div class="ord-meta">
-                <i class="fa-solid fa-prescription"></i>
-                <span class="ord-date">{{ o.date | date: "dd/MM/yyyy" }}</span>
-                <span class="ord-medecin">{{ o.medecin }}</span>
+        @if (!loadingOrdonnances() && ordonnances().length) {
+          <div class="ordonnances-list">
+            <div *ngFor="let o of ordonnances()" class="ordonnance-card">
+              <div class="ord-header">
+                <div class="ord-meta">
+                  <i class="fa-solid fa-prescription"></i>
+                  <span class="ord-date">{{
+                    o.dateEmission | date: "dd/MM/yyyy"
+                  }}</span>
+                  <span class="ord-medecin">{{ o.medecinNom }}</span>
+                </div>
+                <div class="action-btns">
+                  <p-button
+                    icon="pi pi-download"
+                    [text]="true"
+                    size="small"
+                    pTooltip="Télécharger PDF"
+                    (onClick)="genererOrdonnancePdf(o)"
+                  />
+                  <p-button
+                    icon="pi pi-pencil"
+                    [text]="true"
+                    size="small"
+                    pTooltip="Modifier"
+                    tooltipPosition="top"
+                    [routerLink]="['/ordonnance', o.id, 'edit']"
+                  />
+                  <p-button
+                    icon="pi pi-trash"
+                    [text]="true"
+                    size="small"
+                    severity="danger"
+                    pTooltip="Supprimer"
+                    tooltipPosition="top"
+                    (onClick)="confirmDeleteOrdonnance(o)"
+                  />
+                </div>
               </div>
-              <p-button
-                icon="pi pi-download"
-                [text]="true"
-                size="small"
-                pTooltip="Télécharger PDF"
-              />
+              <ul class="ord-meds">
+                @for (m of o.medicaments; track m) {
+                  <li class="med-item">
+                    <i class="fa-solid fa-pills"></i>
+                    {{ m.medicamentNom }}
+                    @if (m.dosage) {
+                      <i class="fa-solid fa-prescription-bottle-medical"></i>
+                      {{ m.dosage }}
+                    }
+
+                    @if (m.frequence) {
+                      <i class="fa-solid fa-repeat"></i>
+                      {{ m.frequence }}
+                    }
+
+                    @if (m.duree) {
+                      <i class="fa-regular fa-clock"></i>
+                      {{ m.duree }}
+                    }
+
+                    @if (m.instructions) {
+                      <i class="fa-solid fa-note-sticky"></i>
+                      {{ m.instructions }}
+                    }
+                  </li>
+                }
+              </ul>
             </div>
-            <ul class="ord-meds">
-              <li *ngFor="let m of o.medicaments">
-                <i class="fa-solid fa-pills"></i> {{ m }}
-              </li>
-            </ul>
           </div>
-        </div>
+        }
+        @if (!loadingOrdonnances() && ordonnances().length === 0) {
+          <div class="not-found">
+            <h3>Aucune ordonnance pour le moment</h3>
+            <p>Ajouter une nouvelle ordonnance au besoin.</p>
+          </div>
+        }
       </p-tabpanel>
 
       <!-- PANNEAU 4 : Facturation -->
@@ -535,7 +591,11 @@
               >{{ soldeDu | number }} FCFA</strong
             ></span
           >
-          <p-button label="Nouvelle facture" icon="pi pi-plus" size="small" />
+          <p-button
+            label="Nouvelle facture"
+            icon="pi pi-receipt"
+            size="small"
+          />
         </div>
         <p-table
           [value]="factures()"
