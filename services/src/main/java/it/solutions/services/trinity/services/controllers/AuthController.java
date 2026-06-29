@@ -1,14 +1,11 @@
 package it.solutions.services.trinity.services.controllers;
 
-import it.solutions.services.trinity.contracts.dto.EmployeDto;
-import it.solutions.services.trinity.core.helpers.CoreHelper;
+
 import it.solutions.services.trinity.core.security.services.CookieUtils;
 import it.solutions.services.trinity.core.security.services.JwtService;
 import it.solutions.services.trinity.core.security.services.UserService;
 import it.solutions.services.trinity.core.shared.api.ApiResponse;
 import it.solutions.services.trinity.core.shared.entities.User;
-
-import it.solutions.services.trinity.employe.entities.Employe;
 import it.solutions.services.trinity.employe.helpers.EmployeHelper;
 import it.solutions.services.trinity.employe.services.EmployeService;
 import jakarta.validation.constraints.Email;
@@ -33,9 +30,6 @@ public class AuthController {
     private final JwtService jwtService;
     private final CookieUtils cookieUtil;
     private final EmployeHelper helper;
-
-
-
 
 
     record LoginRequest(@Email String email, String password) {}

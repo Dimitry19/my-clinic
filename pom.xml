@@ -26,6 +26,7 @@
         <module>contracts</module>
         <module>laboratoire</module>
         <module>ordonnance</module>
+        <module>facturation</module>
         <module>services</module> <!-- toujours en dernier -->
     </modules>
 

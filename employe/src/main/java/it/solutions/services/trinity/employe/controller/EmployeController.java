@@ -79,7 +79,6 @@ public class EmployeController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDECIN','INFIRMIER')")
     public ResponseEntity<ApiResponse<EmployeDto.Response>> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(service.findById(id)));
     }

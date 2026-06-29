@@ -13,6 +13,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         "it.solutions.services.trinity.employe.controller",
         "it.solutions.services.trinity.laboratoire.controller",
         "it.solutions.services.trinity.ordonnance.controller",
+        "it.solutions.services.trinity.facturation.controller",
         "it.solutions.services.trinity.services.controllers.*",
 })
 @EnableJpaRepositories(basePackages = {
@@ -22,6 +23,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         "it.solutions.services.trinity.agenda.dao",
         "it.solutions.services.trinity.laboratoire.dao",
         "it.solutions.services.trinity.ordonnance.dao",
+        "it.solutions.services.trinity.facturation.dao",
 },
         entityManagerFactoryRef = "entityManagerFactory" )
 @EntityScan(basePackages = {
@@ -31,7 +33,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         "it.solutions.services.trinity.agenda.entities",
         "it.solutions.services.trinity.contracts.entities",
         "it.solutions.services.trinity.laboratoire.entities",
-        "it.solutions.services.trinity.ordonnance.entities"
+        "it.solutions.services.trinity.ordonnance.entities",
+        "it.solutions.services.trinity.facturation.entities"
 })
 public class  TrinityApplication {
     static {

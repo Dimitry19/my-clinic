@@ -4,8 +4,6 @@ package it.solutions.services.trinity.ordonnance.entities;
 
 import it.solutions.services.trinity.contracts.entities.ConsultationLight;
 import it.solutions.services.trinity.contracts.entities.PatientLight;
-import it.solutions.services.trinity.core.shared.entities.BaseEntity;
-import it.solutions.services.trinity.core.shared.entities.User;
 import it.solutions.services.trinity.core.shared.entities.UserLight;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;

@@ -26,7 +26,7 @@ public class AgendaController {
 
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER','RECEPTIONNISTE','URGENTISTE')")
     public ResponseEntity<ApiResponse<List<AgendaDto.Response>>> findAgendaByPeriode(
                                                                                      @RequestParam  int annee,
                                                                                      @RequestParam int mois,
@@ -37,26 +37,27 @@ public class AgendaController {
 
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','URGENTISTE')")
     public ResponseEntity<ApiResponse<AgendaDto.Response>> create(@Valid @RequestBody AgendaDto.Request req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Rendez-vous créé", service.create(req)));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','URGENTISTE')")
     public ResponseEntity<ApiResponse<AgendaDto.Response>> edit(
             @PathVariable UUID id, @Valid @RequestBody AgendaDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok("Rendez-vous modifié", service.edit(id, req)));
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','URGENTISTE')")
     public ResponseEntity<ApiResponse<AgendaDto.Response>> changeStatus(@PathVariable UUID id, @RequestBody AgendaDto.StatusRequest statut) {
 
         return ResponseEntity.ok(ApiResponse.ok("Statut du rendez-vous modifié", service.changeStatus(id, statut)));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','URGENTISTE')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok("Rendez-vous supprimé", null));

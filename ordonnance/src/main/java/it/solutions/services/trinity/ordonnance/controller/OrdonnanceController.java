@@ -4,6 +4,7 @@ package it.solutions.services.trinity.ordonnance.controller;
 
 import it.solutions.services.trinity.contracts.dto.OrdonnanceDto;
 import it.solutions.services.trinity.core.shared.api.ApiResponse;
+import it.solutions.services.trinity.core.shared.utils.GenericUtils;
 import it.solutions.services.trinity.ordonnance.services.OrdonnanceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +27,8 @@ public class OrdonnanceController {
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER','PHARMACIEN')")
     public ResponseEntity<ApiResponse<Page<OrdonnanceDto.Response>>> findAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = GenericUtils.PAGE) int page,
+            @RequestParam(defaultValue = GenericUtils.SIZE) int size) {
         return ResponseEntity.ok(ApiResponse.ok(service.findAll(page, size)));
     }
 
