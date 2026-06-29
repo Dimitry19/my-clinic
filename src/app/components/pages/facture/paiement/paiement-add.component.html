@@ -1,0 +1,225 @@
+﻿<p-dialog
+  header="Ajouter un paiement"
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '520px' }"
+>
+  @if (facture(); as f) {
+    <div class="clnt-dialog-detail">
+      <!-- ── Info facture ── -->
+      <div class="clnt-dialog-detail-element">
+        <div class="clnt-dialog-detail-avatar">
+          {{ initiales() }}
+        </div>
+
+        <div>
+          <div class="clnt-dialog-detail-nom">
+            {{ f.patientNom }}
+          </div>
+
+          <div class="clnt-dialog-detail-meta">
+            <i class="pi pi-calendar"></i>
+            {{ formatDate(f.dateEmission) }}
+          </div>
+        </div>
+
+        <p-tag
+          [value]="statutFactConfig[f.statut].label"
+          [severity]="statutFactConfig[f.statut].severity"
+        />
+      </div>
+
+      <!-- ── Montants ── -->
+      <div class="clnt-dialog-clnt-dialog-detail-rows">
+        <div class="clnt-dialog-detail-row">
+          <span>
+            <i class="pi pi-money-bill"></i>
+            Montant total
+          </span>
+          <span>{{ formatMontant(f.montantTotal) }}</span>
+        </div>
+
+        <div class="clnt-dialog-detail-row">
+          <span>
+            <i class="pi pi-check-circle"></i>
+            Déjà payé
+          </span>
+          <span>{{ formatMontant(f.montantPaye) }}</span>
+        </div>
+
+        <div class="clnt-dialog-detail-row">
+          <span>
+            <i class="pi pi-exclamation-circle"></i>
+            Reste à payer
+          </span>
+          <span [class.reste-danger]="f.resteAPayer > 0">
+            {{ formatMontant(f.resteAPayer) }}
+          </span>
+        </div>
+
+        @if (f.notes) {
+          <div class="clnt-dialog-detail-row">
+            <span>
+              <i class="pi pi-pencil"></i>
+              Notes
+            </span>
+            <span>{{ f.notes }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- ── Formulaire paiement ── -->
+      @if (isEditable()) {
+        <div class="paiement-form-section">
+          <div class="section-label">
+            <i class="pi pi-credit-card"></i>
+            Nouveau paiement
+          </div>
+
+          <form [formGroup]="paiementForm" class="paiement-form">
+            <div class="form-row-2">
+              <!-- Montant -->
+              <div class="f-field">
+                <label class="form-label required">
+                  <i class="pi pi-money-bill" aria-hidden="true"></i>
+                  Montant
+                </label>
+
+                <p-inputNumber
+                  formControlName="montant"
+                  [min]="0.01"
+                  [max]="f.resteAPayer"
+                  suffix=" FCFA"
+                  styleClass="w-full"
+                />
+
+                @if (paiementFieldError("montant")) {
+                  <span class="f-err-msg">
+                    {{ paiementFieldError("montant") }}
+                  </span>
+                }
+
+                @if (f.resteAPayer > 0) {
+                  <button
+                    type="button"
+                    class="paiement-tout-payer"
+                    (click)="setFullAmount()"
+                  >
+                    Payer le solde complet ({{ formatMontant(f.resteAPayer) }})
+                  </button>
+                }
+              </div>
+
+              <!-- Mode paiement -->
+              <div class="f-field">
+                <label class="form-label required">
+                  <i class="pi pi-wallet" aria-hidden="true"></i>
+                  Mode de paiement
+                </label>
+
+                <p-select
+                  formControlName="modePaiement"
+                  [options]="modePaiementOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Sélectionner..."
+                  styleClass="w-full"
+                />
+
+                @if (paiementFieldError("modePaiement")) {
+                  <span class="f-err-msg">
+                    {{ paiementFieldError("modePaiement") }}
+                  </span>
+                }
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="f-field">
+                <label class="form-label">
+                  <i class="pi pi-clipboard" aria-hidden="true"></i>
+                  Référence
+                </label>
+                <input
+                  pInputText
+                  formControlName="reference"
+                  placeholder="N° chèque / transaction"
+                  class="f-input form-control"
+                />
+              </div>
+
+              <div class="f-field">
+                <label class="form-label">
+                  <i class="pi pi-calendar" aria-hidden="true"></i>
+                  Date de paiement
+                </label>
+
+                <input
+                  pInputText
+                  type="datetime-local"
+                  formControlName="datePaiement"
+                  class="f-input form-control"
+                />
+              </div>
+            </div>
+          </form>
+        </div>
+      } @else {
+        <div class="info-hint">
+          Cette facture est
+          {{ f.statut === "PAYEE" ? "entièrement payée" : "annulée" }}
+        </div>
+      }
+
+      <!-- ── Historique ── -->
+      @if (f.paiements) {
+        <div class="paiement-historique">
+          <div class="section-label">
+            <i class="pi pi-history"></i>
+            Historique des paiements
+          </div>
+
+          @for (p of f.paiements; track p.id) {
+            <div class="paiement-hist-row">
+              <div>
+                <i class="pi {{ getModePaiementIcon(p.modePaiement) }}"></i>
+
+                <div>
+                  <div>{{ getModePaiementLabel(p.modePaiement) }}</div>
+                  <div>{{ formatDate(p.datePaiement) }}</div>
+
+                  @if (p.reference) {
+                    <small>Réf: {{ p.reference }}</small>
+                  }
+                </div>
+              </div>
+
+              <span>{{ formatMontant(p.montant) }}</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── Footer ── -->
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Fermer"
+      severity="secondary"
+      (onClick)="close()"
+      [disabled]="savingPaiement()"
+    />
+
+    @if (isEditable()) {
+      <p-button
+        [label]="savingPaiement() ? 'Enregistrement...' : 'Enregistrer'"
+        [icon]="savingPaiement() ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+        (onClick)="submitPaiement()"
+        [disabled]="savingPaiement()"
+      />
+    }
+  </ng-template>
+</p-dialog>

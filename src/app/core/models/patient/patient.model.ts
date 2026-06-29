@@ -1,9 +1,4 @@
-import {
-  Genre,
-  StatutExamenLabo,
-  StatutFacture,
-  StatutPatient,
-} from '../enums/enums.model';
+import { Genre, StatutPatient } from '../enums/enums.model';
 
 export interface Patient {
   id: string;
@@ -24,12 +19,4 @@ export interface Patient {
   notesGenerales?: string;
   age: number;
   statut?: StatutPatient;
-}
-
-export interface Facture {
-  id: string;
-  date: Date;
-  montant: number;
-  paye: number;
-  statut: StatutFacture;
 }

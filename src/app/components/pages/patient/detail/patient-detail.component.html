@@ -293,28 +293,29 @@
       <p-tabpanel [value]="1">
         <div class="tab-panel-header">
           <span>{{ consultations().length }} consultation(s)</span>
-          <p-button
-            label="Rafraîchir"
-            icon="pi pi-refresh"
-            size="small"
-            styleClass="hero-btn-primary"
-            [loading]="loadingCons()"
-            (onClick)="retryLoadConsultations()"
-          >
-          </p-button>
-          <p-button
-            [disabled]="!patient()"
-            [routerLink]="
-              patient() ? ['/consultation/create', patient()!.id] : null
-            "
-            label="Nouvelle consultation"
-            styleClass="hero-btn-primary"
-            size="small"
-          >
-            <ng-template pTemplate="icon">
-              <i class="fa-solid fa-stethoscope"></i>
-            </ng-template>
-          </p-button>
+          <div class="action-btns">
+            <p-button
+              label="Rafraîchir"
+              icon="pi pi-refresh"
+              size="small"
+              styleClass="hero-btn-primary"
+              [loading]="loadingCons()"
+              (onClick)="retryLoadConsultations()"
+            />
+            <p-button
+              [disabled]="!patient()"
+              [routerLink]="
+                patient() ? ['/consultation/create', patient()!.id] : null
+              "
+              label="Nouvelle consultation"
+              styleClass="hero-btn-primary"
+              size="small"
+            >
+              <ng-template pTemplate="icon">
+                <i class="fa-solid fa-stethoscope"></i>
+              </ng-template>
+            </p-button>
+          </div>
         </div>
         <p-table
           [value]="consultations()"
@@ -591,16 +592,35 @@
               >{{ soldeDu | number }} FCFA</strong
             ></span
           >
-          <p-button
-            label="Nouvelle facture"
-            icon="pi pi-receipt"
-            size="small"
-          />
+          <div class="action-btns">
+            <p-button
+              label="Rafraîchir"
+              icon="pi pi-refresh"
+              size="small"
+              styleClass="hero-btn-primary"
+              [loading]="loadingFactures()"
+              (onClick)="retryLoadFactures()"
+            />
+            <p-button
+              label="Nouvelle facture"
+              icon="pi pi-receipt"
+              size="small"
+              [routerLink]="['/facture/create', patient()!.id]"
+            />
+          </div>
         </div>
         <p-table
           [value]="factures()"
+          [loading]="loadingFactures()"
+          [paginator]="true"
+          [rows]="pageSize"
+          [totalRecords]="totalFactures()"
+          [lazy]="true"
+          (onLazyLoad)="onLazyLoadFactures($event)"
           styleClass="p-datatable-sm"
           [rowHover]="true"
+          dataKey="id"
+          aria-label="Liste des factures du patient"
         >
           <ng-template pTemplate="header">
             <tr>
@@ -609,25 +629,76 @@
               <th>Montant payé</th>
               <th>Reste dû</th>
               <th>Statut</th>
+              <th style="width: 120px">Actions</th>
               <th></th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-f>
             <tr>
-              <td>{{ f.date | date: "dd/MM/yyyy" }}</td>
-              <td>{{ f.montant | number }} FCFA</td>
-              <td>{{ f.paye | number }} FCFA</td>
-              <td [class.reste-danger]="f.montant - f.paye > 0">
-                {{ f.montant - f.paye | number }} FCFA
+              <td>{{ f.dateEmission | date: "dd/MM/yyyy" }}</td>
+              <td>{{ f.montantTotal | number }} FCFA</td>
+              <td>{{ f.montantPaye | number }} FCFA</td>
+              <td [class.reste-danger]="f.resteAPayer > 0">
+                {{ f.resteAPayer | number }} FCFA
               </td>
               <td>
                 <p-tag
-                  [value]="f.statut"
+                  [value]="getFactureStatutLabel(f.statut)"
                   [severity]="getFactureSeverity(f.statut)"
                 />
               </td>
               <td>
-                <p-button icon="pi pi-eye" [text]="true" size="small" />
+                <div class="action-btns">
+                  <p-button
+                    icon="pi pi-download"
+                    [text]="true"
+                    size="small"
+                    pTooltip="Télécharger PDF"
+                    (onClick)="genererFacturePdf(f)"
+                  />
+                  <p-button
+                    icon="pi pi-pencil"
+                    [text]="true"
+                    size="small"
+                    severity="secondary"
+                    pTooltip="Modifier"
+                    tooltipPosition="top"
+                    [routerLink]="['/facture', f.id, 'edit']"
+                    [class.invisible]="!editableFacture(f)"
+                  />
+                  <p-button
+                    icon="pi pi-arrow-right-arrow-left"
+                    [text]="true"
+                    size="small"
+                    pTooltip="Modifier le statut"
+                    (onClick)="openFactureDetails(f); $event.stopPropagation()"
+                  />
+
+                  <p-button
+                    icon="pi pi-plus"
+                    [text]="true"
+                    size="small"
+                    pTooltip="Ajouter un paiement"
+                    (onClick)="ajouterPaiement(f); $event.stopPropagation()"
+                  />
+                  <p-button
+                    icon="pi pi-trash"
+                    [text]="true"
+                    size="small"
+                    severity="danger"
+                    pTooltip="Supprimer"
+                    tooltipPosition="top"
+                    (onClick)="confirmDeleteFacture(f)"
+                  />
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="6" class="empty-state">
+                <i class="pi pi-receipt"></i>
+                <p>Aucune facture trouvée</p>
               </td>
             </tr>
           </ng-template>
@@ -688,7 +759,12 @@
       <!-- Patient info -->
       <div class="clnt-dialog-detail-element">
         <div class="clnt-dialog-detail-avatar">
-          {{ getInitiales(detailConsultation()!) }}
+          {{
+            getInitiales(
+              detailConsultation()!.patientPrenom,
+              detailConsultation()!.patientNom
+            )
+          }}
         </div>
         <div>
           <div class="clnt-dialog-detail-nom">
@@ -758,3 +834,169 @@
     </div>
   }
 </p-dialog>
+
+<p-dialog
+  header="Détail de la Facture"
+  [(visible)]="showDetailFacture"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '460px' }"
+>
+  @if (showDetailFacture() && detailFacture()) {
+    <div class="clnt-dialog-detail">
+      <!-- Patient info -->
+      <div class="clnt-dialog-detail-element">
+        <div class="clnt-dialog-detail-avatar">
+          {{ getInitiales(patient()!.prenom, patient()!.nom) }}
+        </div>
+        <div>
+          <div class="clnt-dialog-detail-nom">
+            {{ detailFacture()!.patientNom }}
+          </div>
+          <div class="clnt-dialog-detail-meta">
+            <i class="pi pi-calendar" aria-hidden="true"></i>
+            {{ formatDate(detailFacture()!.dateEmission) }}
+          </div>
+        </div>
+        <p-tag
+          [value]="statutFactConfig[detailFacture()!.statut].label"
+          [severity]="statutFactConfig[detailFacture()!.statut].severity"
+        />
+      </div>
+
+      <!-- Infos -->
+      <div class="clnt-dialog-clnt-dialog-detail-rows">
+        <div class="clnt-dialog-detail-row">
+          <span class="clnt-dialog-detail-label"
+            ><i class="pi pi-money-bill" aria-hidden="true"></i> Montant
+            total</span
+          >
+          <span class="clnt-dialog-detail-val">{{
+            detailFacture()!.montantTotal
+          }}</span>
+        </div>
+        <div class="clnt-dialog-detail-row">
+          <span class="clnt-dialog-detail-label"
+            ><i class="pi pi-clipboard" aria-hidden="true"></i> A payer</span
+          >
+          <span class="clnt-dialog-detail-val">{{
+            detailFacture()!.resteAPayer
+          }}</span>
+        </div>
+        @if (detailFacture()!.notes) {
+          <div class="clnt-dialog-detail-row">
+            <span class="clnt-dialog-detail-label"
+              ><i class="pi pi-pencil" aria-hidden="true"></i> Notes</span
+            >
+            <span class="clnt-dialog-detail-val">{{
+              detailFacture()!.notes
+            }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Changer statut -->
+      <div class="clnt-dialog-detail-statuts">
+        <span class="clnt-dialog-detail-statut-label">Changer le statut :</span>
+        <div class="clnt-dialog-statut-btns">
+          @for (opt of statutFactOptions; track opt.value) {
+            <p-button
+              [label]="opt.label"
+              size="small"
+              [outlined]="detailFacture()!.statut !== opt.value"
+              [severity]="$any(getFactureStatutSeverity(opt.value))"
+              (onClick)="changeFactureStatus(detailFacture()!, $any(opt.value))"
+            />
+          }
+        </div>
+      </div>
+    </div>
+  }
+</p-dialog>
+
+<p-dialog
+  header="Ajouter un paiemente"
+  [(visible)]="showDetailFacture"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '460px' }"
+>
+  @if (showDetailFacture() && detailFacture()) {
+    <div class="clnt-dialog-detail">
+      <!-- Patient info -->
+      <div class="clnt-dialog-detail-element">
+        <div class="clnt-dialog-detail-avatar">
+          {{ getInitiales(patient()!.prenom, patient()!.nom) }}
+        </div>
+        <div>
+          <div class="clnt-dialog-detail-nom">
+            {{ detailFacture()!.patientNom }}
+          </div>
+          <div class="clnt-dialog-detail-meta">
+            <i class="pi pi-calendar" aria-hidden="true"></i>
+            {{ formatDate(detailFacture()!.dateEmission) }}
+          </div>
+        </div>
+        <p-tag
+          [value]="statutFactConfig[detailFacture()!.statut].label"
+          [severity]="statutFactConfig[detailFacture()!.statut].severity"
+        />
+      </div>
+
+      <!-- Infos -->
+      <div class="clnt-dialog-clnt-dialog-detail-rows">
+        <div class="clnt-dialog-detail-row">
+          <span class="clnt-dialog-detail-label"
+            ><i class="pi pi-money-bill" aria-hidden="true"></i> Montant
+            total</span
+          >
+          <span class="clnt-dialog-detail-val">{{
+            detailFacture()!.montantTotal
+          }}</span>
+        </div>
+        <div class="clnt-dialog-detail-row">
+          <span class="clnt-dialog-detail-label"
+            ><i class="pi pi-clipboard" aria-hidden="true"></i> A payer</span
+          >
+          <span class="clnt-dialog-detail-val">{{
+            detailFacture()!.resteAPayer
+          }}</span>
+        </div>
+        @if (detailFacture()!.notes) {
+          <div class="clnt-dialog-detail-row">
+            <span class="clnt-dialog-detail-label"
+              ><i class="pi pi-pencil" aria-hidden="true"></i> Notes</span
+            >
+            <span class="clnt-dialog-detail-val">{{
+              detailFacture()!.notes
+            }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Changer statut -->
+      <div class="clnt-dialog-detail-statuts">
+        <span class="clnt-dialog-detail-statut-label">Changer le statut :</span>
+        <div class="clnt-dialog-statut-btns">
+          @for (opt of statutFactOptions; track opt.value) {
+            <p-button
+              [label]="opt.label"
+              size="small"
+              [outlined]="detailFacture()!.statut !== opt.value"
+              [severity]="$any(getFactureStatutSeverity(opt.value))"
+              (onClick)="changeFactureStatus(detailFacture()!, $any(opt.value))"
+            />
+          }
+        </div>
+      </div>
+    </div>
+  }
+</p-dialog>
+
+<clnt-paiement-dialog
+  [(visible)]="addPayment"
+  [facture]="detailFacture()"
+  (save)="soumettrePaiement($event)"
+/>

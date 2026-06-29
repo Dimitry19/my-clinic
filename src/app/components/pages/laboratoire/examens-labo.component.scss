@@ -214,17 +214,6 @@
   max-width: 220px;
 }
 
-.action-btns {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-
-  .invisible {
-    visibility: hidden;
-    pointer-events: none;
-  }
-}
-
 .empty-state {
   text-align: center;
   padding: 2.5rem 1rem;

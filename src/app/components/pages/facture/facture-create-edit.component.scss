@@ -1,0 +1,257 @@
+﻿@use "sass:color";
+@use "../../../../variables.scss" as *;
+
+// Réutilise toutes les classes de consultation-create-edit.component.scss
+// Spécifiques facture ci-dessous
+
+// ── Lignes de prestation ──────────────────────────────────
+.lignes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ligne-bloc {
+  background: $bg-light;
+  border: 0.5px solid $border;
+  border-radius: $radius-lg;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: color.adjust($border, $lightness: -10%);
+  }
+}
+
+.ligne-bloc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 0.5px solid $border;
+}
+
+.ligne-num {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  color: $primary;
+
+  i {
+    font-size: 15px;
+  }
+}
+
+// Grille 3 colonnes pour les lignes
+.form-row-3 {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+    .ligne-desc {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+// Total par ligne
+.ligne-total {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 0.5rem;
+  border-top: 0.5px solid $border;
+  font-size: 13px;
+}
+
+.ligne-total-label {
+  color: $text-muted;
+}
+
+.ligne-total-val {
+  font-weight: 600;
+  color: $text;
+  font-size: 14px;
+}
+
+// Bouton ajouter ligne
+.facture-add-btn {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+}
+
+// Barre total général
+.facture-total-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: $primary-lt;
+  border: 0.5px solid #b5d4f4;
+  border-radius: $radius-lg;
+  margin-top: 1.5rem;
+}
+
+.facture-total-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: $primary-dk;
+
+  i {
+    font-size: 16px;
+  }
+}
+
+.facture-total-val {
+  font-size: 20px;
+  font-weight: 700;
+  color: $primary;
+}
+
+// ── Récapitulatif lignes ──────────────────────────────────
+.recap-card-full {
+  grid-column: 1 / -1;
+}
+
+.facture-recap-lignes {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.facture-recap-ligne-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 0.5px solid $bg-light;
+  font-size: 13px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+  &:hover {
+    background: rgba($primary-lt, 0.3);
+  }
+}
+
+.facture-recap-desc {
+  font-weight: 500;
+  color: $text;
+}
+
+.facture-recap-detail {
+  font-size: 12px;
+  color: $text-muted;
+  white-space: nowrap;
+}
+
+.facture-recap-total {
+  font-weight: 600;
+  color: $text;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.facture-recap-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: $primary-lt;
+  border-top: 1px solid #b5d4f4;
+  font-size: 14px;
+  font-weight: 500;
+  color: $primary-dk;
+}
+
+.facture-recap-grand-total {
+  font-size: 18px;
+  font-weight: 700;
+  color: $primary;
+}
+
+// ── Champs formulaire ─────────────────────────────────────
+.f-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 1rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &.f-err .f-input {
+    border-color: $danger !important;
+  }
+}
+
+.f-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: $text-muted;
+
+  .req {
+    color: $danger;
+    margin-left: 1px;
+  }
+  .optional-hint {
+    font-weight: 400;
+    color: #b4b2a9;
+    margin-left: 4px;
+  }
+}
+
+.f-input {
+  padding: 9px 12px;
+  border: 0.5px solid $border;
+  border-radius: $radius;
+  font-size: 14px;
+  color: $text;
+  background: $bg;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+  font-family: inherit;
+
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.1);
+  }
+  &::placeholder {
+    color: #b4b2a9;
+  }
+}
+
+.f-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.f-err-msg {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: $danger;
+}

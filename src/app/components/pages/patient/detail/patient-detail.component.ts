@@ -20,10 +20,7 @@ import { PatientService } from '../../../../core/services/patient/patient.servic
 
 import { TooltipModule } from 'primeng/tooltip';
 import { CommonService } from '../../../../core/services/common.services';
-import {
-  Facture,
-  Patient,
-} from '../../../../core/models/patient/patient.model';
+import { Patient } from '../../../../core/models/patient/patient.model';
 import {
   Entite,
   StatutFacture,
@@ -42,6 +39,12 @@ import { ExamenLabo } from '../../../../core/models/laboratoire/laboratoire.mode
 import { ExamenLaboService } from '../../../../core/services/laboratoire/laboratoire.service';
 import { OrdonnanceService } from '../../../../core/services/ordonnance/ordonnance.service';
 import { Ordonnance } from '../../../../core/models/ordonnance/ordonnance.model';
+import {
+  Facture,
+  FACTURE_STATUT_CONFIG,
+} from '../../../../core/models/facture/facture.model';
+import { FactureService } from '../../../../core/services/facture/facture.service';
+import { PaiementAddComponent } from '../../facture/paiement/paiement-add.component';
 
 @Component({
   selector: 'clnt-patient-detail',
@@ -62,6 +65,7 @@ import { Ordonnance } from '../../../../core/models/ordonnance/ordonnance.model'
     TooltipModule,
     DialogModule,
     ConfirmDialogModule,
+    PaiementAddComponent,
   ],
   providers: [MessageService, AppConfirmationService],
   templateUrl: './patient-detail.component.html',
@@ -76,6 +80,7 @@ export class PatientDetailComponent implements OnInit {
   private commonService = inject(CommonService);
   private ordonnanceSvc = inject(OrdonnanceService);
   private confirmService = inject(AppConfirmationService);
+  private factureSvc = inject(FactureService);
   private msgSvc = inject(MessageService);
 
   patient = signal<Patient | null>(null);
@@ -101,18 +106,8 @@ export class PatientDetailComponent implements OnInit {
   pageConsIndex = signal(0);
   consultations = signal<Consultation[]>([]);
   totalConsultations = computed(() => this.pageCons()?.page.totalElements ?? 0);
-
-  // Ordonnances
-  private destroyOrd$ = new Subject<void>();
-  loadingOrdonnances = signal(true);
-  ordonnances = signal<Ordonnance[]>([]);
-
   // ── Dialog Consultation ────────────────────────────────────────
   showDetailConsultation = signal(false);
-
-  selectedRdv = signal<Consultation | null>(null);
-  saving = signal(false);
-  formError = signal<string | null>(null);
 
   // ── Dialog détail Consultation─────────────────────────────────────
   showDetail = signal(false);
@@ -124,29 +119,36 @@ export class PatientDetailComponent implements OnInit {
   }));
   statutConsConfig = CONS_STATUT_CONFIG;
 
-  factures = signal<Facture[]>([
-    {
-      id: '1',
-      date: new Date('2026-05-20'),
-      montant: 4500,
-      paye: 4500,
-      statut: StatutFacture.PAYEE,
-    },
-    {
-      id: '2',
-      date: new Date('2026-04-10'),
-      montant: 2800,
-      paye: 1500,
-      statut: StatutFacture.PARTIELLEMENT_PAYEE,
-    },
-    {
-      id: '3',
-      date: new Date('2026-06-01'),
-      montant: 1200,
-      paye: 0,
-      statut: StatutFacture.IMPAYEE,
-    },
-  ]);
+  // Ordonnances
+  private destroyOrd$ = new Subject<void>();
+  loadingOrdonnances = signal(true);
+  ordonnances = signal<Ordonnance[]>([]);
+
+  // Factures
+  private destroyFact$ = new Subject<void>();
+  loadingFactures = signal(true);
+  pageFact = signal<Page<Facture> | null>(null);
+  pageFactIndex = signal(0);
+  factures = signal<Facture[]>([]);
+  totalFactures = computed(() => this.pageFact()?.page.totalElements ?? 0);
+  addPayment = signal(false);
+
+  // ── Dialog Facture ────────────────────────────────────────
+  showDetailFacture = signal(false);
+
+  // ── Dialog détail Facture
+  showDetailFact = signal(false);
+  detailFacture = signal<Facture | null>(null);
+  statutFactOptions = Object.entries(FACTURE_STATUT_CONFIG).map(([v, c]) => ({
+    label: c.label,
+    value: v,
+  }));
+
+  statutFactConfig = FACTURE_STATUT_CONFIG;
+
+  selectedRdv = signal<Consultation | null>(null);
+  saving = signal(false);
+  formError = signal<string | null>(null);
 
   timeline = signal<any[]>([]);
 
@@ -188,6 +190,8 @@ export class PatientDetailComponent implements OnInit {
     this.destroyExams$.complete();
     this.destroyOrd$.next();
     this.destroyOrd$.complete();
+    this.destroyFact$.next();
+    this.destroyFact$.complete();
   }
 
   private buildTimeline() {
@@ -226,8 +230,8 @@ export class PatientDetailComponent implements OnInit {
 
   get soldeDu(): number {
     return this.factures()
-      .filter((f) => f.statut !== 'PAYEE')
-      .reduce((acc, f) => acc + (f.montant - f.paye), 0);
+      .filter((f) => f.statut !== StatutFacture.PAYEE)
+      .reduce((acc, f) => acc + (f.montantTotal - f.montantPaye), 0);
   }
 
   getSexeLabel(s: string) {
@@ -235,10 +239,7 @@ export class PatientDetailComponent implements OnInit {
   }
 
   getFactureSeverity(s: string) {
-    return (
-      { PAYEE: 'success', PARTIELLEMENT_PAYEE: 'warn', IMPAYEE: 'danger' }[s] ??
-      'secondary'
-    );
+    return this.commonService.getStatutSeverity(s, Entite.FACTURATION);
   }
 
   getExamenSeverity(s: string) {
@@ -258,10 +259,127 @@ export class PatientDetailComponent implements OnInit {
   imprimerFiche() {
     window.print();
   }
+
+  //------------------FACTURES---------------------------
+
+  changeFactureStatus(fact: Facture, statut: StatutFacture) {
+    this.factureSvc.changeStatut(fact.id, statut).subscribe({
+      next: () => {
+        this.factures.update((list) =>
+          list.map((r) => (r.id === fact.id ? { ...r, statut } : r)),
+        );
+        if (this.detailFacture()?.id === fact.id)
+          this.detailFacture.set({ ...fact, statut });
+        this.msgSvc.add({
+          severity: 'success',
+          summary: 'Statut mis à jour',
+          detail: `Facture marquée comme ${FACTURE_STATUT_CONFIG[statut].label}.`,
+        });
+      },
+      error: (err: ServiceError) => {
+        this.saving.set(false);
+        this.loading.set(false);
+        this.loadError.set(err.message);
+      },
+    });
+  }
+  onLazyLoadFactures(e: any) {
+    this.pageFactIndex.set(e.first / this.pageSize);
+    this.loadFactures(this.pageFactIndex());
+  }
+
+  loadFactures(p = 0) {
+    this.loadingFactures.set(true);
+
+    this.factureSvc
+      .findByPatient(this.patient()!.id, p, this.pageSize)
+      .pipe(takeUntil(this.destroyFact$))
+      .subscribe({
+        next: (page) => {
+          this.successLoadFactures(page);
+        },
+        error: (e: ServiceError) => {
+          this.loadingFactures.set(false);
+        },
+      });
+  }
+
+  successLoadFactures(data: Page<Facture>) {
+    this.pageFact.set(data);
+    this.factures.set(data.content);
+    this.loadingFactures.set(false);
+  }
+
+  editableFacture(fact: Facture): boolean {
+    if (!fact) return false;
+    return (
+      fact.statut != StatutFacture.PAYEE && fact.statut != StatutFacture.ANNULEE
+    );
+  }
+
+  confirmDeleteFacture(fact: Facture) {
+    this.confirmService.action(
+      `Suppression de la facture`,
+      `Supprimer la facture de  ${fact.patientNom} numéro ${fact.numeroFacture}?`,
+      () => {
+        this.factureSvc.delete(fact.id).subscribe(() => {
+          this.msgSvc.add({
+            severity: 'success',
+            summary: 'Supprimée',
+            detail: 'Facture supprimée.',
+          });
+          this.loadFactures(0);
+        });
+      },
+    );
+  }
+
+  retryLoadFactures() {
+    this.loadFactures(this.pageFactIndex());
+  }
+  openFactureDetails(fact: Facture) {
+    this.detailFacture.set(fact);
+    this.showDetailFacture.set(true);
+  }
+
+  ajouterPaiement(fact: Facture) {
+    this.detailFacture.set(fact);
+    this.addPayment.set(true);
+  }
+
+  getFactureStatutSeverity(s: string) {
+    return this.commonService.getStatutSeverity(s, Entite.FACTURATION);
+  }
+
+  soumettrePaiement(data: any) {
+    console.log('Paiement reçu:', data);
+    if (!data) return;
+
+    this.factureSvc.ajouterPaiement(data).subscribe({
+      next: (updated) => {
+        this.detailFacture.set(updated);
+
+        this.addPayment.set(false);
+
+        this.msgSvc.add({
+          severity: 'success',
+          summary: 'Paiement enregistré',
+          detail: `${data.montant.toLocaleString('fr-FR')} FCFA encaissés.`,
+        });
+        this.loadFactures();
+      },
+      error: (err: ServiceError) => {
+        this.msgSvc.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: err.message,
+        });
+      },
+    });
+  }
   //------------------ORDONNANCES---------------------------
 
   loadOrdonnances() {
-    console.log('loadOrdonnances');
     this.loadingOrdonnances.set(true);
 
     this.ordonnanceSvc
@@ -281,6 +399,35 @@ export class PatientDetailComponent implements OnInit {
     this.loadingOrdonnances.set(false);
   }
 
+  confirmDeleteOrdonnance(o: Ordonnance) {
+    this.confirmService.action(
+      `Suppression de l'ordonnance`,
+      `Supprimer de l'ordonnance donc la date d'emission est ${this.formatDate(o.dateEmission)} du patient ${o.patientNom} ?`,
+      () => {
+        this.ordonnanceSvc.delete(o.id).subscribe({
+          next: () => {
+            this.ordonnances.update((list) =>
+              list.filter((r) => r.id !== o.id),
+            );
+            this.msgSvc.add({
+              severity: 'success',
+              summary: 'Supprimé',
+              detail: 'Ordonnance supprimée.',
+            });
+            this.loadOrdonnances();
+          },
+          error: (err: ServiceError) => {
+            this.msgSvc.add({
+              severity: 'error',
+              summary: 'Erreur',
+              detail: err.message,
+              life: 5000,
+            });
+          },
+        });
+      },
+    );
+  }
   //------------------EXAMENS---------------------------
   successLoadExamens(data: Page<ExamenLabo>) {
     this.pageExams.set(data);
@@ -299,7 +446,7 @@ export class PatientDetailComponent implements OnInit {
 
     this.examenLaboSvc
       .findByPatient(this.patient()!.id, p, this.pageSize)
-      .pipe(takeUntil(this.destroyCons$))
+      .pipe(takeUntil(this.destroyExams$))
       .subscribe({
         next: (page) => {
           this.successLoadExamens(page);
@@ -328,19 +475,6 @@ export class PatientDetailComponent implements OnInit {
 
   //------------------CONSULTATIONS---------------------------
   openConsultationDetails(cons: Consultation) {
-    /* 
-      this.formError.set(null);
-      this.form.patchValue({
-        patientId: rdv.patientId,
-        medecinId: rdv.medecinId,
-        patientNom: rdv.patientNom + ' ' + rdv.patientPrenom,
-        medecinNom: rdv.medecinNom,
-        dateHeure: rdv.dateHeure.slice(0, 16),
-        dureeMinutes: rdv.dureeMinutes,
-        motif: rdv.motif,
-        notes: rdv.notes ?? '',
-      });
-      */
     this.detailConsultation.set(cons);
     this.showDetailConsultation.set(true);
     // this.showDialogConsultation.set(true);
@@ -349,39 +483,6 @@ export class PatientDetailComponent implements OnInit {
   editableConsultation(cons: Consultation): boolean {
     if (!cons) return false;
     return cons.statut === StatutConsultation.PLANIFIEE;
-  }
-  private recuperationPatient(): void {
-    const patientId = this.route.snapshot.paramMap.get('id')!;
-    if (!patientId) {
-      this.handleMissingPatient();
-    }
-    this.patientSvc.findById(patientId).subscribe({
-      next: (p) => {
-        this.patient.set(p);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.msgSvc.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Patient introuvable.',
-        });
-      },
-    });
-
-    console.log(patientId);
-  }
-
-  private handleMissingPatient(): void {
-    this.loading.set(false);
-
-    this.msgSvc.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Patient introuvable.',
-    });
-    this.router.navigate(['/patients']);
   }
 
   confirmDeleteConsultation(consultation: Consultation) {
@@ -396,36 +497,6 @@ export class PatientDetailComponent implements OnInit {
             detail: 'consulation supprimée.',
           });
           this.loadConsultations(0);
-        });
-      },
-    );
-  }
-
-  confirmDeleteOrdonnance(o: Ordonnance) {
-    this.confirmService.action(
-      `Suppression de l'ordonnance`,
-      `Supprimer de l'ordonnance donc la date d'emission est ${this.formatDate(o.dateEmission)} du patient ${o.patientNom} ?`,
-      () => {
-        this.ordonnanceSvc.delete(o.id).subscribe({
-          next: () => {
-            this.ordonnances.update((list) =>
-              list.filter((r) => r.id !== o.id),
-            );
-            this.msgSvc.add({
-              severity: 'success',
-              summary: 'Supprimé',
-              detail: 'Ordonnance supprimée.',
-            });
-            this.loadOrdonnances();
-          },
-          error: (err: ServiceError) => {
-            this.msgSvc.add({
-              severity: 'error',
-              summary: 'Erreur',
-              detail: err.message,
-              life: 5000,
-            });
-          },
         });
       },
     );
@@ -492,6 +563,9 @@ export class PatientDetailComponent implements OnInit {
     return this.commonService.formatHeure(iso);
   }
 
+  getFactureStatutLabel(s: string) {
+    return this.commonService.getStatutLabel(s, Entite.FACTURATION);
+  }
   getConsultationStatutLabel(s: string): string {
     return this.commonService.getStatutLabel(s, Entite.CONSULTATION);
   }
@@ -508,8 +582,8 @@ export class PatientDetailComponent implements OnInit {
     return this.commonService.getStatutButtonSeverity(s, Entite.CONSULTATION);
   }
 
-  getInitiales(c: Consultation): string {
-    return this.commonService.getInitiales(c.patientPrenom, c.patientNom);
+  getInitiales(prenom: string, nom: string): string {
+    return this.commonService.getInitiales(prenom, nom);
   }
 
   genererRapportPdf(examen: ExamenLabo) {
@@ -517,5 +591,8 @@ export class PatientDetailComponent implements OnInit {
   }
   genererOrdonnancePdf(ordonnance: Ordonnance) {
     this.ordonnanceSvc.genererPdf(ordonnance);
+  }
+  genererFacturePdf(facture: Facture) {
+    this.factureSvc.genererPdf(facture);
   }
 }

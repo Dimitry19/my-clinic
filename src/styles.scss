@@ -1,7 +1,6 @@
 @use "sass:color";
 @import "primeicons/primeicons.css";
 
-
 $primary: #185fa5;
 $primary-dk: #0c447c;
 $primary-lt: #e6f1fb;
@@ -122,13 +121,45 @@ $radius-lg: 12px;
 }
 
 // Boutons actions
+.action-btnsd {
+  display: flex;
+  gap: 4px;
+
+  .invisible {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.2s ease,
+      visibility 0.2s ease;
+  }
+
+  &:hover .invisible {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
 .action-btns {
   display: flex;
   gap: 4px;
+
   .invisible {
-    visibility: hidden; // masqué mais occupe toujours son espace
-    pointer-events: none; // désactive les clics même si invisible
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.2s ease,
+      visibility 0.2s ease;
   }
+}
+
+tr:hover .action-btns .invisible,
+.p-datatable-tbody > tr:hover .action-btns .invisible {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .invisible {
@@ -902,12 +933,9 @@ select.form-control {
   font-family: "system-ui", sans-serif !important;
 }
 
-
- 
-.p-tag-icon{
-  margin-right:0.2rem !important
+.p-tag-icon {
+  margin-right: 0.2rem !important;
 }
-
 
 //--- Consultation et ordonnance (create-edit)
 // ── En-tête ────────────────────────────────────────────────
@@ -938,7 +966,6 @@ select.form-control {
   max-width: 900px;
   margin: 0 auto;
 }
-
 
 // ══════════════════════════════════════
 // INDICATEUR D'ÉTAPES
@@ -1126,7 +1153,6 @@ select.form-control {
 .step-form {
   padding: 1.5rem;
 }
-
 
 // ══════════════════════════════════════
 // CHAMPS FORMULAIRE (réutilisation)
@@ -1349,8 +1375,6 @@ select.form-control {
   font-weight: 500;
 }
 
-
-
 // ── Skeleton chargement ────────────────────────────────────
 .loading-grid {
   display: grid;
@@ -1361,7 +1385,6 @@ select.form-control {
     grid-template-columns: 1fr;
   }
 }
-
 
 // ══════════════════════════════════════
 // ÉTAPE 1 — Rendez-vous
@@ -1921,5 +1944,3 @@ select.form-control {
     cursor: not-allowed;
   }
 }
-
-

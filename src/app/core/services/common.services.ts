@@ -11,6 +11,7 @@ import {
   Entite,
   StatutEmploye,
   StatutExamenLabo,
+  StatutFacture,
   StatutRendezVous,
 } from '../models/enums/enums.model';
 import { RDV_STATUT_CONFIG } from '../models/agenda/agenda.model';
@@ -22,6 +23,7 @@ import { EXAMEN_STATUT_CONFIG } from '../models/laboratoire/laboratoire.model';
 import { EMLOYE_STATUT_CONFIG } from '../models/employe/employe.model';
 import { AuthService } from './auth/auth.service';
 import { ErrorService } from './error.service';
+import { FACTURE_STATUT_CONFIG } from '../models/facture/facture.model';
 
 @Injectable({
   providedIn: 'root',
@@ -116,6 +118,9 @@ export class CommonService {
     if (entite === Entite.EMPLOYE) {
       return EMLOYE_STATUT_CONFIG[s as StatutEmploye]?.label ?? '-';
     }
+    if (entite === Entite.FACTURATION) {
+      return FACTURE_STATUT_CONFIG[s as StatutFacture]?.label ?? '-';
+    }
     return '-';
   }
 
@@ -136,6 +141,9 @@ export class CommonService {
     if (entite === Entite.EMPLOYE) {
       return EMLOYE_STATUT_CONFIG[s as StatutEmploye]?.severity ?? 'secondary';
     }
+    if (entite === Entite.FACTURATION) {
+      return FACTURE_STATUT_CONFIG[s as StatutFacture]?.severity ?? 'secondary';
+    }
     return 'secondary';
   }
 
@@ -154,6 +162,11 @@ export class CommonService {
     if (entite === Entite.EMPLOYE) {
       return (
         EMLOYE_STATUT_CONFIG[s as StatutEmploye]?.icon ?? 'pi pi-check-circle'
+      );
+    }
+    if (entite === Entite.FACTURATION) {
+      return (
+        FACTURE_STATUT_CONFIG[s as StatutFacture]?.icon ?? 'pi pi-check-circle'
       );
     }
     return 'pi-clock';

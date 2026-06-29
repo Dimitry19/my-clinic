@@ -1,0 +1,597 @@
+﻿<p-toast position="top-right" />
+
+<div class="cons-ord-create">
+  <!-- ── Breadcrumb ── -->
+  <nav class="breadcrumb" aria-label="Navigation">
+    @if (patient()) {
+      <a [routerLink]="['/patients', patient()!.id]" class="bc-link">
+        <i class="pi pi-arrow-left" aria-hidden="true"></i>
+        {{ patient()!.prenom }} {{ patient()!.nom }}
+      </a>
+    } @else {
+      <a routerLink="/factures" class="bc-link">
+        <i class="pi pi-arrow-left" aria-hidden="true"></i>
+        Factures
+      </a>
+    }
+    <span class="bc-sep" aria-hidden="true">/</span>
+    <span class="bc-current">{{ getPageTitle() }}</span>
+  </nav>
+
+  <!-- ── En-tête ── -->
+  <div class="page-header">
+    <div>
+      <h2>
+        <i class="pi pi-receipt" aria-hidden="true"></i>
+        {{ getPageTitle() }}
+      </h2>
+      <p>Créez une facture et ajoutez les lignes de prestation</p>
+    </div>
+  </div>
+
+  @if (globalError()) {
+    <p-message severity="error" [text]="globalError()!" styleClass="w-full" />
+  }
+
+  <!-- ── Indicateur d'étapes ── -->
+  <div class="steps-nav" role="tablist">
+    @for (step of STEPS; track $index) {
+      <div class="step-wrapper">
+        <button
+          class="step-btn"
+          [class.step-active]="activeStep() === $index"
+          [class.step-done]="etapeComplete($index)"
+          [class.step-disabled]="$index > activeStep()"
+          (click)="allerEtape($index)"
+          role="tab"
+          [attr.aria-selected]="activeStep() === $index"
+          [disabled]="$index > activeStep()"
+        >
+          <div class="step-circle">
+            @if (etapeComplete($index)) {
+              <i class="pi pi-check" aria-hidden="true"></i>
+            } @else {
+              <span>{{ $index + 1 }}</span>
+            }
+          </div>
+          <div class="step-info">
+            <span class="step-num">Étape {{ $index + 1 }}</span>
+            <span class="step-label">{{ step.label }}</span>
+          </div>
+        </button>
+        @if ($index < STEPS.length - 1) {
+          <div
+            class="step-connector"
+            [class.connector-done]="etapeComplete($index)"
+          ></div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 0 — Patient
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 0) {
+    <div class="step-panel" role="tabpanel">
+      <div class="step-panel-header">
+        <div class="step-panel-icon">
+          <i class="pi pi-user" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Sélection du patient</h3>
+          <p>Choisissez le patient pour lequel vous créez la facture</p>
+        </div>
+      </div>
+
+      <form [formGroup]="form" class="step-form">
+        <div class="form-field" [class.f-err]="hasError('patientId')">
+          <label class="form-label required">
+            <i class="pi pi-user" aria-hidden="true"></i>
+            Patient
+          </label>
+          <p-select
+            formControlName="patientId"
+            [options]="patientOptions()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Sélectionner un patient"
+            styleClass="w-full"
+            [filter]="true"
+            filterPlaceholder="Rechercher..."
+            [showClear]="true"
+            appendTo="body"
+          ></p-select>
+          @if (fieldError("patientId")) {
+            <span class="f-err-msg" role="alert">
+              <i class="pi pi-info-circle" aria-hidden="true"></i>
+              {{ fieldError("patientId") }}
+            </span>
+          }
+          @if (selectedPatient()) {
+            <div class="selection-card selection-card-patient">
+              <div class="selection-avatar avatar-patient">
+                {{
+                  getInitiales(
+                    selectedPatient()!.prenom,
+                    selectedPatient()!.nom
+                  )
+                }}
+              </div>
+              <div class="selection-info">
+                <span class="selection-nom"
+                  >{{ selectedPatient()!.prenom }}
+                  {{ selectedPatient()!.nom }}</span
+                >
+                <span class="selection-sub"
+                  >{{ selectedPatient()!.age }} ans</span
+                >
+              </div>
+              <i
+                class="pi pi-check-circle selection-check"
+                aria-hidden="true"
+              ></i>
+            </div>
+          }
+        </div>
+
+        <div class="form-row-2">
+          <!-- Date d'émission -->
+          <div class="form-field">
+            <label class="form-label">
+              <i class="pi pi-calendar" aria-hidden="true"></i>
+              Date d'émission
+            </label>
+            <input
+              pInputText
+              type="datetime-local"
+              formControlName="dateEmission"
+              class="f-input form-control"
+            />
+          </div>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 1 — Consultation (optionnelle)
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 1) {
+    <div class="step-panel" role="tabpanel">
+      <div class="step-panel-header">
+        <div class="step-panel-icon">
+          <i class="pi pi-stethoscope" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Consultation liée</h3>
+          <p>
+            Associez la facture à une consultation
+            <span class="optional-hint">(optionnel)</span>
+          </p>
+        </div>
+      </div>
+
+      @if (loadingCons()) {
+        <div class="clnt-grid">
+          @for (i of [1, 2, 3]; track i) {
+            <p-skeleton height="80px" borderRadius="12px" />
+          }
+        </div>
+      }
+
+      @if (!loadingCons() && consultations().length === 0) {
+        <div class="info-hint" style="margin: 1.5rem">
+          <i class="pi pi-info-circle" aria-hidden="true"></i>
+          Aucune consultation trouvée pour ce patient. Vous pouvez continuer
+          sans en sélectionner.
+        </div>
+      }
+
+      @if (!loadingCons() && consultations().length > 0) {
+        <div class="clnt-count-label">
+          <i class="pi pi-list" aria-hidden="true"></i>
+          {{ consultations().length }} consultation(s) disponible(s)
+        </div>
+
+        <div class="clnt-grid">
+          @for (cons of consultations(); track cons.id) {
+            <div
+              class="clnt-card"
+              [class.clnt-card-selected]="
+                selectedConsultation()?.id === cons.id
+              "
+              (click)="selectionnerConsultation(cons)"
+              role="radio"
+              [attr.aria-checked]="selectedConsultation()?.id === cons.id"
+              tabindex="0"
+              (keydown.enter)="selectionnerConsultation(cons)"
+              (keydown.space)="selectionnerConsultation(cons)"
+            >
+              <div class="clnt-radio">
+                @if (selectedConsultation()?.id === cons.id) {
+                  <i
+                    class="pi pi-check-circle clnt-radio-checked"
+                    aria-hidden="true"
+                  ></i>
+                } @else {
+                  <div class="clnt-radio-empty" aria-hidden="true"></div>
+                }
+              </div>
+              <div class="clnt-card-body">
+                <div class="clnt-card-date">
+                  <div class="clnt-date-icon">
+                    <i class="pi pi-stethoscope" aria-hidden="true"></i>
+                  </div>
+                  <div>
+                    <span class="clnt-date-label">{{
+                      formatDate(cons.dateHeure)
+                    }}</span>
+                    <span class="clnt-heure-label">
+                      <i class="pi pi-user" aria-hidden="true"></i>
+                      {{ cons.medecinNom }}
+                    </span>
+                  </div>
+                </div>
+                <div class="clnt-card-motif">
+                  <i class="pi pi-clipboard" aria-hidden="true"></i>
+                  {{ cons.motif }}
+                </div>
+              </div>
+              <div class="clnt-card-statut">
+                <p-tag [value]="getConsultationStatutLabel(cons.statut)" />
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (selectedConsultation()) {
+          <div style="padding: 0 1.5rem 1rem; text-align: right">
+            <button
+              class="btn-back-step"
+              (click)="deselectionnerConsultation()"
+            >
+              <i class="pi pi-times" aria-hidden="true"></i>
+              Désélectionner
+            </button>
+          </div>
+        }
+      }
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 2 — Lignes de prestation
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 2) {
+    <div class="step-panel" role="tabpanel">
+      <div class="step-panel-header">
+        <div class="step-panel-icon">
+          <i class="pi pi-list" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Lignes de prestation</h3>
+          <p>Ajoutez les prestations facturées au patient</p>
+        </div>
+      </div>
+
+      <form [formGroup]="form" class="step-form">
+        <!-- Lignes -->
+        <div formArrayName="lignes" class="lignes-list">
+          @for (ctrl of lignesArray.controls; track trackByIndex($index)) {
+            <div class="ligne-bloc" [formGroupName]="$index">
+              <div class="ligne-bloc-header">
+                <span class="ligne-num">
+                  <i class="pi pi-tag" aria-hidden="true"></i>
+                  Prestation {{ $index + 1 }}
+                </span>
+                <p-button
+                  icon="pi pi-trash"
+                  [text]="true"
+                  size="small"
+                  severity="danger"
+                  pTooltip="Supprimer cette ligne"
+                  [disabled]="lignesArray.length === 1"
+                  (onClick)="supprimerLigne($index)"
+                />
+              </div>
+
+              <div class="form-row-3">
+                <!-- Description -->
+                <div
+                  class="form-field ligne-desc"
+                  [class.f-err]="ligneHasError($index, 'description')"
+                >
+                  <label class="form-label required"> Description </label>
+                  <input
+                    pInputText
+                    formControlName="description"
+                    placeholder="Ex: Consultation générale, Analyse sanguine..."
+                    class="f-input form-control"
+                  />
+                  @if (ligneHasError($index, "description")) {
+                    <span class="f-err-msg" role="alert">
+                      <i class="pi pi-info-circle"></i>
+                      Ce champ est obligatoire.
+                    </span>
+                  }
+                </div>
+
+                <!-- Quantité -->
+                <div
+                  class="form-field"
+                  [class.f-err]="ligneHasError($index, 'quantite')"
+                >
+                  <label class="form-label required">Quantité </label>
+                  <p-inputNumber
+                    formControlName="quantite"
+                    [min]="1"
+                    [step]="1"
+                    styleClass="w-full"
+                    (onInput)="
+                      lignesArray
+                        .at($index)
+                        .get('quantite')
+                        ?.setValue($event.value)
+                    "
+                  />
+                </div>
+
+                <!-- Prix unitaire -->
+                <div
+                  class="form-field"
+                  [class.f-err]="ligneHasError($index, 'prixUnitaire')"
+                >
+                  <label class="form-label required">Prix unitaire </label>
+                  <p-inputNumber
+                    formControlName="prixUnitaire"
+                    [min]="0"
+                    [minFractionDigits]="0"
+                    [maxFractionDigits]="2"
+                    styleClass="w-full"
+                    suffix=" FCFA"
+                    (onInput)="
+                      lignesArray
+                        .at($index)
+                        .get('prixUnitaire')
+                        ?.setValue($event.value)
+                    "
+                  />
+                </div>
+              </div>
+
+              <!-- Total ligne -->
+              <div class="ligne-total">
+                <span class="ligne-total-label">Total :</span>
+                <span class="ligne-total-val">{{
+                  formatMontant(totalLigne($index))
+                }}</span>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Ajouter ligne -->
+        <p-button
+          icon="pi pi-plus"
+          label="Ajouter une prestation"
+          [text]="true"
+          (onClick)="ajouterLigne()"
+          styleClass="facture-add-btn"
+        />
+
+        <!-- Notes -->
+        <div class="section-label" style="margin-top: 1.5rem">
+          <i class="pi pi-clipboard" aria-hidden="true"></i>
+          Notes
+          <span class="optional-hint">(optionnel)</span>
+        </div>
+
+        <div class="form-field">
+          <textarea
+            pTextarea
+            formControlName="notes"
+            rows="3"
+            placeholder="Informations complémentaires, conditions de paiement..."
+            class="f-input f-textarea"
+          ></textarea>
+        </div>
+
+        <!-- Total général -->
+        <div class="facture-total-bar">
+          <span class="facture-total-label">
+            <i class="pi pi-calculator" aria-hidden="true"></i>
+            Montant total de la facture
+          </span>
+          <span class="facture-total-val">{{
+            formatMontant(montantTotal())
+          }}</span>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════
+       ÉTAPE 3 — Récapitulatif
+  ══════════════════════════════════════ -->
+  @if (activeStep() === 3) {
+    <div class="step-panel" role="tabpanel">
+      <div class="step-panel-header">
+        <div class="step-panel-icon step-icon-success">
+          <i class="pi pi-list-check" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3>Récapitulatif</h3>
+          <p>Vérifiez les informations avant d'enregistrer la facture</p>
+        </div>
+      </div>
+
+      <div class="recap-grid">
+        <!-- Patient -->
+        <div class="recap-card">
+          <div class="recap-card-title">
+            <i class="pi pi-user" aria-hidden="true"></i>
+            Patient
+          </div>
+          <div class="recap-rows">
+            <div class="recap-row">
+              <span class="recap-label">Nom</span>
+              <span class="recap-val">
+                {{ selectedPatient()?.prenom }} {{ selectedPatient()?.nom }}
+                <span class="recap-sub">{{ selectedPatient()?.age }} ans</span>
+              </span>
+            </div>
+            <div class="recap-row">
+              <span class="recap-label">Date</span>
+              <span class="recap-val">{{
+                formatDate(form.get("dateEmission")?.value)
+              }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Consultation -->
+        <div class="recap-card">
+          <div class="recap-card-title">
+            <i class="pi pi-stethoscope" aria-hidden="true"></i>
+            Consultation liée
+          </div>
+          <div class="recap-rows">
+            @if (selectedConsultation()) {
+              <div class="recap-row">
+                <span class="recap-label">Date</span>
+                <span class="recap-val">{{
+                  formatDate(selectedConsultation()!.dateHeure)
+                }}</span>
+              </div>
+              <div class="recap-row">
+                <span class="recap-label">Médecin</span>
+                <span class="recap-val">{{
+                  selectedConsultation()!.medecinNom
+                }}</span>
+              </div>
+            } @else {
+              <div class="recap-row">
+                <span class="recap-val recap-empty"
+                  >Aucune consultation associée</span
+                >
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Lignes -->
+        <div class="recap-card recap-card-full">
+          <div class="recap-card-title">
+            <i class="pi pi-list" aria-hidden="true"></i>
+            Prestations ({{ lignesArray.length }})
+          </div>
+          <div class="facture-recap-lignes">
+            @for (l of lignesArray.controls; track trackByIndex($index)) {
+              <div class="facture-recap-ligne-row">
+                <span class="facture-recap-desc">{{
+                  l.get("description")?.value
+                }}</span>
+                <span class="facture-recap-detail">
+                  {{ l.get("quantite")?.value }} ×
+                  {{ formatMontant(l.get("prixUnitaire")?.value) }}
+                </span>
+                <span class="facture-recap-total">{{
+                  formatMontant(totalLigne($index))
+                }}</span>
+              </div>
+            }
+            <div class="facture-recap-total-row">
+              <span>Total</span>
+              <span class="facture-recap-grand-total">{{
+                formatMontant(montantTotal())
+              }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        @if (form.get("notes")?.value) {
+          <div class="recap-card recap-card-full">
+            <div class="recap-card-title">
+              <i class="pi pi-clipboard" aria-hidden="true"></i>
+              Notes
+            </div>
+            <div class="recap-rows">
+              <div class="recap-row">
+                <span class="recap-val">{{ form.get("notes")?.value }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ── Navigation ── -->
+  <div class="step-footer">
+    <div class="footer-left">
+      @if (activeStep() > 0) {
+        <button
+          class="btn-prev"
+          (click)="etapePrecedente()"
+          [disabled]="saving()"
+        >
+          <i class="pi pi-chevron-left" aria-hidden="true"></i>
+          Précédent
+        </button>
+      }
+    </div>
+
+    <div class="footer-progress">
+      <span class="progress-label"
+        >Étape {{ activeStep() + 1 }} / {{ STEPS.length }}</span
+      >
+      <div
+        class="progress-bar"
+        role="progressbar"
+        [attr.aria-valuenow]="activeStep() + 1"
+        [attr.aria-valuemin]="1"
+        [attr.aria-valuemax]="STEPS.length"
+      >
+        <div
+          class="progress-fill"
+          [style.width.%]="((activeStep() + 1) / STEPS.length) * 100"
+        ></div>
+      </div>
+    </div>
+
+    <div class="footer-right">
+      <a
+        [routerLink]="patient() ? ['/patients', patient()!.id] : ['/factures']"
+        class="btn-cancel"
+        [class.disabled]="saving()"
+      >
+        <i class="pi pi-times" aria-hidden="true"></i>
+        Annuler
+      </a>
+
+      @if (activeStep() < STEPS.length - 1) {
+        <button class="btn-next" (click)="etapeSuivante()">
+          Suivant
+          <i class="pi pi-chevron-right" aria-hidden="true"></i>
+        </button>
+      } @else {
+        <button
+          class="btn-submit"
+          (click)="soumettre()"
+          [disabled]="saving()"
+          [attr.aria-busy]="saving()"
+        >
+          @if (saving()) {
+            <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+            Enregistrement...
+          } @else {
+            <i class="pi pi-check" aria-hidden="true"></i>
+            {{ editMode() ? "Modifier la facture" : "Créer la facture" }}
+          }
+        </button>
+      }
+    </div>
+  </div>
+</div>

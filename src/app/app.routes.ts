@@ -5,6 +5,7 @@ import { employeRoutes } from './core/routes/employe/employe.routes';
 import { consultationRoutes } from './core/routes/patient/consultation.routes';
 import { examenLaboRoutes } from './core/routes/laboratoire/laboratoire.routes';
 import { ordonnanceRoutes } from './core/routes/ordonnance/ordonnance.routes';
+import { factureRoutes } from './core/routes/facture/facture.routes';
 
 export const routes: Routes = [
   {
@@ -42,6 +43,7 @@ export const routes: Routes = [
       ...consultationRoutes,
       ...examenLaboRoutes,
       ...ordonnanceRoutes,
+      ...factureRoutes,
       {
         path: 'agenda',
         loadComponent: () =>

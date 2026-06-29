@@ -29,8 +29,9 @@ export enum StatutExamenLabo {
 
 export enum StatutFacture {
   IMPAYEE = 'IMPAYEE',
-  PARTIELLEMENT_PAYEE = 'PARTIELLEMENT PAYEE',
+  PARTIELLEMENT_PAYEE = 'PARTIELLEMENT_PAYEE',
   PAYEE = 'PAYEE',
+  ANNULEE = 'ANNULEE',
 }
 
 export enum StatutEmploye {
@@ -51,4 +52,5 @@ export enum Entite {
   PATIENT,
   LABORATOIRE,
   ORDONNANCE,
+  FACTURATION,
 }

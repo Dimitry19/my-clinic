@@ -1,6 +1,6 @@
 ﻿<p-toast position="top-right" />
 
-<div class="consultation-create">
+<div class="cons-ord-create">
   <!-- ── Breadcrumb ── -->
   @if (patient()) {
     <nav class="breadcrumb" aria-label="Navigation">
@@ -304,11 +304,11 @@
 
       <!-- Aucun rendez-vous -->
       @if (!loadingRdv() && rdvDisponibles().length === 0) {
-        <div class="no-rdv-card">
-          <div class="no-rdv-icon">
+        <div class="no-clnt-card">
+          <div class="no-clnt-icon">
             <i class="pi pi-calendar-times" aria-hidden="true"></i>
           </div>
-          <div class="no-rdv-body">
+          <div class="no-clnt-body">
             <h4>Aucun rendez-vous trouvé</h4>
             <p>
               Il n'existe pas de rendez-vous entre
@@ -322,12 +322,12 @@
                 {{ selectedMedecin()?.nom }}</strong
               >.
             </p>
-            <p class="no-rdv-hint">
+            <p class="no-clnt-hint">
               Un rendez-vous est nécessaire avant de créer une consultation.
               Veuillez d'abord planifier un rendez-vous.
             </p>
           </div>
-          <div class="no-rdv-actions">
+          <div class="no-clnt-actions">
             <a routerLink="/agenda" class="btn-create-rdv">
               <i class="pi pi-plus" aria-hidden="true"></i>
               Créer un rendez-vous

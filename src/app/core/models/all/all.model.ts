@@ -54,3 +54,10 @@ export const CONS_STEPS = [
   { label: 'Diagnostic', icon: 'pi-clipboard' },
   { label: 'Récapitulatif', icon: 'pi-list-check' },
 ];
+
+export const FACT_STEPS = [
+  { label: 'Patient', icon: 'pi-user' },
+  { label: 'Consultation', icon: 'pi-stethoscope' },
+  { label: 'Prestations', icon: 'pi-list' },
+  { label: 'Récapitulatif', icon: 'pi-list-check' },
+];

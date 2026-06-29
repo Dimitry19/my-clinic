@@ -209,7 +209,7 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
         if (s === StatutExamenLabo.EN_COURS || s === StatutExamenLabo.TERMINE) {
           this.form
             .get('dateResultat')
-            ?.setValue(this.selectedConsultation()!.dateHeure.slice(0, 16));
+            ?.setValue(this.selectedConsultation()?.dateHeure.slice(0, 16));
         } else {
           this.form.get('dateResultat')?.setValue(null);
         }

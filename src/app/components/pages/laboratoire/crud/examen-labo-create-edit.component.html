@@ -1,6 +1,6 @@
 ﻿<p-toast position="top-right" />
 
-<div class="consultation-create">
+<div class="cons-ord-create">
   <!-- ── Breadcrumb ── -->
   <nav class="breadcrumb" aria-label="Navigation">
     @if (patient()) {
@@ -271,11 +271,11 @@
 
       <!-- Aucune consultation -->
       @if (!loadingCons() && consultations().length === 0) {
-        <div class="no-rdv-card">
-          <div class="no-rdv-icon">
+        <div class="no-clnt-card">
+          <div class="no-clnt-icon">
             <i class="pi pi-stethoscope" aria-hidden="true"></i>
           </div>
-          <div class="no-rdv-body">
+          <div class="no-clnt-body">
             <h4>Aucune consultation trouvée</h4>
             <p>
               <strong
@@ -284,12 +284,12 @@
               >
               n'a pas encore de consultation enregistrée.
             </p>
-            <p class="no-rdv-hint">
+            <p class="no-clnt-hint">
               Une consultation est nécessaire avant de prescrire un examen.
               Veuillez d'abord en créer une.
             </p>
           </div>
-          <div class="no-rdv-actions">
+          <div class="no-clnt-actions">
             <a
               [routerLink]="['/consultation/create', selectedPatient()!.id]"
               class="btn-create-rdv"
