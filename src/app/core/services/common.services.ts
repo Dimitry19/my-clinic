@@ -9,6 +9,7 @@ import { ApiResponseService } from '../models/response/api.service';
 import { ApiResponse } from '../models/response/api-response.model';
 import {
   Entite,
+  StatutConge,
   StatutEmploye,
   StatutExamenLabo,
   StatutFacture,
@@ -20,10 +21,14 @@ import {
   StatutConsultation,
 } from '../models/patient/consultation.model';
 import { EXAMEN_STATUT_CONFIG } from '../models/laboratoire/laboratoire.model';
-import { EMLOYE_STATUT_CONFIG } from '../models/employe/employe.model';
+import {
+  CONGE_STATUT_CONFIG,
+  EMLOYE_STATUT_CONFIG,
+} from '../models/employe/employe.model';
 import { AuthService } from './auth/auth.service';
 import { ErrorService } from './error.service';
 import { FACTURE_STATUT_CONFIG } from '../models/facture/facture.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -103,6 +108,7 @@ export class CommonService {
 
     return `${initialePrenom}${initialeNom}`.toUpperCase();
   }
+
   getStatutLabel(s: string, entite: Entite): string {
     if (entite === Entite.AGENDA) {
       return RDV_STATUT_CONFIG[s as StatutRendezVous]?.label ?? 'Planifié';
@@ -120,6 +126,10 @@ export class CommonService {
     }
     if (entite === Entite.FACTURATION) {
       return FACTURE_STATUT_CONFIG[s as StatutFacture]?.label ?? '-';
+    }
+
+    if (entite === Entite.CONGE) {
+      return CONGE_STATUT_CONFIG[s as StatutConge]?.label ?? '-';
     }
     return '-';
   }
@@ -143,6 +153,9 @@ export class CommonService {
     }
     if (entite === Entite.FACTURATION) {
       return FACTURE_STATUT_CONFIG[s as StatutFacture]?.severity ?? 'secondary';
+    }
+    if (entite === Entite.CONGE) {
+      return CONGE_STATUT_CONFIG[s as StatutConge]?.severity ?? 'secondary';
     }
     return 'secondary';
   }
@@ -169,6 +182,12 @@ export class CommonService {
         FACTURE_STATUT_CONFIG[s as StatutFacture]?.icon ?? 'pi pi-check-circle'
       );
     }
+
+    if (entite === Entite.CONGE) {
+      return (
+        CONGE_STATUT_CONFIG[s as StatutConge]?.icon ?? 'pi pi-times-circle'
+      );
+    }
     return 'pi-clock';
   }
 
@@ -191,6 +210,10 @@ export class CommonService {
 
   getSexeLabel(s: string) {
     return s === 'M' ? 'Homme' : s === 'F' ? 'Femme' : 'Autre';
+  }
+
+  deviseMonnetaire(): string {
+    return `${environment.deviseMonnetaire}`;
   }
 
   getStatutColorClass(statut: string): string {

@@ -199,8 +199,8 @@ export class FactureService {
       body: facture.lignes.map((l) => [
         l.description,
         l.quantite.toString(),
-        `${l.prixUnitaire.toLocaleString('fr-FR')} FCFA`,
-        `${l.total.toLocaleString('fr-FR')} FCFA`,
+        `${l.prixUnitaire.toLocaleString('fr-FR')} ${this.commonSvc.deviseMonnetaire()}`,
+        `${l.total.toLocaleString('fr-FR')} ${this.commonSvc.deviseMonnetaire()}`,
       ]),
       headStyles: {
         fillColor: primaryColor,
@@ -227,9 +227,18 @@ export class FactureService {
     y = (doc as any).lastAutoTable.finalY + 4;
 
     const totauxData: [string, string][] = [
-      ['Montant total', `${facture.montantTotal.toLocaleString('fr-FR')} FCFA`],
-      ['Montant payé', `${facture.montantPaye.toLocaleString('fr-FR')} FCFA`],
-      ['Reste à payer', `${facture.resteAPayer.toLocaleString('fr-FR')} FCFA`],
+      [
+        'Montant total',
+        `${facture.montantTotal.toLocaleString('fr-FR')} ${this.commonSvc.deviseMonnetaire()}`,
+      ],
+      [
+        'Montant payé',
+        `${facture.montantPaye.toLocaleString('fr-FR')} ${this.commonSvc.deviseMonnetaire()}`,
+      ],
+      [
+        'Reste à payer',
+        `${facture.resteAPayer.toLocaleString('fr-FR')} ${this.commonSvc.deviseMonnetaire()}`,
+      ],
     ];
 
     autoTable(doc, {
@@ -290,7 +299,7 @@ export class FactureService {
           this.commonSvc.formatDate(p.datePaiement),
           MODE_PAIEMENT_CONFIG[p.modePaiement]?.label ?? p.modePaiement,
           p.reference || '—',
-          `${p.montant.toLocaleString('fr-FR')} FCFA`,
+          `${p.montant.toLocaleString('fr-FR')} ${this.commonSvc.deviseMonnetaire()}`,
           p.encaisseParNom || '—',
         ]),
         headStyles: {

@@ -120,6 +120,7 @@ export class FactureCreateEditComponent implements OnInit, OnDestroy {
   readonly montantTotal = signal(0);
 
   // ── Init ─────────────────────────────────────────────────
+  devise = this.commonSvc.deviseMonnetaire();
   ngOnInit() {
     this.initForm();
 
@@ -408,7 +409,7 @@ export class FactureCreateEditComponent implements OnInit, OnDestroy {
   }
 
   formatMontant(v: number): string {
-    return `${v.toLocaleString('fr-FR')} FCFA`;
+    return `${v.toLocaleString('fr-FR')} ${this.commonSvc.deviseMonnetaire()}`;
   }
 
   hasError(name: string): boolean {

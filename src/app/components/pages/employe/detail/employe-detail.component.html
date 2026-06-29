@@ -81,7 +81,7 @@
           </div>
           <div class="emp-badges">
             <p-tag
-              [value]="employe()!.statut"
+              [value]="getStatutLabel(employe()!.statut)"
               [severity]="getStatutSeverity(employe()!.statut)"
             />
             <p-tag
@@ -145,7 +145,7 @@
         </div>
         <div class="sc-body">
           <span class="sc-val"
-            >{{ employe()!.salaireBase | number: "1.0-0" }} FCFA</span
+            >{{ employe()!.salaireBase | number: "1.0-0" }} {{ devise }}</span
           >
           <span class="sc-label">Salaire de base</span>
         </div>
@@ -156,7 +156,7 @@
         </div>
         <div class="sc-body">
           <span class="sc-val"
-            >{{ salaireNetMoyen() | number: "1.0-0" }} FCFA</span
+            >{{ salaireNetMoyen() | number: "1.0-0" }} {{ devise }}</span
           >
           <span class="sc-label">Net moyen (3 mois)</span>
         </div>
@@ -272,13 +272,14 @@
                 <div class="info-row">
                   <span class="info-label">Salaire de base</span>
                   <span class="info-val salaire-highlight">
-                    {{ employe()!.salaireBase | number: "1.0-0" }} FCFA
+                    {{ employe()!.salaireBase | number: "1.0-0" }} {{ devise }}
                   </span>
                 </div>
                 <div class="info-row">
                   <span class="info-label">Net moyen</span>
                   <span class="info-val"
-                    >{{ salaireNetMoyen() | number: "1.0-0" }} FCFA</span
+                    >{{ salaireNetMoyen() | number: "1.0-0" }}
+                    {{ devise }}</span
                   >
                 </div>
               </div>
@@ -301,7 +302,7 @@
                 ) {
                   <div class="info-row">
                     <span class="info-label">{{ row.label }}</span>
-                    <span class="info-val">{{ row.val }}</span>
+                    <span class="info-val">{{ getStatutLabel(row.val) }}</span>
                   </div>
                 }
               </div>
@@ -313,11 +314,14 @@
         <p-tabpanel [value]="1">
           <div class="tab-panel-header">
             <span>{{ fiches().length }} fiche(s) générée(s)</span>
-            <p-button
-              label="Générer la fiche du mois"
-              icon="pi pi-plus"
-              size="small"
-            />
+
+            @if (canWrite) {
+              <p-button
+                label="Générer la fiche du mois"
+                icon="pi pi-plus"
+                size="small"
+              />
+            }
           </div>
 
           @if (fiches().length === 0) {
@@ -341,8 +345,8 @@
                             >{{ getMoisLabel(f.mois) }} {{ f.annee }}</span
                           >
                           <span class="fiche-net-preview"
-                            >Net :
-                            {{ f.salaireNet | number: "1.0-0" }} HTG</span
+                            >Net : {{ f.salaireNet | number: "1.0-0" }}
+                            {{ devise }}</span
                           >
                         </div>
                       </div>
@@ -367,7 +371,7 @@
                         Salaire brut
                       </span>
                       <span class="fiche-ligne-val">
-                        {{ f.salaireBrut | number: "1.0-0" }} HTG
+                        {{ f.salaireBrut | number: "1.0-0" }} {{ devise }}
                       </span>
                     </div>
 
@@ -378,7 +382,7 @@
                         Cotisations
                       </span>
                       <span class="fiche-ligne-val">
-                        − {{ f.cotisations | number: "1.0-0" }} HTG
+                        − {{ f.cotisations | number: "1.0-0" }} {{ devise }}
                       </span>
                     </div>
 
@@ -390,7 +394,7 @@
                           Primes
                         </span>
                         <span class="fiche-ligne-val">
-                          + {{ f.primes | number: "1.0-0" }} HTG
+                          + {{ f.primes | number: "1.0-0" }} {{ devise }}
                         </span>
                       </div>
                     }
@@ -403,7 +407,7 @@
                           Retenues
                         </span>
                         <span class="fiche-ligne-val">
-                          − {{ f.retenues | number: "1.0-0" }} HTG
+                          − {{ f.retenues | number: "1.0-0" }} {{ devise }}
                         </span>
                       </div>
                     }
@@ -417,7 +421,9 @@
                         Net à payer
                       </span>
                       <p-tag
-                        [value]="(f.salaireNet | number: '1.0-0') + ' HTG'"
+                        [value]="
+                          (f.salaireNet | number: '1.0-0') + ' ' + devise
+                        "
                         severity="success"
                         styleClass="fiche-net-tag"
                       />
@@ -437,7 +443,13 @@
               {{ conges().length }} demande(s)</span
             >
 
-            <p-button label="Nouvelle demande" icon="pi pi-plus" size="small" />
+            @if (canWrite) {
+              <p-button
+                label="Nouvelle demande"
+                icon="pi pi-plus"
+                size="small"
+              />
+            }
           </div>
 
           @if (conges().length === 0) {
@@ -470,7 +482,7 @@
                   <td>{{ c.motif || "—" }}</td>
                   <td>
                     <p-tag
-                      [value]="c.statut"
+                      [value]="getCongeStatutLabel(c.statut)"
                       [severity]="getCongeStatutSeverity(c.statut)"
                     />
                   </td>

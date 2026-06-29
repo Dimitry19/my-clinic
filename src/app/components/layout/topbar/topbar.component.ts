@@ -45,7 +45,9 @@ import { Router } from '@angular/router';
         <!-- User menu -->
         <div class="user-chip" (click)="userMenu.toggle($event)">
           <div class="avatar">{{ initiales }}</div>
-          <span class="user-name">Dr. {{ auth.currentUser()?.nom }}</span>
+          <span class="user-name"
+            >{{ label }} {{ auth.currentUser()?.nom }}</span
+          >
           <i class="pi pi-chevron-down"></i>
         </div>
         <p-menu #userMenu [popup]="true" [model]="userMenuItems" />
@@ -139,6 +141,8 @@ export class TopbarComponent {
   commonService = inject(CommonService);
 
   router = inject(Router);
+
+  label = this.auth.currentUser()?.role === 'MEDECIN' ? 'Dr.' : '';
 
   darkMode = false;
 

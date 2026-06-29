@@ -151,6 +151,7 @@ export class PatientDetailComponent implements OnInit {
   formError = signal<string | null>(null);
 
   timeline = signal<any[]>([]);
+  devise = this.commonService.deviseMonnetaire();
 
   recuperationsParallesDesDonnees(page: number, id: string) {
     forkJoin({
@@ -364,7 +365,7 @@ export class PatientDetailComponent implements OnInit {
         this.msgSvc.add({
           severity: 'success',
           summary: 'Paiement enregistré',
-          detail: `${data.montant.toLocaleString('fr-FR')} FCFA encaissés.`,
+          detail: `${data.montant.toLocaleString('fr-FR')} ${this.commonService.deviseMonnetaire()} encaissés.`,
         });
         this.loadFactures();
       },
@@ -594,5 +595,9 @@ export class PatientDetailComponent implements OnInit {
   }
   genererFacturePdf(facture: Facture) {
     this.factureSvc.genererPdf(facture);
+  }
+
+  deviseMonnetaire(): string {
+    return this.commonService.deviseMonnetaire();
   }
 }

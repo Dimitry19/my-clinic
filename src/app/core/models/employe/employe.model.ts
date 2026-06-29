@@ -79,6 +79,23 @@ export const EMLOYE_STATUT_CONFIG: Record<
   INACTIF: { label: 'Inactif', severity: 'danger', icon: 'pi pi-check-circle' },
 };
 
+export const CONGE_STATUT_CONFIG: Record<
+  StatutConge,
+  {
+    label: string;
+    severity: 'success' | 'info' | 'secondary' | 'danger' | 'primary' | 'warn';
+    icon: string;
+  }
+> = {
+  APPROUVE: { label: 'Approuvé', severity: 'success', icon: 'pi-check-circle' },
+  EN_ATTENTE: {
+    label: 'En attente',
+    severity: 'warn',
+    icon: 'pi-times-circle',
+  },
+  REJETE: { label: 'Rejeté', severity: 'danger', icon: 'pi-ban' },
+};
+
 export interface FicheDePaie {
   id: string;
   mois: number;

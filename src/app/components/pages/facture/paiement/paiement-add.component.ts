@@ -81,6 +81,8 @@ export class PaiementAddComponent implements OnInit {
   private msg = inject(MessageService);
   private commonService = inject(CommonService);
 
+  devise = this.commonService.deviseMonnetaire();
+
   // ───────────────────── STATE ─────────────────────
   savingPaiement = signal(false);
 
@@ -92,7 +94,7 @@ export class PaiementAddComponent implements OnInit {
   );
   facture = input<Facture | null>(null);
   visible = model<boolean>(false);
-  patient = signal<Patient | null>(null);
+  patient = input<Patient | null>(null);
 
   save = output<PaiementRequest>();
   selectedFacture = signal<Facture | null>(null);
@@ -199,12 +201,18 @@ export class PaiementAddComponent implements OnInit {
     if (!c || (!c.dirty && !c.touched)) return '';
     if (c.errors?.['required']) return 'Ce champ est obligatoire.';
     if (c.errors?.['min'])
-      return `Montant minimum : ${c.errors['min'].min} FCFA.`;
+      return `Montant minimum : ${c.errors['min'].min} ${this.commonService.deviseMonnetaire()}.`;
     return '';
   }
 
   formatMontant(v: number): string {
-    return `${(v ?? 0).toLocaleString('fr-FR')} FCFA`;
+    return `${(v ?? 0).toLocaleString('fr-FR')} ${this.commonService.deviseMonnetaire()}`;
+  }
+
+  infoHint(statut: string): string {
+    return statut === StatutFacture.PAYEE
+      ? 'Cette facture est entièrement payée'
+      : 'Cette facture est annulée';
   }
 
   getModePaiementLabel(mode: string): string {

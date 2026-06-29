@@ -381,7 +381,7 @@
           <!-- Salaire de base -->
           <div class="form-group" [class.has-error]="hasError('salaireBase')">
             <label for="salaireBase" class="form-label required">
-              Salaire de base (FCFA)
+              Salaire de base ({{ devise }})
             </label>
             <p-inputNumber
               id="salaireBase"
@@ -491,10 +491,8 @@
             <div class="resume-item">
               <span class="resume-label">Salaire</span>
               <span class="resume-val"
-                >{{
-                  form.get("salaireBase")?.value | number: "1.0-0"
-                }}
-                FCFA</span
+                >{{ form.get("salaireBase")?.value | number: "1.0-0" }}
+                {{ devise }}</span
               >
             </div>
             <div class="resume-item">

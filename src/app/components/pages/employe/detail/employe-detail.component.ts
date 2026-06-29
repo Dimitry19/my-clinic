@@ -24,8 +24,10 @@ import {
 import { EmployeService } from '../../../../core/services/employe/employe.service';
 import { EmployeFormComponent } from '../formulaire/employe-form.component';
 import { catchError, EMPTY, forkJoin, of } from 'rxjs';
-import { StatutConge } from '../../../../core/models/enums/enums.model';
+import { Entite, StatutConge } from '../../../../core/models/enums/enums.model';
 import { ServiceError } from '../../../../core/models/all/all.model';
+import { CommonService } from '../../../../core/services/common.services';
+import { environment } from '../../../../../environments/environment';
 
 const MOIS = [
   'Jan',
@@ -71,6 +73,7 @@ export class EmployeDetailComponent implements OnInit {
   private svc = inject(EmployeService);
   private msg = inject(MessageService);
   private confirm = inject(ConfirmationService);
+  private commonService = inject(CommonService);
 
   employe = signal<Employe | null>(null);
   loading = signal(true);
@@ -81,77 +84,7 @@ export class EmployeDetailComponent implements OnInit {
   fiches = signal<FicheDePaie[]>([]);
   conges = signal<Conge[]>([]);
 
-  // Données simulées — à remplacer par de vrais appels API
-  /* fiches = signal<FicheDePaie[]>([
-    {
-      id: '1',
-      mois: 5,
-      annee: 2026,
-      salaireBrut: 30000,
-      cotisations: 2700,
-      primes: 2000,
-      retenues: 500,
-      salaireNet: 28800,
-    },
-    {
-      id: '2',
-      mois: 4,
-      annee: 2026,
-      salaireBrut: 30000,
-      cotisations: 2700,
-      primes: 0,
-      retenues: 0,
-      salaireNet: 27300,
-    },
-    {
-      id: '3',
-      mois: 3,
-      annee: 2026,
-      salaireBrut: 30000,
-      cotisations: 2700,
-      primes: 3000,
-      retenues: 0,
-      salaireNet: 30300,
-    },
-    {
-      id: '4',
-      mois: 2,
-      annee: 2026,
-      salaireBrut: 30000,
-      cotisations: 2700,
-      primes: 0,
-      retenues: 1000,
-      salaireNet: 26300,
-    },
-  ]);
-
-  conges = signal<Conge[]>([
-    {
-      id: '1',
-      type: 'Congé annuel',
-      dateDebut: '2026-04-14',
-      dateFin: '2026-04-21',
-      statut: 'APPROUVE',
-      dureeJours: 7,
-    },
-    {
-      id: '2',
-      type: 'Congé maladie',
-      dateDebut: '2026-02-03',
-      dateFin: '2026-02-05',
-      statut: 'APPROUVE',
-      dureeJours: 3,
-      motif: 'Grippe',
-    },
-    {
-      id: '3',
-      type: 'Congé familial',
-      dateDebut: '2026-06-15',
-      dateFin: '2026-06-17',
-      statut: 'EN_ATTENTE',
-      dureeJours: 3,
-    },
-  ]);*/
+  canWrite = this.commonService.hasRole(environment.ressourcesHumainesRoles);
 
   timeline = signal<TimelineEvent[]>([]);
 
@@ -174,6 +107,8 @@ export class EmployeDetailComponent implements OnInit {
     if (!f.length) return 0;
     return Math.round(f.reduce((a, c) => a + c.salaireNet, 0) / f.length);
   });
+
+  devise = this.commonService.deviseMonnetaire();
 
   recuperationsParallesDesDonnees(id: string) {
     forkJoin({
@@ -218,7 +153,7 @@ export class EmployeDetailComponent implements OnInit {
         icon: 'pi-wallet',
         color: '#185fa5',
         title: `Fiche de paie — ${MOIS[f.mois - 1]} ${f.annee}`,
-        subtitle: `Net : ${f.salaireNet.toLocaleString()} FCFA`,
+        subtitle: `Net : ${f.salaireNet.toLocaleString()} ${this.commonService.deviseMonnetaire()}`,
         type: 'paie',
       })),
       ...this.conges().map((c) => ({
@@ -258,11 +193,20 @@ export class EmployeDetailComponent implements OnInit {
     return MOIS[m - 1] ?? '';
   }
 
+  getStatutLabel(s: string) {
+    return this.commonService.getStatutLabel(s, Entite.EMPLOYE);
+  }
+
+  getCongeStatutLabel(s: string) {
+    return this.commonService.getStatutLabel(s, Entite.CONGE);
+  }
+
   getStatutSeverity(s: string) {
-    return (
-      { ACTIF: 'success', INACTIF: 'danger', SUSPENDU: 'warn' }[s] ??
-      'secondary'
-    );
+    return this.commonService.getStatutSeverity(s, Entite.EMPLOYE);
+  }
+
+  getCongeStatutSeverity(s: string) {
+    return this.commonService.getStatutSeverity(s, Entite.CONGE);
   }
 
   getContratSeverity(c: string) {
@@ -270,13 +214,6 @@ export class EmployeDetailComponent implements OnInit {
       { CDI: 'success', CDD: 'info', STAGE: 'warn', VACATAIRE: 'secondary' }[
         c
       ] ?? 'secondary'
-    );
-  }
-
-  getCongeStatutSeverity(s: string) {
-    return (
-      { APPROUVE: 'success', EN_ATTENTE: 'warn', REJETE: 'danger' }[s] ??
-      'secondary'
     );
   }
 

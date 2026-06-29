@@ -18,6 +18,7 @@ import { Authenticate, User } from '../../../core/models/auth/auth.model';
 import { CommonService } from '../../../core/services/common.services';
 import { ApiResponse } from '../../../core/models/response/api-response.model';
 import { LoginStep, ErrorType } from '../../../core/models/all/all.model';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'clnt-login',
@@ -115,7 +116,11 @@ export class LoginComponent {
           const user = response.data;
           this.authService.setCurrentUser(user);
           this.step.set('success');
-          setTimeout(() => this.router.navigate(['/dashboard']), 800);
+          if (this.commonService.hasRole(environment.dashboardRoles)) {
+            setTimeout(() => this.router.navigate(['/dashboard']), 800);
+          } else {
+            setTimeout(() => this.router.navigate(['/agenda']), 800);
+          }
         } else {
           this.step.set('error');
           const newAttempts = this.attempts() + 1;

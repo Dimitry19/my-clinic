@@ -141,7 +141,7 @@
         ></i>
       </div>
       <div class="sc-body">
-        <span class="sc-val">{{ soldeDu | number }} FCFA</span>
+        <span class="sc-val">{{ soldeDu | number }} {{ devise }}</span>
         <span class="sc-label">Solde dû</span>
       </div>
     </div>
@@ -589,7 +589,7 @@
           <span
             >Solde dû :
             <strong [class.solde-danger]="soldeDu > 0"
-              >{{ soldeDu | number }} FCFA</strong
+              >{{ soldeDu | number }} {{ devise }}</strong
             ></span
           >
           <div class="action-btns">
@@ -636,10 +636,10 @@
           <ng-template pTemplate="body" let-f>
             <tr>
               <td>{{ f.dateEmission | date: "dd/MM/yyyy" }}</td>
-              <td>{{ f.montantTotal | number }} FCFA</td>
-              <td>{{ f.montantPaye | number }} FCFA</td>
+              <td>{{ f.montantTotal | number }} {{ devise }}</td>
+              <td>{{ f.montantPaye | number }} {{ devise }}</td>
               <td [class.reste-danger]="f.resteAPayer > 0">
-                {{ f.resteAPayer | number }} FCFA
+                {{ f.resteAPayer | number }} {{ devise }}
               </td>
               <td>
                 <p-tag
@@ -665,6 +665,7 @@
                     tooltipPosition="top"
                     [routerLink]="['/facture', f.id, 'edit']"
                     [class.invisible]="!editableFacture(f)"
+                    [disabled]="!editableFacture(f)"
                   />
                   <p-button
                     icon="pi pi-arrow-right-arrow-left"
@@ -672,6 +673,8 @@
                     size="small"
                     pTooltip="Modifier le statut"
                     (onClick)="openFactureDetails(f); $event.stopPropagation()"
+                    [class.invisible]="!editableFacture(f)"
+                    [disabled]="!editableFacture(f)"
                   />
 
                   <p-button
@@ -689,6 +692,8 @@
                     pTooltip="Supprimer"
                     tooltipPosition="top"
                     (onClick)="confirmDeleteFacture(f)"
+                    [class.invisible]="!editableFacture(f)"
+                    [disabled]="!editableFacture(f)"
                   />
                 </div>
               </td>
@@ -998,5 +1003,6 @@
 <clnt-paiement-dialog
   [(visible)]="addPayment"
   [facture]="detailFacture()"
+  [patient]="patient()"
   (save)="soumettrePaiement($event)"
 />

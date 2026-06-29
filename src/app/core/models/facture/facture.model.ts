@@ -15,14 +15,14 @@ export const FACTURE_STATUT_CONFIG: Record<
   StatutFacture,
   {
     label: string;
-    severity: 'success' | 'info' | 'secondary' | 'danger' | 'primary';
+    severity: 'success' | 'info' | 'secondary' | 'danger' | 'primary' | 'warn';
     icon: string;
   }
 > = {
   IMPAYEE: { label: 'Impayée', severity: 'danger', icon: 'pi-times-circle' },
   PARTIELLEMENT_PAYEE: {
     label: 'Partiellement payée',
-    severity: 'info',
+    severity: 'warn',
     icon: 'pi-clock',
   },
   PAYEE: { label: 'Payée', severity: 'success', icon: 'pi-check-circle' },

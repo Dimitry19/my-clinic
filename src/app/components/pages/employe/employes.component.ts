@@ -86,7 +86,7 @@ export class EmployesComponent implements OnInit {
     { label: 'Tous les départements', value: '' },
     ...DEPARTEMENTS,
   ];
-
+  devise = this.commonService.deviseMonnetaire();
   ngOnInit() {
     //this.load();
     this.search$

@@ -15,7 +15,7 @@ export interface ClinicTrinityEnvironment {
   facturationRoles: string[];
   ressourcesHumainesRoles: string[];
 
-  inProgressIconUrl: string;
+  deviseMonnetaire: string;
   insertedIconUrl: string;
   stopOverIconUrl: string;
   startedIconUrl: string;

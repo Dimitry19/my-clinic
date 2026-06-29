@@ -91,7 +91,7 @@
                   formControlName="montant"
                   [min]="0.01"
                   [max]="f.resteAPayer"
-                  suffix=" FCFA"
+                  [suffix]="devise"
                   styleClass="w-full"
                 />
 
@@ -168,8 +168,7 @@
         </div>
       } @else {
         <div class="info-hint">
-          Cette facture est
-          {{ f.statut === "PAYEE" ? "entièrement payée" : "annulée" }}
+          {{ infoHint(f.statut) }}
         </div>
       }
 

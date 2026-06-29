@@ -23,7 +23,7 @@ export const environment: ClinicTrinityEnvironment = {
   pharmacieRoles: ['ADMIN', 'SUPER_ADMIN', 'PHARMACIEN'],
   facturationRoles: ['ADMIN', 'SUPER_ADMIN', 'COMPTABLE'],
   ressourcesHumainesRoles: ['ADMIN', 'SUPER_ADMIN'],
-  inProgressIconUrl: '/assets/images/tracking/delivery-step.jpg',
+  deviseMonnetaire: 'FCFA',
   insertedIconUrl: '/assets/images/tracking/inserted-step.png',
   stopOverIconUrl: '/assets/images/tracking/room_time_waiting.png',
   startedIconUrl: '/assets/images/tracking/taking-off-plane-step.jpg',

@@ -32,6 +32,7 @@ import {
 } from '../../../../core/models/employe/employe.model';
 import { EmployeService } from '../../../../core/services/employe/employe.service';
 import { ServiceError } from '../../../../core/models/all/all.model';
+import { CommonService } from '../../../../core/services/common.services';
 
 @Component({
   selector: 'clnt-employe-form',
@@ -53,6 +54,7 @@ import { ServiceError } from '../../../../core/models/all/all.model';
 export class EmployeFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private svc = inject(EmployeService);
+  private commonSvc = inject(CommonService);
   today = new Date();
 
   // Inputs / Outputs
@@ -76,6 +78,8 @@ export class EmployeFormComponent implements OnInit {
     { label: 'Actif', value: StatutEmploye.ACTIF },
     { label: 'Inactif', value: StatutEmploye.INACTIF },
   ];
+
+  devise = this.commonSvc.deviseMonnetaire();
 
   form = this.fb.group({
     // Étape 1 — Identité

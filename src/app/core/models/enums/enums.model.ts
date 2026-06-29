@@ -1,12 +1,12 @@
 export enum StatutConge {
   APPROUVE = 'APPROUVE',
-  EN_ATTENTE = 'EN ATTENTE',
+  EN_ATTENTE = 'EN_ATTENTE',
   REJETE = 'REJETE',
 }
 
 export enum StatutPatient {
   EN_COURS = 'EN_COURS',
-  EN_ATTENTE = 'EN ATTENTE',
+  EN_ATTENTE = 'EN_ATTENTE',
   ANNULE = 'ANNULE',
   TERMINE = 'TERMINE',
 }
@@ -53,4 +53,5 @@ export enum Entite {
   LABORATOIRE,
   ORDONNANCE,
   FACTURATION,
+  CONGE,
 }
