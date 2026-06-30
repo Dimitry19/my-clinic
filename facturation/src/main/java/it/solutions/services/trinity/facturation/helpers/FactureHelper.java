@@ -8,11 +8,13 @@ import it.solutions.services.trinity.contracts.entities.PatientLight;
 import it.solutions.services.trinity.contracts.port.ConsultationLookupPort;
 import it.solutions.services.trinity.contracts.port.EmployeLookupPort;
 import it.solutions.services.trinity.contracts.port.PatientLookupPort;
+import it.solutions.services.trinity.core.exception.ValidationException;
 import it.solutions.services.trinity.core.helpers.CoreHelper;
 import it.solutions.services.trinity.core.shared.dao.UserDao;
 import it.solutions.services.trinity.core.shared.entities.User;
 import it.solutions.services.trinity.core.shared.entities.UserLight;
 import it.solutions.services.trinity.core.shared.enums.StatutFacture;
+import it.solutions.services.trinity.core.shared.utils.GenericUtils;
 import it.solutions.services.trinity.facturation.dao.FactureDao;
 import it.solutions.services.trinity.facturation.entities.Facture;
 import it.solutions.services.trinity.facturation.entities.FactureLigne;
@@ -127,11 +129,16 @@ public class FactureHelper extends CoreHelper{
 
     public   FactureDto.Response toResponse(Facture f) {
         BigDecimal resteAPayer = f.getMontantPaye()!=null ?f.getMontantTotal().subtract(f.getMontantPaye()):f.getMontantTotal();
-
+        PatientLight patient=f.getPatient();
+        if(patient==null){
+            throw new ValidationException(
+                    "Impossible de trouver le patient associé à la facture " + f.getNumeroFacture());
+        }
 
         return FactureDto.Response.builder()
                 .id(f.getId())
-                .patientId(f.getPatient().getId())
+                .patientId(patient.getId())
+                .patientNom(GenericUtils.formatNomPrenom(patient.getNom(), patient.getPrenom()))
                 .consultationId(f.getConsultation()!=null?f.getConsultation().getId():null)
                 .numeroFacture(f.getNumeroFacture())
                 .dateEmission(f.getDateEmission())
