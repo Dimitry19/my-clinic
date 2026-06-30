@@ -340,7 +340,7 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
   }
 
   private loadPatients(startIndex: number) {
-    this.patientSvc.findAll(startIndex, Configuration.pageSize, '').subscribe({
+    this.patientSvc.findAll(startIndex, this.pageSize, '').subscribe({
       next: (data: Page<Patient>) => {
         this.patients.update((items) => {
           const updated = [...items];

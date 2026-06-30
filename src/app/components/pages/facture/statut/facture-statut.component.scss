@@ -1,0 +1,93 @@
+﻿@use "sass:color";
+@use "../../../../../variables.scss" as *;
+
+// Formulaire paiement dans le dialog
+.paiement-form-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 0.5px solid $border;
+}
+
+.paiement-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 0.75rem;
+}
+
+.paiement-tout-payer {
+  margin-top: 4px;
+  font-size: 11px;
+  color: $primary;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+
+  &:hover {
+    color: $primary-dk;
+  }
+}
+
+// Historique
+.paiement-historique {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 0.5px solid $border;
+}
+
+.paiement-hist-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 0.5px solid $bg-light;
+  font-size: 13px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.paiement-hist-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  i {
+    font-size: 16px;
+    color: $success;
+    margin-top: 2px;
+  }
+}
+
+.paiement-hist-mode {
+  display: block;
+  font-weight: 500;
+  color: $text;
+}
+
+.paiement-hist-date,
+.paiement-hist-ref {
+  display: block;
+  font-size: 11px;
+  color: $text-muted;
+}
+
+.paiement-hist-montant {
+  font-weight: 600;
+  color: $success;
+  white-space: nowrap;
+}
+
+.reste-danger {
+  color: $danger;
+  font-weight: 600;
+}
+
+.f-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}

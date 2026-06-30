@@ -605,7 +605,7 @@
               label="Nouvelle facture"
               icon="pi pi-receipt"
               size="small"
-              [routerLink]="['/facture/create', patient()!.id]"
+              [routerLink]="['/factures/create', patient()!.id]"
             />
           </div>
         </div>
@@ -663,7 +663,7 @@
                     severity="secondary"
                     pTooltip="Modifier"
                     tooltipPosition="top"
-                    [routerLink]="['/facture', f.id, 'edit']"
+                    [routerLink]="['/factures', f.id, 'edit']"
                     [class.invisible]="!editableFacture(f)"
                     [disabled]="!editableFacture(f)"
                   />
@@ -840,166 +840,12 @@
   }
 </p-dialog>
 
-<p-dialog
-  header="Détail de la Facture"
+<clnt-facture-statut-dialog
   [(visible)]="showDetailFacture"
-  [modal]="true"
-  [draggable]="false"
-  [resizable]="false"
-  [style]="{ width: '460px' }"
->
-  @if (showDetailFacture() && detailFacture()) {
-    <div class="clnt-dialog-detail">
-      <!-- Patient info -->
-      <div class="clnt-dialog-detail-element">
-        <div class="clnt-dialog-detail-avatar">
-          {{ getInitiales(patient()!.prenom, patient()!.nom) }}
-        </div>
-        <div>
-          <div class="clnt-dialog-detail-nom">
-            {{ detailFacture()!.patientNom }}
-          </div>
-          <div class="clnt-dialog-detail-meta">
-            <i class="pi pi-calendar" aria-hidden="true"></i>
-            {{ formatDate(detailFacture()!.dateEmission) }}
-          </div>
-        </div>
-        <p-tag
-          [value]="statutFactConfig[detailFacture()!.statut].label"
-          [severity]="statutFactConfig[detailFacture()!.statut].severity"
-        />
-      </div>
-
-      <!-- Infos -->
-      <div class="clnt-dialog-clnt-dialog-detail-rows">
-        <div class="clnt-dialog-detail-row">
-          <span class="clnt-dialog-detail-label"
-            ><i class="pi pi-money-bill" aria-hidden="true"></i> Montant
-            total</span
-          >
-          <span class="clnt-dialog-detail-val">{{
-            detailFacture()!.montantTotal
-          }}</span>
-        </div>
-        <div class="clnt-dialog-detail-row">
-          <span class="clnt-dialog-detail-label"
-            ><i class="pi pi-clipboard" aria-hidden="true"></i> A payer</span
-          >
-          <span class="clnt-dialog-detail-val">{{
-            detailFacture()!.resteAPayer
-          }}</span>
-        </div>
-        @if (detailFacture()!.notes) {
-          <div class="clnt-dialog-detail-row">
-            <span class="clnt-dialog-detail-label"
-              ><i class="pi pi-pencil" aria-hidden="true"></i> Notes</span
-            >
-            <span class="clnt-dialog-detail-val">{{
-              detailFacture()!.notes
-            }}</span>
-          </div>
-        }
-      </div>
-
-      <!-- Changer statut -->
-      <div class="clnt-dialog-detail-statuts">
-        <span class="clnt-dialog-detail-statut-label">Changer le statut :</span>
-        <div class="clnt-dialog-statut-btns">
-          @for (opt of statutFactOptions; track opt.value) {
-            <p-button
-              [label]="opt.label"
-              size="small"
-              [outlined]="detailFacture()!.statut !== opt.value"
-              [severity]="$any(getFactureStatutSeverity(opt.value))"
-              (onClick)="changeFactureStatus(detailFacture()!, $any(opt.value))"
-            />
-          }
-        </div>
-      </div>
-    </div>
-  }
-</p-dialog>
-
-<p-dialog
-  header="Ajouter un paiemente"
-  [(visible)]="showDetailFacture"
-  [modal]="true"
-  [draggable]="false"
-  [resizable]="false"
-  [style]="{ width: '460px' }"
->
-  @if (showDetailFacture() && detailFacture()) {
-    <div class="clnt-dialog-detail">
-      <!-- Patient info -->
-      <div class="clnt-dialog-detail-element">
-        <div class="clnt-dialog-detail-avatar">
-          {{ getInitiales(patient()!.prenom, patient()!.nom) }}
-        </div>
-        <div>
-          <div class="clnt-dialog-detail-nom">
-            {{ detailFacture()!.patientNom }}
-          </div>
-          <div class="clnt-dialog-detail-meta">
-            <i class="pi pi-calendar" aria-hidden="true"></i>
-            {{ formatDate(detailFacture()!.dateEmission) }}
-          </div>
-        </div>
-        <p-tag
-          [value]="statutFactConfig[detailFacture()!.statut].label"
-          [severity]="statutFactConfig[detailFacture()!.statut].severity"
-        />
-      </div>
-
-      <!-- Infos -->
-      <div class="clnt-dialog-clnt-dialog-detail-rows">
-        <div class="clnt-dialog-detail-row">
-          <span class="clnt-dialog-detail-label"
-            ><i class="pi pi-money-bill" aria-hidden="true"></i> Montant
-            total</span
-          >
-          <span class="clnt-dialog-detail-val">{{
-            detailFacture()!.montantTotal
-          }}</span>
-        </div>
-        <div class="clnt-dialog-detail-row">
-          <span class="clnt-dialog-detail-label"
-            ><i class="pi pi-clipboard" aria-hidden="true"></i> A payer</span
-          >
-          <span class="clnt-dialog-detail-val">{{
-            detailFacture()!.resteAPayer
-          }}</span>
-        </div>
-        @if (detailFacture()!.notes) {
-          <div class="clnt-dialog-detail-row">
-            <span class="clnt-dialog-detail-label"
-              ><i class="pi pi-pencil" aria-hidden="true"></i> Notes</span
-            >
-            <span class="clnt-dialog-detail-val">{{
-              detailFacture()!.notes
-            }}</span>
-          </div>
-        }
-      </div>
-
-      <!-- Changer statut -->
-      <div class="clnt-dialog-detail-statuts">
-        <span class="clnt-dialog-detail-statut-label">Changer le statut :</span>
-        <div class="clnt-dialog-statut-btns">
-          @for (opt of statutFactOptions; track opt.value) {
-            <p-button
-              [label]="opt.label"
-              size="small"
-              [outlined]="detailFacture()!.statut !== opt.value"
-              [severity]="$any(getFactureStatutSeverity(opt.value))"
-              (onClick)="changeFactureStatus(detailFacture()!, $any(opt.value))"
-            />
-          }
-        </div>
-      </div>
-    </div>
-  }
-</p-dialog>
-
+  [facture]="detailFacture()"
+  [patient]="patient()"
+  (save)="changeFactureStatus($event)"
+/>
 <clnt-paiement-dialog
   [(visible)]="addPayment"
   [facture]="detailFacture()"

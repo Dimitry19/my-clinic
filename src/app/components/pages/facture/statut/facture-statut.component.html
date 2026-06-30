@@ -1,0 +1,90 @@
+﻿<p-dialog
+  header="Détail de la Facture"
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '460px' }"
+>
+  @if (facture(); as f) {
+    <div class="clnt-dialog-detail">
+      <!-- ── Info facture ── -->
+      <div class="clnt-dialog-detail-element">
+        <div class="clnt-dialog-detail-avatar">
+          {{ initiales() }}
+        </div>
+
+        <div>
+          <div class="clnt-dialog-detail-nom">
+            {{ f.patientNom }}
+          </div>
+
+          <div class="clnt-dialog-detail-meta">
+            <i class="pi pi-calendar"></i>
+            {{ formatDate(f.dateEmission) }}
+          </div>
+        </div>
+
+        <p-tag
+          [value]="statutFactConfig[f.statut].label"
+          [severity]="statutFactConfig[f.statut].severity"
+        />
+      </div>
+
+      <!-- ── Montants ── -->
+      <div class="clnt-dialog-clnt-dialog-detail-rows">
+        <div class="clnt-dialog-detail-row">
+          <span>
+            <i class="pi pi-money-bill"></i>
+            Montant total
+          </span>
+          <span>{{ formatMontant(f.montantTotal) }}</span>
+        </div>
+
+        <div class="clnt-dialog-detail-row">
+          <span>
+            <i class="pi pi-check-circle"></i>
+            Déjà payé
+          </span>
+          <span>{{ formatMontant(f.montantPaye) }}</span>
+        </div>
+
+        <div class="clnt-dialog-detail-row">
+          <span>
+            <i class="pi pi-exclamation-circle"></i>
+            Reste à payer
+          </span>
+          <span [class.reste-danger]="f.resteAPayer > 0">
+            {{ formatMontant(f.resteAPayer) }}
+          </span>
+        </div>
+
+        @if (f.notes) {
+          <div class="clnt-dialog-detail-row">
+            <span>
+              <i class="pi pi-pencil"></i>
+              Notes
+            </span>
+            <span>{{ f.notes }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Changer statut -->
+      <div class="clnt-dialog-detail-statuts">
+        <span class="clnt-dialog-detail-statut-label">Changer le statut :</span>
+        <div class="clnt-dialog-statut-btns">
+          @for (opt of statutFactOptions; track opt.value) {
+            <p-button
+              [label]="opt.label"
+              size="small"
+              [outlined]="f!.statut !== opt.value"
+              [severity]="$any(getFactureStatutSeverity(opt.value))"
+              (onClick)="changeFactureStatus($any(opt.value))"
+            />
+          }
+        </div>
+      </div>
+    </div>
+  }
+</p-dialog>

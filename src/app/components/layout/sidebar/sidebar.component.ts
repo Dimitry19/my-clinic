@@ -110,7 +110,7 @@ export class SidebarComponent {
     {
       label: 'Facturation',
       icon: 'pi pi-receipt',
-      route: '/facturation',
+      route: '/factures',
       roles: environment.facturationRoles,
     },
     {

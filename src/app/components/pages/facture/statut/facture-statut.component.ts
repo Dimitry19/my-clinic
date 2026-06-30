@@ -9,14 +9,16 @@
   output,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
+
 import { CommonService } from '../../../../core/services/common.services';
+
 import {
   Facture,
-  PaiementRequest,
   ModePaiement,
   FACTURE_STATUT_CONFIG,
   MODE_PAIEMENT_CONFIG,
+  StatutFactureRequest,
 } from '../../../../core/models/facture/facture.model';
 
 import { Patient } from '../../../../core/models/patient/patient.model';
@@ -41,7 +43,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
 
 @Component({
-  selector: 'clnt-paiement-dialog',
+  selector: 'clnt-facture-statut-dialog',
   standalone: true,
   imports: [
     CommonModule,
@@ -62,13 +64,11 @@ import { SelectModule } from 'primeng/select';
     SelectModule,
     ConfirmDialogModule,
   ],
-  templateUrl: './paiement-add.component.html',
-  styleUrls: ['./paiement-add.component.scss'],
+  templateUrl: './facture-statut.component.html',
+  styleUrls: ['./facture-statut.component.scss'],
 })
-export class PaiementAddComponent implements OnInit {
+export class FactureStatutComponent implements OnInit {
   // ───────────────────── inject ─────────────────────
-
-  private fb = inject(FormBuilder);
 
   private commonService = inject(CommonService);
 
@@ -77,17 +77,11 @@ export class PaiementAddComponent implements OnInit {
   // ───────────────────── STATE ─────────────────────
   savingPaiement = signal(false);
 
-  modePaiementOptions = Object.entries(MODE_PAIEMENT_CONFIG).map(
-    ([value, cfg]) => ({
-      label: cfg.label,
-      value,
-    }),
-  );
   facture = input<Facture | null>(null);
   visible = model<boolean>(false);
   patient = input<Patient | null>(null);
 
-  save = output<PaiementRequest>();
+  save = output<StatutFactureRequest>();
   selectedFacture = signal<Facture | null>(null);
 
   showDialog = signal(false);
@@ -116,17 +110,6 @@ export class PaiementAddComponent implements OnInit {
       f.statut !== StatutFacture.ANNULEE
     );
   });
-  // ───────────────────── FORM ─────────────────────
-  paiementForm = this.fb.group({
-    montant: this.fb.control<number | null>(null, {
-      validators: [Validators.required, Validators.min(0.01)],
-    }),
-    modePaiement: this.fb.control<string>('', Validators.required),
-    reference: this.fb.control<string>(''),
-    datePaiement: this.fb.control<string>(
-      new Date().toISOString().slice(0, 16),
-    ),
-  });
 
   // ───────────────────── INIT ─────────────────────
   ngOnInit() {}
@@ -137,13 +120,6 @@ export class PaiementAddComponent implements OnInit {
     this.visible.set(false);
   }
 
-  setFullAmount() {
-    const f = this.facture();
-    if (!f) return;
-
-    this.paiementForm.controls.montant.setValue(f.resteAPayer);
-  }
-
   // ───────────────────── UI ─────────────────────
   closeDialog() {
     this.showDialog.set(false);
@@ -151,22 +127,14 @@ export class PaiementAddComponent implements OnInit {
   }
 
   // ───────────────────── PAYMENT ─────────────────────
-  submitPaiement() {
-    if (this.paiementForm.invalid) return;
-
+  changeFactureStatus(statut: StatutFacture) {
     this.saving.set(true);
 
-    const req: PaiementRequest = {
+    const req: StatutFactureRequest = {
       factureId: this.facture()!.id,
-      montant: this.paiementForm.value.montant!,
-      modePaiement: this.paiementForm.value.modePaiement as ModePaiement,
-      reference: this.paiementForm.value.reference || null,
-      datePaiement: this.paiementForm.value.datePaiement ?? undefined,
+      statut: statut,
     };
 
-    this.paiementForm.reset({
-      datePaiement: new Date().toISOString().slice(0, 16),
-    });
     this.save.emit(req);
   }
 
@@ -182,35 +150,15 @@ export class PaiementAddComponent implements OnInit {
   formatHeure(iso: string) {
     return this.commonService.formatHeure(iso);
   }
-  paiementHasError(name: string): boolean {
-    const c = this.paiementForm.get(name);
-    return !!(c && (c.dirty || c.touched) && c.invalid);
-  }
-
-  paiementFieldError(name: string): string {
-    const c = this.paiementForm.get(name);
-    if (!c || (!c.dirty && !c.touched)) return '';
-    if (c.errors?.['required']) return 'Ce champ est obligatoire.';
-    if (c.errors?.['min'])
-      return `Montant minimum : ${c.errors['min'].min} ${this.commonService.deviseMonnetaire()}.`;
-    return '';
-  }
 
   formatMontant(v: number): string {
     return `${(v ?? 0).toLocaleString('fr-FR')} ${this.commonService.deviseMonnetaire()}`;
   }
 
-  infoHint(statut: string): string {
-    return statut === StatutFacture.PAYEE
-      ? 'Cette facture est entièrement payée'
-      : 'Cette facture est annulée';
+  getFactureStatutSeverity(s: string) {
+    return this.commonService.getStatutSeverity(s, Entite.FACTURATION);
   }
-
-  getModePaiementLabel(mode: string): string {
-    return this.commonService.getModePaiementLabel(mode);
-  }
-
   getModePaiementIcon(mode: string): string {
-    return this.commonService.getModePaiementIcon(mode);
+    return MODE_PAIEMENT_CONFIG[mode as ModePaiement]?.icon ?? 'pi-credit-card';
   }
 }

@@ -42,9 +42,11 @@ import { Ordonnance } from '../../../../core/models/ordonnance/ordonnance.model'
 import {
   Facture,
   FACTURE_STATUT_CONFIG,
+  StatutFactureRequest,
 } from '../../../../core/models/facture/facture.model';
 import { FactureService } from '../../../../core/services/facture/facture.service';
 import { PaiementAddComponent } from '../../facture/paiement/paiement-add.component';
+import { FactureStatutComponent } from '../../facture/statut/facture-statut.component';
 
 @Component({
   selector: 'clnt-patient-detail',
@@ -66,6 +68,7 @@ import { PaiementAddComponent } from '../../facture/paiement/paiement-add.compon
     DialogModule,
     ConfirmDialogModule,
     PaiementAddComponent,
+    FactureStatutComponent,
   ],
   providers: [MessageService, AppConfirmationService],
   templateUrl: './patient-detail.component.html',
@@ -130,9 +133,14 @@ export class PatientDetailComponent implements OnInit {
   pageFact = signal<Page<Facture> | null>(null);
   pageFactIndex = signal(0);
   factures = signal<Facture[]>([]);
-  totalFactures = computed(() => this.pageFact()?.page.totalElements ?? 0);
-  addPayment = signal(false);
 
+  addPayment = signal(false);
+  selectedFactureId = signal<string | null>(null);
+
+  totalFactures = computed(() => this.pageFact()?.page.totalElements ?? 0);
+  selectedFacture = computed(() =>
+    this.factures().find((f) => f.id === this.selectedFactureId()),
+  );
   // ── Dialog Facture ────────────────────────────────────────
   showDetailFacture = signal(false);
 
@@ -263,19 +271,23 @@ export class PatientDetailComponent implements OnInit {
 
   //------------------FACTURES---------------------------
 
-  changeFactureStatus(fact: Facture, statut: StatutFacture) {
-    this.factureSvc.changeStatut(fact.id, statut).subscribe({
+  changeFactureStatus(req: StatutFactureRequest) {
+    const factId = req.factureId;
+    const statut = req.statut;
+    this.selectedFactureId.set(factId);
+    this.factureSvc.changeStatut(factId, statut).subscribe({
       next: () => {
         this.factures.update((list) =>
-          list.map((r) => (r.id === fact.id ? { ...r, statut } : r)),
+          list.map((r) => (r.id === factId ? { ...r, statut } : r)),
         );
-        if (this.detailFacture()?.id === fact.id)
-          this.detailFacture.set({ ...fact, statut });
-        this.msgSvc.add({
-          severity: 'success',
-          summary: 'Statut mis à jour',
-          detail: `Facture marquée comme ${FACTURE_STATUT_CONFIG[statut].label}.`,
-        });
+        if (this.detailFacture()?.id === factId) {
+          this.detailFacture.set({ ...this.selectedFacture()!, statut });
+          this.msgSvc.add({
+            severity: 'success',
+            summary: 'Statut mis à jour',
+            detail: `Facture ${this.selectedFacture()?.numeroFacture} → ${FACTURE_STATUT_CONFIG[statut].label}`,
+          });
+        }
       },
       error: (err: ServiceError) => {
         this.saving.set(false);
@@ -359,7 +371,6 @@ export class PatientDetailComponent implements OnInit {
     this.factureSvc.ajouterPaiement(data).subscribe({
       next: (updated) => {
         this.detailFacture.set(updated);
-
         this.addPayment.set(false);
 
         this.msgSvc.add({

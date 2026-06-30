@@ -27,7 +27,11 @@ import {
 } from '../models/employe/employe.model';
 import { AuthService } from './auth/auth.service';
 import { ErrorService } from './error.service';
-import { FACTURE_STATUT_CONFIG } from '../models/facture/facture.model';
+import {
+  FACTURE_STATUT_CONFIG,
+  MODE_PAIEMENT_CONFIG,
+  ModePaiement,
+} from '../models/facture/facture.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -210,6 +214,14 @@ export class CommonService {
 
   getSexeLabel(s: string) {
     return s === 'M' ? 'Homme' : s === 'F' ? 'Femme' : 'Autre';
+  }
+
+  getModePaiementLabel(mode: string): string {
+    return MODE_PAIEMENT_CONFIG[mode as ModePaiement]?.label ?? mode;
+  }
+
+  getModePaiementIcon(mode: string): string {
+    return MODE_PAIEMENT_CONFIG[mode as ModePaiement]?.icon ?? 'pi-credit-card';
   }
 
   deviseMonnetaire(): string {

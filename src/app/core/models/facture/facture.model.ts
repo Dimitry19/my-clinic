@@ -107,3 +107,8 @@ export interface PaiementRequest {
   datePaiement?: string;
   encaisseParId?: string | null;
 }
+
+export interface StatutFactureRequest {
+  factureId: string;
+  statut: StatutFacture;
+}

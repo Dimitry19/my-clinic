@@ -185,7 +185,6 @@ export class ExamensLaboComponent implements OnInit {
 
   onLazyLoad(event: any) {
     this.page = event.first / this.pageSize;
-    console.log('onLazyLoad');
     this.loadExamens();
   }
 

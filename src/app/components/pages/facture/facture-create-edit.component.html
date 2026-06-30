@@ -100,7 +100,11 @@
             [filter]="true"
             filterPlaceholder="Rechercher..."
             [showClear]="true"
+            [virtualScroll]="true"
+            [virtualScrollItemSize]="pageSize"
+            [lazy]="true"
             appendTo="body"
+            (onLazyLoad)="onPatientsLazyLoad($event)"
           ></p-select>
           @if (fieldError("patientId")) {
             <span class="f-err-msg" role="alert">

@@ -3,13 +3,25 @@ import { RenderMode, ServerRoute } from '@angular/ssr';
 
 export const factureRoutes: Routes = [
   {
-    path: 'facture',
+    path: 'factures',
     children: [
       {
         path: '',
-        redirectTo: 'create',
-        pathMatch: 'full',
+        loadComponent: () =>
+          import('../../../components/pages/facture/list/factures.component').then(
+            (m) => m.FacturesComponent,
+          ),
+        title: 'Toutes les factures',
       },
+      {
+        path: 'new',
+        loadComponent: () =>
+          import('../../../components/pages/facture/facture-create-edit.component').then(
+            (m) => m.FactureCreateEditComponent,
+          ),
+        title: 'Créer une facture',
+      },
+
       {
         path: 'create/:patientId',
         loadComponent: () =>
@@ -40,7 +52,7 @@ export const factureRoutes: Routes = [
 ];
 
 export const factureServerRoutes: ServerRoute[] = [
-  { path: 'facture/create/:patientId', renderMode: RenderMode.Client },
-  { path: 'facture/:id/edit', renderMode: RenderMode.Client },
-  { path: 'facture/:id', renderMode: RenderMode.Client },
+  { path: 'factures/create/:patientId', renderMode: RenderMode.Client },
+  { path: 'factures/:id/edit', renderMode: RenderMode.Client },
+  { path: 'factures/:id', renderMode: RenderMode.Client },
 ];

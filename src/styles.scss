@@ -130,22 +130,17 @@ $radius-lg: 12px;
   }
 }
 */
+
 .action-btns {
   display: flex;
   align-items: center;
   gap: 4px;
 
-  .invisible {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-  }
+  opacity: 0;
+  transition: opacity 0.15s ease;
 
-  &:hover .invisible {
+  &:hover {
     opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
   }
 }
 

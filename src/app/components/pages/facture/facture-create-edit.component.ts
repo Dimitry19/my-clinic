@@ -20,7 +20,7 @@ import {
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { SelectModule } from 'primeng/select';
+import { SelectLazyLoadEvent, SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
@@ -31,7 +31,11 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
-import { FACT_STEPS, ServiceError } from '../../../core/models/all/all.model';
+import {
+  FACT_STEPS,
+  Page,
+  ServiceError,
+} from '../../../core/models/all/all.model';
 import {
   LigneRequest,
   FactureRequest,
@@ -47,6 +51,7 @@ import { ConsultationService } from '../../../core/services/patient/consultation
 import { PatientService } from '../../../core/services/patient/patient.service';
 import { Entite } from '../../../core/models/enums/enums.model';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { Configuration } from '../../../core/models/configuration/configuration.model';
 
 @Component({
   selector: 'clnt-facture-create-edit',
@@ -102,6 +107,7 @@ export class FactureCreateEditComponent implements OnInit, OnDestroy {
   consultations = signal<Consultation[]>([]);
   selectedPatient = signal<PatientLight | null>(null);
   selectedConsultation = signal<Consultation | null>(null);
+  readonly pageSize = Configuration.pageSize;
 
   // ── Options selects ───────────────────────────────────────
   patientOptions = computed(() =>
@@ -384,7 +390,7 @@ export class FactureCreateEditComponent implements OnInit, OnDestroy {
           if (this.patient()) {
             this.router.navigate(['/patients', this.patient()!.id]);
           } else {
-            this.router.navigate(['/factures', f.id]);
+            this.router.navigate(['/factures']);
           }
         }, 1500);
       },
@@ -392,6 +398,30 @@ export class FactureCreateEditComponent implements OnInit, OnDestroy {
         this.saving.set(false);
         this.globalError.set(err.message);
       },
+    });
+  }
+
+  onPatientsLazyLoad(event: SelectLazyLoadEvent) {
+    this.loadPatients(event.first ?? 0);
+  }
+
+  private loadPatients(startIndex: number) {
+    this.patientSvc.findAll(startIndex, this.pageSize, '').subscribe({
+      next: (data: Page<Patient>) => {
+        this.patients.update((items) => {
+          const updated = [...items];
+          data.content.forEach((item, i) => {
+            updated[startIndex + i] = item;
+          });
+          return updated;
+        });
+      },
+      error: () =>
+        this.msg.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Aucun patient trouvé.',
+        }),
     });
   }
 

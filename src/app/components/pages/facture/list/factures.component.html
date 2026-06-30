@@ -1,0 +1,283 @@
+﻿<p-toast position="top-right" />
+<p-confirmDialog />
+
+<div class="facture-list-page">
+  <!-- ── En-tête ── -->
+  <div class="page-header">
+    <div>
+      <h2>
+        <i class="pi pi-receipt" aria-hidden="true"></i>
+        Factures
+      </h2>
+      <p>{{ total() }} facture(s) enregistrée(s)</p>
+    </div>
+    <a routerLink="/factures/new" class="btn-next">
+      <i class="pi pi-plus" aria-hidden="true"></i>
+      Nouvelle facture
+    </a>
+  </div>
+
+  <!-- ── Barre de filtres ── -->
+  <div class="facture-filters">
+    <!-- Numéro de facture -->
+    <p-iconfield>
+      <p-inputicon styleClass="pi pi-search" />
+      <input
+        pInputText
+        type="text"
+        placeholder="N° facture..."
+        class="filter-input"
+        [ngModel]="filtreNumero()"
+        (ngModelChange)="onFiltreNumero($event)"
+      />
+    </p-iconfield>
+
+    <!-- Nom du patient -->
+    <p-iconfield>
+      <p-inputicon styleClass="pi pi-user" />
+      <input
+        pInputText
+        type="text"
+        placeholder="Nom du patient..."
+        class="filter-input"
+        [ngModel]="filtrePatient()"
+        (ngModelChange)="onFiltrePatient($event)"
+      />
+    </p-iconfield>
+
+    <!-- Date d'émission -->
+    <p-datepicker
+      [ngModel]="filtreDate()"
+      (ngModelChange)="onFiltreDate($event)"
+      placeholder="Date d'émission"
+      dateFormat="dd/mm/yy"
+      [showClear]="true"
+      styleClass="filter-datepicker"
+      appendTo="body"
+    />
+
+    <!-- Statut -->
+    <p-select
+      [ngModel]="filtreStatut()"
+      (ngModelChange)="onFiltreStatut($event)"
+      [options]="statutOptions"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Tous les statuts"
+      styleClass="filter-select"
+      [showClear]="false"
+      appendTo="body"
+    ></p-select>
+
+    <!-- Effacer filtres -->
+    @if (hasFiltre()) {
+      <button class="btn-clear-filtres" (click)="effacerFiltres()">
+        <i class="pi pi-times" aria-hidden="true"></i>
+        Effacer
+      </button>
+    }
+  </div>
+
+  <!-- ── Tableau ── -->
+  <p-table
+    [value]="facturesFiltrees()"
+    [loading]="loading()"
+    [paginator]="true"
+    [rows]="pageSize"
+    [totalRecords]="total()"
+    [lazy]="true"
+    (onLazyLoad)="onLazyLoad($event)"
+    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
+    currentPageReportTemplate="{first} à {last} sur {totalRecords}"
+    styleClass="p-datatable-sm p-datatable-gridlines"
+    [rowHover]="true"
+    dataKey="id"
+    aria-label="Liste des factures"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 160px">N° Facture</th>
+        <th>Patient</th>
+        <th style="width: 140px">Date émission</th>
+        <th style="width: 140px" class="col-right">Montant total</th>
+        <th style="width: 130px" class="col-right">Reste à payer</th>
+        <th style="width: 160px">Statut</th>
+        <th style="width: 130px">Actions</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-f>
+      <tr class="facture-row">
+        <!-- N° Facture -->
+        <td>
+          <a [routerLink]="['/factures', f.id]" class="facture-numero-link">
+            {{ f.numeroFacture }}
+          </a>
+        </td>
+
+        <!-- Patient -->
+        <td>
+          <div class="facture-patient-cell">
+            <div class="facture-patient-avatar">
+              {{ f.patientNom?.charAt(0)?.toUpperCase() ?? "?" }}
+            </div>
+            <span>{{ f.patientNom }}</span>
+          </div>
+        </td>
+
+        <!-- Date -->
+        <td>{{ formatDate(f.dateEmission) }}</td>
+
+        <!-- Montant total -->
+        <td class="col-right col-montant">
+          {{ formatMontant(f.montantTotal) }}
+        </td>
+
+        <!-- Reste à payer -->
+        <td class="col-right">
+          <span
+            class="reste-badge"
+            [class.reste-zero]="f.resteAPayer === 0"
+            [class.reste-partiel]="
+              f.resteAPayer > 0 && f.resteAPayer < f.montantTotal
+            "
+            [class.reste-total]="f.resteAPayer === f.montantTotal"
+          >
+            {{ formatMontant(f.resteAPayer) }}
+          </span>
+        </td>
+
+        <!-- Statut -->
+        <td>
+          <p-tag
+            [value]="getStatutLabel(f.statut)"
+            [severity]="$any(getStatutSeverity(f.statut))"
+          >
+            <ng-template pTemplate="icon">
+              <i
+                class="pi {{ getStatutIcon(f.statut) }}"
+                style="margin-right: 4px"
+              ></i>
+            </ng-template>
+          </p-tag>
+        </td>
+
+        <!-- Actions — visibles uniquement au hover via CSS -->
+        <td>
+          <div class="action-btns">
+            <!-- PDF -->
+            <p-button
+              icon="pi pi-file-pdf"
+              [text]="true"
+              size="small"
+              severity="secondary"
+              pTooltip="Télécharger le PDF"
+              tooltipPosition="top"
+              (onClick)="genererPdf(f)"
+            />
+
+            <!-- Voir -->
+            <p-button
+              icon="pi pi-eye"
+              [text]="true"
+              size="small"
+              severity="secondary"
+              pTooltip="Voir la facture"
+              tooltipPosition="top"
+              [routerLink]="['/factures', f.id]"
+            />
+
+            <!-- Modifier -->
+            <p-button
+              icon="pi pi-pencil"
+              [text]="true"
+              size="small"
+              severity="secondary"
+              pTooltip="Modifier"
+              tooltipPosition="top"
+              [routerLink]="['/factures', f.id, 'edit']"
+              [class.invisible]="!isModifiable(f)"
+            />
+
+            <!-- Changer statut -->
+            <p-button
+              icon="pi pi-arrow-right-arrow-left"
+              [text]="true"
+              size="small"
+              pTooltip="Changer le statut"
+              tooltipPosition="top"
+              (onClick)="openStatutMenu(f, $event)"
+            />
+
+            <!-- Supprimer -->
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              size="small"
+              severity="danger"
+              pTooltip="Supprimer"
+              tooltipPosition="top"
+              (onClick)="confirmDelete(f)"
+              [class.invisible]="!isSupprimable(f)"
+            />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Empty state -->
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="empty-state">
+          <i class="pi pi-receipt"></i>
+          <p>Aucune facture trouvée</p>
+          @if (hasFiltre()) {
+            <button class="btn-back-step" (click)="effacerFiltres()">
+              <i class="pi pi-times" aria-hidden="true"></i>
+              Effacer les filtres
+            </button>
+          } @else {
+            <a routerLink="/factures/new" class="btn-create-rdv">
+              <i class="pi pi-plus" aria-hidden="true"></i>
+              Créer une facture
+            </a>
+          }
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Loading skeleton -->
+    <ng-template pTemplate="loadingbody">
+      @for (i of [1, 2, 3, 4, 5]; track i) {
+        <tr>
+          <td><p-skeleton height="20px" /></td>
+          <td><p-skeleton height="20px" /></td>
+          <td><p-skeleton height="20px" /></td>
+          <td><p-skeleton height="20px" /></td>
+          <td><p-skeleton height="20px" /></td>
+          <td><p-skeleton height="20px" width="80px" /></td>
+          <td><p-skeleton height="20px" width="100px" /></td>
+        </tr>
+      }
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- ── Menu statut (overlay) ── -->
+<p-popover #statutPopover>
+  <div class="statut-menu">
+    <div class="statut-menu-title">Changer le statut</div>
+    @for (opt of statutActionsOptions; track opt.value) {
+      <button
+        class="statut-menu-item"
+        [class.statut-menu-active]="factureSelectionnee()?.statut === opt.value"
+        (click)="
+          changeStatut(factureSelectionnee()!, opt.value); statutPopover.hide()
+        "
+      >
+        <i class="pi {{ opt.icon }}" aria-hidden="true"></i>
+        {{ opt.label }}
+      </button>
+    }
+  </div>
+</p-popover>
