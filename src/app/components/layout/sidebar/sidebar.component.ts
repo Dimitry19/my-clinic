@@ -100,7 +100,7 @@ export class SidebarComponent {
     },
     {
       label: 'Pharmacie',
-      icon: 'pi pi-shopping-cart',
+      icon: 'pi pi-building',
       route: '/pharmacie',
       roles: environment.pharmacieRoles,
     },

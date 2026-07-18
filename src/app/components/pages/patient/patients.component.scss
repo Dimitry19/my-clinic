@@ -202,11 +202,11 @@
 }
 
 .search-icon-all-patients {
-  position: absolute;
-  right: 4rem;
-  top: 21%;
+  position: relative;
+  left: 96%;
+  margin-top: 1rem;
   transform: translateY(-50%);
-  color: #5f5e5a;
+  color: $text-muted;
   pointer-events: none;
 }
 

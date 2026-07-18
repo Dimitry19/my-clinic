@@ -11,22 +11,27 @@ import { Page } from '../../models/all/all.model';
 import { ApiResponse } from '../../models/response/api-response.model';
 import { CommonService } from '../common.services';
 import { Entite } from '../../models/enums/enums.model';
+import { environment } from '../../../../environments/environment';
+import { Configuration } from '../../models/configuration/configuration.model';
 
 @Injectable({ providedIn: 'root' })
 export class MedicamentService {
   private http = inject(HttpClient);
   private commonService = inject(CommonService);
-  private API = '/api/pharmacie/medicaments';
 
-  search(
+  private readonly API = `${environment.apiUrl}/pharmacie/medicaments`;
+
+  findAll(
     page = 0,
-    size = 20,
+    size = Configuration.pageSize,
     search = '',
     actif?: boolean,
   ): Observable<Page<Medicament>> {
+    console.log('searchQuery dans le search :', search);
     let params = new HttpParams().set('page', page).set('size', size);
-    if (search) params = params.set('search', search);
+    if (search) params = params.set('q', search);
     if (actif !== undefined) params = params.set('actif', actif);
+    console.log('Params HTTP:', params.toString());
     return this.http
       .get<ApiResponse<Page<Medicament>>>(this.API, { params })
       .pipe(

@@ -12,9 +12,10 @@ import {
   ReactiveFormsModule,
   FormBuilder,
   Validators,
+  FormGroup,
 } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { switchMap, takeUntil } from 'rxjs/operators';
 
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -40,6 +41,8 @@ import {
   MOTIFS_MOUVEMENT,
 } from '../../../core/models/pharmacie/medicament.model';
 import { MedicamentService } from '../../../core/services/pharmacie/medicament.service';
+import { CommonService } from '../../../core/services/common.services';
+import { AppConfirmationService } from '../../../core/services/global/app.confirmation.service';
 
 @Component({
   selector: 'clnt-pharmacie',
@@ -64,17 +67,20 @@ import { MedicamentService } from '../../../core/services/pharmacie/medicament.s
     ProgressBarModule,
     DatePickerModule,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [MessageService, AppConfirmationService],
   templateUrl: './pharmacie.component.html',
   styleUrls: ['./pharmacie.component.scss'],
 })
 export class PharmacieComponent implements OnInit, OnDestroy {
   private svc = inject(MedicamentService);
   private msg = inject(MessageService);
-  private confirm = inject(ConfirmationService);
+  private commonService = inject(CommonService);
+  private confirm = inject(AppConfirmationService);
   private fb = inject(FormBuilder);
   private destroy$ = new Subject<void>();
   private search$ = new Subject<string>();
+
+  today = new Date();
 
   // ── State liste ───────────────────────────────────────
   medicaments = signal<Medicament[]>([]);
@@ -85,7 +91,9 @@ export class PharmacieComponent implements OnInit, OnDestroy {
   searchQuery = '';
   filterActif = signal<boolean | undefined>(true);
   pageIndex = signal(0);
+
   readonly pageSize = 20;
+  devise = this.commonService.deviseMonnetaire();
 
   activeTab = signal(0);
 
@@ -125,11 +133,14 @@ export class PharmacieComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.load();
+
     this.loadStats();
     this.search$
       .pipe(debounceTime(350), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((q) => {
-        this.searchQuery = q;
+        console.log('Valeur après RxJS :', q);
+        this.searchQuery = q ?? '';
+        console.log('searchQuery avant load :', this.searchQuery);
         this.load(0);
       });
   }
@@ -137,8 +148,9 @@ export class PharmacieComponent implements OnInit, OnDestroy {
   load(p = 0) {
     this.loading.set(true);
     this.loadError.set(null);
+    console.log('searchQuery dans le load :', this.searchQuery);
     this.svc
-      .search(p, this.pageSize, this.searchQuery, this.filterActif())
+      .findAll(p, this.pageSize, this.searchQuery, this.filterActif())
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (page) => {
@@ -161,6 +173,7 @@ export class PharmacieComponent implements OnInit, OnDestroy {
   }
 
   onSearch(q: string) {
+    console.log('onSearch reçu :', q);
     this.search$.next(q);
   }
   onFilterActif(v: any) {
@@ -210,9 +223,9 @@ export class PharmacieComponent implements OnInit, OnDestroy {
     this.formError.set(null);
     const data = { ...this.form.value } as any;
     if (data.dateExpiration) {
-      data.dateExpiration = (data.dateExpiration as Date)
+      /*data.dateExpiration = (data.dateExpiration as Date)
         .toISOString()
-        .split('T')[0];
+        .split('T')[0];*/
     }
     const op =
       this.editMode() && this.selectedMed()
@@ -237,15 +250,11 @@ export class PharmacieComponent implements OnInit, OnDestroy {
     });
   }
 
-  confirmerSuppression(m: Medicament) {
-    this.confirm.confirm({
-      header: 'Désactiver le médicament',
-      message: `Désactiver <strong>${m.nom}</strong> ?<br>Il ne sera plus visible dans les listes actives.`,
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Oui, désactiver',
-      rejectLabel: 'Annuler',
-      acceptButtonStyleClass: 'p-button-danger',
-      accept: () => {
+  confirmerDelete(m: Medicament) {
+    this.confirm.action(
+      'Désactiver le médicament',
+      `Désactiver <strong>${m.nom}</strong> ?<br>Il ne sera plus visible dans les listes actives.`,
+      () => {
         this.svc
           .delete(m.id)
           .pipe(takeUntil(this.destroy$))
@@ -264,10 +273,11 @@ export class PharmacieComponent implements OnInit, OnDestroy {
                 severity: 'error',
                 summary: 'Erreur',
                 detail: e.message,
+                life: 5000,
               }),
           });
       },
-    });
+    );
   }
 
   // ── Mouvement de stock ────────────────────────────────
@@ -343,12 +353,12 @@ export class PharmacieComponent implements OnInit, OnDestroy {
     return '#0f6e56';
   }
 
-  hasError(name: string, ctrl = this.form) {
+  hasError(name: string, ctrl: FormGroup = this.form) {
     const c = ctrl.get(name);
     return c && (c.dirty || c.touched) && c.invalid;
   }
 
-  fieldError(name: string, ctrl = this.form): string {
+  fieldError(name: string, ctrl: FormGroup = this.form): string {
     const c = ctrl.get(name);
     if (!c || (!c.dirty && !c.touched)) return '';
     if (c.errors?.['required']) return 'Obligatoire.';
@@ -367,5 +377,25 @@ export class PharmacieComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  mouvementQte() {
+    return Math.abs(this.mouvementForm.get('quantite')?.value || 1);
+  }
+
+  mouvementStockClass(m: Medicament): string {
+    switch (m.statutStock) {
+      case 'DISPONIBLE':
+        return 'stock-ok';
+
+      case 'ALERTE':
+        return 'stock-warn';
+
+      case 'RUPTURE':
+        return 'stock-err';
+
+      default:
+        return '';
+    }
   }
 }

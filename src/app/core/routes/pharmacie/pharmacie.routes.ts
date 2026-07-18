@@ -8,8 +8,8 @@ export const pharmacieRoutes: Routes = [
       {
         path: '',
         loadComponent: () =>
-          import('../../../components/pages/facture/list/factures.component').then(
-            (m) => m.FacturesComponent,
+          import('../../../components/pages/pharmacie/pharmacie.component').then(
+            (m) => m.PharmacieComponent,
           ),
         title: 'La Pharmacie',
       },

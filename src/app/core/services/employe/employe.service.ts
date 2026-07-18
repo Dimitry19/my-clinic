@@ -12,6 +12,7 @@ import { environment } from '../../../../environments/environment';
 import { CommonService } from '../common.services';
 import { Entite } from '../../models/enums/enums.model';
 import { Page } from '../../models/all/all.model';
+import { Configuration } from '../../models/configuration/configuration.model';
 
 @Injectable({ providedIn: 'root' })
 export class EmployeService {
@@ -20,7 +21,12 @@ export class EmployeService {
 
   private readonly API = `${environment.apiUrl}/employes`;
 
-  findAll(page = 0, size = 20, search = '', departement = '') {
+  findAll(
+    page = 0,
+    size = Configuration.pageSize,
+    search = '',
+    departement = '',
+  ) {
     let params = new HttpParams().set('page', page).set('size', size);
     if (search) params = params.set('q', search);
     if (departement) params = params.set('departement', departement);

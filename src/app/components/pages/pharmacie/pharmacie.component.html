@@ -1,1 +1,768 @@
-﻿
+﻿<p-toast position="top-right" />
+<p-confirmDialog />
+
+<div class="pharmacie-page">
+  <!-- ── En-tête ── -->
+  <div class="page-header">
+    <div class="header-left">
+      <h2>
+        <i class="pi pi-building" aria-hidden="true"></i>
+        Pharmacie — Stock médicaments
+      </h2>
+      <p>
+        {{ total() }} médicament(s) enregistré(s)
+        @if (stats()) {
+          <span class="inline-badge badge-success">
+            <i class="pi pi-check-circle" aria-hidden="true"></i>
+            {{ stats()!.disponibles }} disponibles
+          </span>
+          @if (stats()!.alertes > 0) {
+            <span class="inline-badge badge-warn">
+              <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+              {{ stats()!.alertes }} alertes
+            </span>
+          }
+          @if (stats()!.ruptures > 0) {
+            <span class="inline-badge badge-danger">
+              <i class="pi pi-times-circle" aria-hidden="true"></i>
+              {{ stats()!.ruptures }} ruptures
+            </span>
+          }
+        }
+      </p>
+    </div>
+    <p-button
+      label="Ajouter un médicament"
+      icon="pi pi-plus"
+      (onClick)="ouvrirCreation()"
+    />
+  </div>
+
+  <!-- ── Cartes stats ── -->
+  @if (stats()) {
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="sc-icon sc-blue">
+          <i class="fa-solid fa-pills"></i>
+        </div>
+        <div class="sc-body">
+          <span class="sc-val">{{ stats()!.totalMedicaments }}</span>
+          <span class="sc-label">Total médicaments</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-icon sc-green">
+          <i class="pi pi-check-circle" aria-hidden="true"></i>
+        </div>
+        <div class="sc-body">
+          <span class="sc-val">{{ stats()!.disponibles }}</span>
+          <span class="sc-label">Disponibles</span>
+        </div>
+      </div>
+      <div class="stat-card" [class.stat-card-warn]="stats()!.alertes > 0">
+        <div class="sc-icon sc-amber">
+          <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+        </div>
+        <div class="sc-body">
+          <span class="sc-val">{{ stats()!.alertes }}</span>
+          <span class="sc-label">Alertes stock</span>
+        </div>
+      </div>
+      <div class="stat-card" [class.stat-card-danger]="stats()!.ruptures > 0">
+        <div class="sc-icon sc-red">
+          <i class="pi pi-times-circle" aria-hidden="true"></i>
+        </div>
+        <div class="sc-body">
+          <span class="sc-val">{{ stats()!.ruptures }}</span>
+          <span class="sc-label">Ruptures</span>
+        </div>
+      </div>
+      <div class="stat-card" [class.stat-card-danger]="stats()!.expires > 0">
+        <div class="sc-icon sc-red">
+          <i class="pi pi-calendar-times" aria-hidden="true"></i>
+        </div>
+        <div class="sc-body">
+          <span class="sc-val">{{ stats()!.expires }}</span>
+          <span class="sc-label">Expirés</span>
+        </div>
+      </div>
+      <div
+        class="stat-card"
+        [class.stat-card-warn]="stats()!.expireBientot > 0"
+      >
+        <div class="sc-icon sc-amber">
+          <i class="pi pi-clock" aria-hidden="true"></i>
+        </div>
+        <div class="sc-body">
+          <span class="sc-val">{{ stats()!.expireBientot }}</span>
+          <span class="sc-label">Expirent bientôt</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Toolbar ── -->
+  <div class="toolbar">
+    <div class="search-bar" [class.search-active]="searchQuery.length > 0">
+      <i
+        class="pi pi-search"
+        [ngClass]="searchQuery.length === 0 ? 'search-icon' : ''"
+        aria-hidden="true"
+      ></i>
+      <input
+        type="text"
+        class="search-input"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearch($event)"
+        placeholder="Rechercher par nom, dénomination, fournisseur..."
+        aria-label="Rechercher un médicament"
+      />
+      @if (searchQuery.length > 0) {
+        <button
+          class="search-clear"
+          (click)="searchQuery = ''; onSearch('')"
+          aria-label="Effacer"
+        >
+          <i class="pi pi-times" aria-hidden="true"></i>
+        </button>
+      }
+    </div>
+    <p-select
+      [options]="filterOptions"
+      [(ngModel)]="filterActif"
+      optionLabel="label"
+      optionValue="value"
+      (onChange)="onFilterActif($event.value)"
+      styleClass="filter-select"
+      aria-label="Filtrer par statut"
+    />
+  </div>
+
+  <!-- ── Erreur chargement ── -->
+  @if (loadError()) {
+    <div class="list-error" role="alert">
+      <div class="error-icon">
+        <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+      </div>
+      <div class="error-body">
+        <strong>Impossible de charger les médicaments</strong>
+        <span>{{ loadError() }}</span>
+      </div>
+      <button class="error-retry" (click)="retryLoad()">
+        <i class="pi pi-refresh" aria-hidden="true"></i>
+        Réessayer
+      </button>
+    </div>
+  }
+
+  <!-- ── Tableau ── -->
+  @if (!loadError()) {
+    <div class="table-card">
+      <p-table
+        [value]="medicaments()"
+        [loading]="loading()"
+        [paginator]="true"
+        [rows]="pageSize"
+        [totalRecords]="total()"
+        [lazy]="true"
+        (onLazyLoad)="onLazyLoad($event)"
+        [rowHover]="true"
+        styleClass="p-datatable-sm"
+        dataKey="id"
+        aria-label="Liste des médicaments"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th scope="col">Médicament</th>
+            <th scope="col" style="width: 100px">Forme</th>
+            <th scope="col" style="width: 200px">Stock</th>
+            <th scope="col" style="width: 110px">Prix unitaire</th>
+            <th scope="col" style="width: 120px">Expiration</th>
+            <th scope="col" style="width: 110px">Statut</th>
+            <th scope="col" style="width: 140px">Actions</th>
+          </tr>
+        </ng-template>
+
+        <!-- Skeleton -->
+        <ng-template pTemplate="loadingbody">
+          @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+            <tr>
+              <td>
+                <div class="skel-cell">
+                  <p-skeleton height="14px" width="160px" />
+                </div>
+              </td>
+              <td><p-skeleton height="14px" width="70px" /></td>
+              <td>
+                <p-skeleton height="8px" width="120px" borderRadius="4px" />
+              </td>
+              <td><p-skeleton height="14px" width="70px" /></td>
+              <td><p-skeleton height="14px" width="80px" /></td>
+              <td>
+                <p-skeleton height="22px" width="80px" borderRadius="20px" />
+              </td>
+              <td>
+                <p-skeleton height="30px" width="110px" borderRadius="6px" />
+              </td>
+            </tr>
+          }
+        </ng-template>
+
+        <!-- Body -->
+        <ng-template pTemplate="body" let-m>
+          <tr
+            [class.row-alerte]="m.statutStock === 'ALERTE'"
+            [class.row-rupture]="m.statutStock === 'RUPTURE'"
+            [class.row-inactif]="!m.actif"
+          >
+            <!-- Médicament -->
+            <td>
+              <div class="med-cell">
+                <div
+                  class="med-icon"
+                  [class.med-icon-alerte]="m.statutStock === 'ALERTE'"
+                  [class.med-icon-rupture]="m.statutStock === 'RUPTURE'"
+                >
+                  <i class="fa-solid fa-pills"></i>
+                </div>
+                <div class="med-info">
+                  <span class="med-nom">{{ m.nom }}</span>
+                  @if (m.denomination) {
+                    <span class="med-sub">{{ m.denomination }}</span>
+                  }
+                  @if (m.dosageUnitaire) {
+                    <span class="med-dosage">{{ m.dosageUnitaire }}</span>
+                  }
+                  @if (m.fournisseur) {
+                    <span class="med-fournisseur">
+                      <i class="pi pi-building" aria-hidden="true"></i>
+                      {{ m.fournisseur }}
+                    </span>
+                  }
+                </div>
+              </div>
+            </td>
+
+            <!-- Forme -->
+            <td>
+              <span class="forme-badge">{{ m.forme || "—" }}</span>
+            </td>
+
+            <!-- Stock avec barre de progression -->
+            <td>
+              <div class="stock-cell">
+                <div class="stock-numbers">
+                  <span class="stock-actuel" [ngClass]="mouvementStockClass(m)">
+                    {{ m.stockActuel }}
+                  </span>
+                  <span class="stock-sep">/</span>
+                  <span class="stock-min">{{ m.stockMinimum }} min</span>
+                  @if (m.manquant > 0) {
+                    <span class="stock-manquant">−{{ m.manquant }}</span>
+                  }
+                </div>
+                <p-progressbar
+                  [value]="getStockPct(m)"
+                  [style]="{ height: '5px' }"
+                  [showValue]="false"
+                  styleClass="stock-bar"
+                />
+              </div>
+            </td>
+
+            <!-- Prix -->
+            <td>
+              <span class="prix">
+                @if (m.prixUnitaire) {
+                  {{ m.prixUnitaire | number: "1.2-2" }} {{ devise }}
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </span>
+            </td>
+
+            <!-- Expiration -->
+            <td>
+              @if (m.dateExpiration) {
+                <div class="date-exp-cell">
+                  <span
+                    [class.exp-rouge]="m.expire"
+                    [class.exp-orange]="m.expireBientot && !m.expire"
+                  >
+                    {{ m.dateExpiration | date: "dd/MM/yyyy" }}
+                  </span>
+                  @if (m.expire) {
+                    <p-tag value="Expiré" severity="danger" />
+                  } @else if (m.expireBientot) {
+                    <p-tag value="Bientôt" severity="warn" />
+                  }
+                </div>
+              } @else {
+                <span class="text-muted">—</span>
+              }
+            </td>
+
+            <!-- Statut -->
+            <td>
+              <p-tag
+                [value]="getStatutLabel(m.statutStock)"
+                [severity]="getStatutSeverity(m.statutStock)"
+              />
+            </td>
+
+            <!-- Actions -->
+            <td>
+              <div class="action-btns">
+                <button
+                  class="action-btn action-stock"
+                  pTooltip="Mouvement de stock"
+                  tooltipPosition="top"
+                  (click)="ouvrirMouvement(m)"
+                  aria-label="Mouvement de stock"
+                >
+                  <i class="pi pi-arrows-v" aria-hidden="true"></i>
+                </button>
+                <button
+                  class="action-btn action-edit"
+                  pTooltip="Modifier"
+                  tooltipPosition="top"
+                  (click)="ouvrirModification(m)"
+                  aria-label="Modifier le médicament"
+                >
+                  <i class="pi pi-pencil" aria-hidden="true"></i>
+                </button>
+                <button
+                  class="action-btn action-delete"
+                  pTooltip="Désactiver"
+                  tooltipPosition="top"
+                  (click)="confirmerDelete(m)"
+                  aria-label="Désactiver le médicament"
+                >
+                  <i class="pi pi-ban" aria-hidden="true"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <!-- Empty state -->
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <i class="pi pi-box" aria-hidden="true"></i>
+                <h3>Aucun médicament trouvé</h3>
+                @if (searchQuery) {
+                  <p>Aucun résultat pour "{{ searchQuery }}".</p>
+                  <button
+                    class="btn-secondary"
+                    (click)="searchQuery = ''; onSearch('')"
+                  >
+                    <i class="pi pi-filter-slash" aria-hidden="true"></i>
+                    Réinitialiser
+                  </button>
+                } @else {
+                  <p>Commencez par ajouter un médicament.</p>
+                  <p-button
+                    label="Ajouter un médicament"
+                    icon="pi pi-plus"
+                    size="small"
+                    (onClick)="ouvrirCreation()"
+                  />
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  }
+</div>
+
+<!-- ══ Dialog formulaire médicament ══ -->
+<p-dialog
+  [header]="editMode() ? 'Modifier le médicament' : 'Ajouter un médicament'"
+  [(visible)]="showFormDialog"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '620px' }"
+  [closeOnEscape]="true"
+>
+  @if (showFormDialog()) {
+    <form
+      [formGroup]="form"
+      (ngSubmit)="soumettre()"
+      novalidate
+      class="med-form"
+    >
+      @if (formError()) {
+        <p-message
+          severity="error"
+          [text]="formError()!"
+          styleClass="w-full mb-3"
+        />
+      }
+
+      <!-- Nom + Dénomination -->
+      <div class="f-row-2">
+        <div class="form-field" [class.f-err]="hasError('nom')">
+          <label class="form-label required">
+            <i class="fa-solid fa-pills"></i>
+            Nom
+          </label>
+          <input
+            pInputText
+            formControlName="nom"
+            placeholder="Nom du médicament"
+            class="form-control"
+          />
+          @if (fieldError("nom")) {
+            <span class="f-err-msg" role="alert">
+              <i class="pi pi-info-circle" aria-hidden="true"></i
+              >{{ fieldError("nom") }}
+            </span>
+          }
+        </div>
+        <div class="form-field">
+          <label class="form-label">
+            <i class="pi pi-tag" aria-hidden="true"></i>
+            Dénomination commune
+          </label>
+          <input
+            pInputText
+            formControlName="denomination"
+            placeholder="DCI..."
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <!-- Forme + Dosage -->
+      <div class="f-row-2">
+        <div class="form-field">
+          <label class="form-label">
+            <i class="pi pi-list" aria-hidden="true"></i>
+            Forme pharmaceutique
+          </label>
+          <p-select
+            formControlName="forme"
+            [options]="formes"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Sélectionner..."
+            styleClass="w-full"
+          />
+        </div>
+        <div class="form-field">
+          <label class="form-label">
+            <i class="pi pi-gauge" aria-hidden="true"></i>
+            Dosage unitaire
+          </label>
+          <input
+            pInputText
+            formControlName="dosageUnitaire"
+            placeholder="500mg, 250ml..."
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <!-- Stock actuel + Stock minimum -->
+      <div class="f-row-2">
+        <div class="form-field" [class.f-err]="hasError('stockActuel')">
+          <label class="form-label required">
+            <i class="pi pi-warehouse" aria-hidden="true"></i>
+            Stock actuel
+          </label>
+          <p-inputNumber
+            formControlName="stockActuel"
+            [min]="0"
+            styleClass="w-full"
+            suffix=" unités"
+          />
+          @if (fieldError("stockActuel")) {
+            <span class="f-err-msg" role="alert">
+              <i class="pi pi-info-circle" aria-hidden="true"></i
+              >{{ fieldError("stockActuel") }}
+            </span>
+          }
+        </div>
+        <div class="form-field" [class.f-err]="hasError('stockMinimum')">
+          <label class="form-label required">
+            <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+            Stock minimum
+          </label>
+          <p-inputNumber
+            formControlName="stockMinimum"
+            [min]="0"
+            styleClass="w-full"
+            suffix=" unités"
+          />
+          @if (fieldError("stockMinimum")) {
+            <span class="f-err-msg" role="alert">
+              <i class="pi pi-info-circle" aria-hidden="true"></i
+              >{{ fieldError("stockMinimum") }}
+            </span>
+          }
+        </div>
+      </div>
+
+      <!-- Prix + Fournisseur -->
+      <div class="f-row-2">
+        <div class="form-field">
+          <label class="form-label">
+            <i class="pi pi-money-bill" aria-hidden="true"></i>
+            Prix unitaire ({{ devise }})
+          </label>
+          <p-inputNumber
+            formControlName="prixUnitaire"
+            [min]="0"
+            [minFractionDigits]="2"
+            [maxFractionDigits]="2"
+            styleClass="w-full"
+            [suffix]="devise"
+          />
+        </div>
+        <div class="form-field">
+          <label class="form-label">
+            <i class="pi pi-building" aria-hidden="true"></i>
+            Fournisseur
+          </label>
+          <input
+            pInputText
+            formControlName="fournisseur"
+            placeholder="Nom du fournisseur"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <!-- Date expiration -->
+      <div class="form-field">
+        <label class="form-label">
+          <i class="pi pi-calendar" aria-hidden="true"></i>
+          Date d'expiration
+        </label>
+        <input
+          pInputText
+          type="date"
+          formControlName="dateExpiration"
+          placeholder="JJ/MM/AAAA"
+          class="form-control"
+        />
+      </div>
+
+      <!-- Footer -->
+      <div class="f-footer">
+        <p-button
+          label="Annuler"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="showFormDialog.set(false)"
+          [disabled]="saving()"
+        />
+        <p-button
+          type="submit"
+          [label]="
+            saving()
+              ? 'Enregistrement...'
+              : editMode()
+                ? 'Mettre à jour'
+                : 'Enregistrer'
+          "
+          [icon]="saving() ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+          [disabled]="saving()"
+        />
+      </div>
+    </form>
+  }
+</p-dialog>
+
+<!-- ══ Dialog mouvement de stock ══ -->
+<p-dialog
+  header="Mouvement de stock"
+  [(visible)]="showMouvementDialog"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '460px' }"
+  [closeOnEscape]="true"
+>
+  @if (showMouvementDialog() && selectedMed()) {
+    <div class="mouvement-dialog">
+      <!-- Résumé médicament -->
+      <div class="med-resume">
+        <div class="med-resume-icon">
+          <i class="pi pi-box" aria-hidden="true"></i>
+        </div>
+        <div class="med-resume-info">
+          <span class="med-resume-nom">{{ selectedMed()!.nom }}</span>
+          <span class="med-resume-stock">
+            Stock actuel :
+            <strong
+              [class.stock-ok]="selectedMed()!.statutStock === 'DISPONIBLE'"
+              [class.stock-warn]="selectedMed()!.statutStock === 'ALERTE'"
+              [class.stock-err]="selectedMed()!.statutStock === 'RUPTURE'"
+            >
+              {{ selectedMed()!.stockActuel }} unités
+            </strong>
+          </span>
+        </div>
+        <p-tag
+          [value]="getStatutLabel(selectedMed()!.statutStock)"
+          [severity]="getStatutSeverity(selectedMed()!.statutStock)"
+        />
+      </div>
+
+      @if (formError()) {
+        <p-message
+          severity="error"
+          [text]="formError()!"
+          styleClass="w-full mt-3"
+        />
+      }
+
+      <!-- Type de mouvement : pills -->
+      <div class="mouvement-type-row">
+        <button
+          class="type-pill type-entree"
+          [class.type-pill-active]="mouvementForm.get('quantite')?.value! > 0"
+          type="button"
+          (click)="
+            mouvementForm.patchValue({
+              quantite: mouvementQte(),
+            })
+          "
+        >
+          <i class="pi pi-plus-circle" aria-hidden="true"></i>
+          Entrée stock
+        </button>
+        <button
+          class="type-pill type-sortie"
+          [class.type-pill-active]="mouvementForm.get('quantite')?.value! < 0"
+          type="button"
+          (click)="
+            mouvementForm.patchValue({
+              quantite: -mouvementQte(),
+            })
+          "
+        >
+          <i class="pi pi-minus-circle" aria-hidden="true"></i>
+          Sortie stock
+        </button>
+      </div>
+
+      <form
+        [formGroup]="mouvementForm"
+        (ngSubmit)="soumettreM()"
+        novalidate
+        class="med-form"
+      >
+        <!-- Quantité -->
+        <div
+          class="form-field"
+          [class.f-err]="hasError('quantite', mouvementForm)"
+        >
+          <label class="form-label">
+            <i class="pi pi-hashtag" aria-hidden="true"></i>
+            Quantité <span class="req">*</span>
+          </label>
+          <p-inputNumber
+            formControlName="quantite"
+            [showButtons]="true"
+            styleClass="w-full"
+            suffix=" unités"
+          />
+          @if (fieldError("quantite", mouvementForm)) {
+            <span class="f-err-msg" role="alert">
+              <i class="pi pi-info-circle" aria-hidden="true"></i>
+              {{ fieldError("quantite", mouvementForm) }}
+            </span>
+          }
+          <!-- Aperçu nouveau stock -->
+          @if (mouvementForm.get("quantite")?.value !== null) {
+            <div class="stock-preview">
+              <i class="pi pi-arrow-right" aria-hidden="true"></i>
+              Nouveau stock :
+              <strong
+                [class.stock-ok]="
+                  selectedMed()!.stockActuel +
+                    (mouvementForm.get('quantite')?.value || 0) >
+                  selectedMed()!.stockMinimum
+                "
+                [class.stock-err]="
+                  selectedMed()!.stockActuel +
+                    (mouvementForm.get('quantite')?.value || 0) <=
+                  0
+                "
+              >
+                {{
+                  selectedMed()!.stockActuel +
+                    (mouvementForm.get("quantite")?.value || 0)
+                }}
+                unités
+              </strong>
+            </div>
+          }
+        </div>
+
+        <!-- Motif -->
+        <div
+          class="form-field"
+          [class.f-err]="hasError('motif', mouvementForm)"
+        >
+          <label class="form-label required">
+            <i class="pi pi-list" aria-hidden="true"></i>
+            Motif
+          </label>
+          <p-select
+            formControlName="motif"
+            [options]="motifs"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Sélectionner le motif"
+            styleClass="w-full"
+          />
+          @if (fieldError("motif", mouvementForm)) {
+            <span class="f-err-msg" role="alert">
+              <i class="pi pi-info-circle" aria-hidden="true"></i>
+              {{ fieldError("motif", mouvementForm) }}
+            </span>
+          }
+        </div>
+
+        <!-- Référence -->
+        <div class="form-field">
+          <label class="form-label">
+            <i class="pi pi-barcode" aria-hidden="true"></i>
+            Référence (optionnel)
+          </label>
+          <input
+            pInputText
+            formControlName="reference"
+            placeholder="N° bon de réception, ordonnance..."
+            class="form-control"
+          />
+        </div>
+
+        <!-- Footer -->
+        <div class="f-footer">
+          <p-button
+            label="Annuler"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="showMouvementDialog.set(false)"
+            [disabled]="saving()"
+          />
+          <p-button
+            type="submit"
+            [label]="saving() ? 'Enregistrement...' : 'Valider le mouvement'"
+            [icon]="saving() ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+            [disabled]="saving()"
+          />
+        </div>
+      </form>
+    </div>
+  }
+</p-dialog>

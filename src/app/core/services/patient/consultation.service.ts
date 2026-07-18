@@ -12,6 +12,7 @@ import { environment } from '../../../../environments/environment.prod';
 import { Entite } from '../../models/enums/enums.model';
 import { CommonService } from '../common.services';
 import { Observable } from 'rxjs/internal/Observable';
+import { Configuration } from '../../models/configuration/configuration.model';
 
 @Injectable({ providedIn: 'root' })
 export class ConsultationService {
@@ -20,7 +21,7 @@ export class ConsultationService {
 
   private readonly API = `${environment.apiUrl}/consultations`;
 
-  findAll(page = 0, size = 20, search = '') {
+  findAll(page = 0, size = Configuration.pageSize, search = '') {
     let params = new HttpParams().set('page', page).set('size', size);
     if (search) params = params.set('q', search);
     const url = search ? `${this.API}/search` : this.API;

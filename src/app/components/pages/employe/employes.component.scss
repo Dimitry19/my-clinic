@@ -5,11 +5,11 @@
 @use "../../../../variables.scss" as *;
 
 .search-icon-all-emp {
-  position: absolute;
-  right: 18.5rem;
-  top: 21.3%;
+  position: relative;
+  left: 96%;
+  margin-top: 1rem;
   transform: translateY(-50%);
-  color: #5f5e5a;
+  color: $text-muted;
   pointer-events: none;
   z-index: 1;
 }

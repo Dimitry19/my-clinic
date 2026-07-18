@@ -25,7 +25,7 @@ export const errorInterceptor: HttpInterceptorFn = (
       });
 
       // optionnel : logging global
-      console.error('HTTP Error:', normalizedError);
+      console.log('HTTP Error:', normalizedError);
 
       return throwError(() => normalizedError);
     }),
