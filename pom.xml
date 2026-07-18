@@ -27,6 +27,7 @@
         <module>laboratoire</module>
         <module>ordonnance</module>
         <module>facturation</module>
+        <module>pharmacie</module>
         <module>services</module> <!-- toujours en dernier -->
     </modules>
 

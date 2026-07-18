@@ -26,7 +26,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FactureService {
 
-    private static final Sort SORT_BY_NUM_FACT = Sort.by("numeroFacture").ascending();
     private final FactureHelper helper;
     private final FactureDao dao;
     private final PaiementDao paiementDao;

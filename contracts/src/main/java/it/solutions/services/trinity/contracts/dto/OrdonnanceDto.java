@@ -69,38 +69,3 @@ public class OrdonnanceDto {
         private boolean expiree;  // calculé : dateEmission + validiteJours < now
     }
 }
-
-// ── DTO Médicament (stock) ────────────────────────────────
-class MedicamentDto {
-
-    @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
-    public static class Request {
-        @NotBlank private String nom;
-        private String denomination;
-        private String forme;
-        private String dosageUnitaire;
-        @Min(0) private Integer stockActuel = 0;
-        @Min(0) private Integer stockMinimum = 10;
-        private java.math.BigDecimal prixUnitaire;
-        private String fournisseur;
-        private java.time.LocalDate dateExpiration;
-        private boolean actif = true;
-    }
-
-    @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
-    public static class Response {
-        private java.util.UUID id;
-        private String nom;
-        private String denomination;
-        private String forme;
-        private String dosageUnitaire;
-        private Integer stockActuel;
-        private Integer stockMinimum;
-        private java.math.BigDecimal prixUnitaire;
-        private String fournisseur;
-        private java.time.LocalDate dateExpiration;
-        private boolean actif;
-        private boolean stockBas;
-        private boolean expire;
-    }
-}

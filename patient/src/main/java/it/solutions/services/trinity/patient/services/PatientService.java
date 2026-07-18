@@ -47,8 +47,7 @@ public class PatientService {
     public PatientDto.Response create(PatientDto.Request req)  {
 
         validator.validatePhone(req.getTelephone());
-        Patient patient = helper.builder(req);
-        return helper.toResponse(dao.save(patient));
+        return helper.toResponse(dao.save(helper.builder(req)));
     }
 
     @Transactional

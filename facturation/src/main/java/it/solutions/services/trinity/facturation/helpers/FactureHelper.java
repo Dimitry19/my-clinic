@@ -89,7 +89,6 @@ public class FactureHelper extends CoreHelper{
         Facture facture = Facture.builder()
                 .consultation(cons)
                 .patient(patientLight)
-
                 .numeroFacture(genererNumero())
                 .montantPaye(BigDecimal.ZERO)
                 .dateEmission(req.getDateEmission() != null
