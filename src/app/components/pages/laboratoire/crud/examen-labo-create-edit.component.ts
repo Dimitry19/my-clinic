@@ -282,7 +282,7 @@ export class ExamenLaboCreateEditComponent implements OnInit, OnDestroy {
   }
 
   // ── Soumission ───────────────────────────────────────────
-  soumettre() {
+  submit() {
     this.form.markAllAsTouched();
     if (this.form.invalid) {
       for (let i = 0; i < this.STEPS.length - 1; i++) {

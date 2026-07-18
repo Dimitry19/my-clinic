@@ -218,7 +218,7 @@ export class ExamensLaboComponent implements OnInit {
     this.form.reset();
   }
 
-  soumettre() {
+  submit() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

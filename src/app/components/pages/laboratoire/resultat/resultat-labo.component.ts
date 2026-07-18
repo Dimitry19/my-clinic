@@ -119,13 +119,13 @@ export class ResultatLaboComponent implements OnInit {
       next: (r) => {
         this.resultat.set(r);
         this.loading.set(false);
-         this.loaded.emit(r); 
+        this.loaded.emit(r);
       },
       error: () => {
         // Pas de résultat encore — état normal
         this.resultat.set(null);
         this.loading.set(false);
-         this.loaded.emit(null); 
+        this.loaded.emit(null);
       },
     });
   }
@@ -151,7 +151,7 @@ export class ResultatLaboComponent implements OnInit {
     }
   }
 
-  soumettre(): void {
+  submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

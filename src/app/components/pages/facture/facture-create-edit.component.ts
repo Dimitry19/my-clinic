@@ -351,7 +351,7 @@ export class FactureCreateEditComponent implements OnInit, OnDestroy {
   }
 
   // ── Soumission ────────────────────────────────────────────
-  soumettre(): void {
+  submit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) {
       for (let i = 0; i < this.STEPS.length - 1; i++) {
@@ -402,7 +402,7 @@ export class FactureCreateEditComponent implements OnInit, OnDestroy {
   }
 
   onPatientsLazyLoad(event: SelectLazyLoadEvent) {
-    this.loadPatients(event.first ?? 0);
+    !this.editMode() && this.loadPatients(event.first ?? 0);
   }
 
   private loadPatients(startIndex: number) {

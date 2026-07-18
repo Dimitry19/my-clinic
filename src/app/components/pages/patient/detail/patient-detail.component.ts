@@ -275,6 +275,24 @@ export class PatientDetailComponent implements OnInit {
     const factId = req.factureId;
     const statut = req.statut;
     this.selectedFactureId.set(factId);
+
+    const facture = this.selectedFacture()!;
+
+    if (
+      (facture.statut === StatutFacture.PARTIELLEMENT_PAYEE &&
+        (statut === StatutFacture.IMPAYEE ||
+          statut === StatutFacture.ANNULEE)) ||
+      (facture.resteAPayer === 0 &&
+        (statut === StatutFacture.PARTIELLEMENT_PAYEE ||
+          statut === StatutFacture.ANNULEE))
+    ) {
+      this.msgSvc.add({
+        severity: 'error',
+        summary: 'Action impossible',
+        detail: `Impossible de changer le statut de la facture ${facture.numeroFacture} vers ${FACTURE_STATUT_CONFIG[statut].label}.`,
+      });
+      return;
+    }
     this.factureSvc.changeStatut(factId, statut).subscribe({
       next: () => {
         this.factures.update((list) =>
@@ -288,6 +306,7 @@ export class PatientDetailComponent implements OnInit {
             detail: `Facture ${this.selectedFacture()?.numeroFacture} → ${FACTURE_STATUT_CONFIG[statut].label}`,
           });
         }
+        this.loadFactures(this.pageFactIndex());
       },
       error: (err: ServiceError) => {
         this.saving.set(false);
@@ -364,7 +383,7 @@ export class PatientDetailComponent implements OnInit {
     return this.commonService.getStatutSeverity(s, Entite.FACTURATION);
   }
 
-  soumettrePaiement(data: any) {
+  submitPaiement(data: any) {
     console.log('Paiement reçu:', data);
     if (!data) return;
 

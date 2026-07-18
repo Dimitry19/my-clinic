@@ -43,6 +43,7 @@ import {
 import { MedicamentService } from '../../../core/services/pharmacie/medicament.service';
 import { CommonService } from '../../../core/services/common.services';
 import { AppConfirmationService } from '../../../core/services/global/app.confirmation.service';
+import { Entite } from '../../../core/models/enums/enums.model';
 
 @Component({
   selector: 'clnt-pharmacie',
@@ -189,7 +190,7 @@ export class PharmacieComponent implements OnInit, OnDestroy {
   }
 
   // ── Formulaire CRUD ───────────────────────────────────
-  ouvrirCreation() {
+  openCreation() {
     this.editMode.set(false);
     this.selectedMed.set(null);
     this.formError.set(null);
@@ -216,7 +217,7 @@ export class PharmacieComponent implements OnInit, OnDestroy {
     this.showFormDialog.set(true);
   }
 
-  soumettre() {
+  submit() {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
     this.saving.set(true);
@@ -250,7 +251,7 @@ export class PharmacieComponent implements OnInit, OnDestroy {
     });
   }
 
-  confirmerDelete(m: Medicament) {
+  confirmDelete(m: Medicament) {
     this.confirm.action(
       'Désactiver le médicament',
       `Désactiver <strong>${m.nom}</strong> ?<br>Il ne sera plus visible dans les listes actives.`,
@@ -281,14 +282,14 @@ export class PharmacieComponent implements OnInit, OnDestroy {
   }
 
   // ── Mouvement de stock ────────────────────────────────
-  ouvrirMouvement(m: Medicament) {
+  openMovement(m: Medicament) {
     this.selectedMed.set(m);
     this.formError.set(null);
     this.mouvementForm.reset();
     this.showMouvementDialog.set(true);
   }
 
-  soumettreM() {
+  submitMovement() {
     this.mouvementForm.markAllAsTouched();
     if (this.mouvementForm.invalid || !this.selectedMed()) return;
     this.saving.set(true);
@@ -324,19 +325,13 @@ export class PharmacieComponent implements OnInit, OnDestroy {
   }
 
   // ── Helpers ───────────────────────────────────────────
-  getStatutSeverity(s: string) {
-    return (
-      { DISPONIBLE: 'success', ALERTE: 'warn', RUPTURE: 'danger' }[s] ??
-      'secondary'
-    );
+
+  getStatutSeverity(s: string): string {
+    return this.commonService.getStatutSeverity(s, Entite.MEDICAMENT);
   }
 
-  getStatutLabel(s: string) {
-    return (
-      { DISPONIBLE: 'Disponible', ALERTE: 'Alerte stock', RUPTURE: 'Rupture' }[
-        s
-      ] ?? s
-    );
+  getStatutLabel(s: string): string {
+    return this.commonService.getStatutLabel(s, Entite.MEDICAMENT);
   }
 
   getStockPct(m: Medicament): number {

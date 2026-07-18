@@ -67,3 +67,24 @@ export const MOTIFS_MOUVEMENT = [
   { label: 'Ajustement inventaire', value: 'AJUSTEMENT' },
   { label: 'Péremption', value: 'PEREMPTION' },
 ];
+
+export const MEDICAMENT_STATUT_CONFIG: Record<
+  StatutStock,
+  {
+    label: string;
+    severity: 'success' | 'info' | 'secondary' | 'danger' | 'primary' | 'warn';
+    icon: string;
+  }
+> = {
+  DISPONIBLE: {
+    label: 'Disponible',
+    severity: 'success',
+    icon: 'pi-check-circle',
+  },
+  ALERTE: {
+    label: 'En alerte',
+    severity: 'warn',
+    icon: 'pi-times-circle',
+  },
+  RUPTURE: { label: 'En rupture', severity: 'danger', icon: 'pi-ban' },
+};

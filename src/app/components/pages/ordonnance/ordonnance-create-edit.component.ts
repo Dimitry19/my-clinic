@@ -437,7 +437,7 @@ export class OrdonnanceCreateEditComponent implements OnInit, OnDestroy {
   }
 
   // ── Soumission ────────────────────────────────────────────
-  soumettre(): void {
+  submit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) {
       for (let i = 0; i < this.STEPS.length - 1; i++) {

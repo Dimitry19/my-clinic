@@ -471,7 +471,7 @@ export class ConsultationCreateEditComponent implements OnInit, OnDestroy {
   }
 
   // ── Soumission ────────────────────────────────────────
-  soumettre() {
+  submit() {
     this.form.markAllAsTouched();
     if (this.form.invalid) {
       // Trouver la première étape invalide

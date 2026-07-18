@@ -236,6 +236,23 @@ export class FacturesComponent implements OnInit, OnDestroy {
   // ── Changement de statut ──────────────────────────────────
   changeStatut(facture: Facture, statut: StatutFacture) {
     if (facture.statut === statut) return;
+
+    if (
+      (facture.statut === StatutFacture.PARTIELLEMENT_PAYEE &&
+        (statut === StatutFacture.IMPAYEE ||
+          statut === StatutFacture.ANNULEE)) ||
+      (facture.resteAPayer === 0 &&
+        (statut === StatutFacture.PARTIELLEMENT_PAYEE ||
+          statut === StatutFacture.ANNULEE))
+    ) {
+      this.msg.add({
+        severity: 'error',
+        summary: 'Action impossible',
+        detail: `Impossible de changer le statut de la facture ${facture.numeroFacture} vers ${FACTURE_STATUT_CONFIG[statut].label}.`,
+      });
+      return;
+    }
+
     this.saving.set(true);
     this.svc.changeStatut(facture.id, statut).subscribe({
       next: (updated) => {
@@ -248,6 +265,7 @@ export class FacturesComponent implements OnInit, OnDestroy {
           summary: 'Statut mis à jour',
           detail: `Facture ${facture.numeroFacture} → ${FACTURE_STATUT_CONFIG[statut].label}`,
         });
+        this.loadFactures();
       },
       error: (err: ServiceError) => {
         this.saving.set(false);

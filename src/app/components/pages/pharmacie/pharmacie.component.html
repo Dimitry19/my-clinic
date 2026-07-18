@@ -34,7 +34,7 @@
     <p-button
       label="Ajouter un médicament"
       icon="pi pi-plus"
-      (onClick)="ouvrirCreation()"
+      (onClick)="openCreation()"
     />
   </div>
 
@@ -317,7 +317,7 @@
                   class="action-btn action-stock"
                   pTooltip="Mouvement de stock"
                   tooltipPosition="top"
-                  (click)="ouvrirMouvement(m)"
+                  (click)="openMovement(m)"
                   aria-label="Mouvement de stock"
                 >
                   <i class="pi pi-arrows-v" aria-hidden="true"></i>
@@ -335,7 +335,7 @@
                   class="action-btn action-delete"
                   pTooltip="Désactiver"
                   tooltipPosition="top"
-                  (click)="confirmerDelete(m)"
+                  (click)="confirmDelete(m)"
                   aria-label="Désactiver le médicament"
                 >
                   <i class="pi pi-ban" aria-hidden="true"></i>
@@ -367,7 +367,7 @@
                     label="Ajouter un médicament"
                     icon="pi pi-plus"
                     size="small"
-                    (onClick)="ouvrirCreation()"
+                    (onClick)="openCreation()"
                   />
                 }
               </div>
@@ -390,12 +390,7 @@
   [closeOnEscape]="true"
 >
   @if (showFormDialog()) {
-    <form
-      [formGroup]="form"
-      (ngSubmit)="soumettre()"
-      novalidate
-      class="med-form"
-    >
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="med-form">
       @if (formError()) {
         <p-message
           severity="error"
@@ -655,7 +650,7 @@
 
       <form
         [formGroup]="mouvementForm"
-        (ngSubmit)="soumettreM()"
+        (ngSubmit)="submitMovement()"
         novalidate
         class="med-form"
       >

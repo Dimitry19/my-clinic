@@ -33,6 +33,10 @@ import {
   ModePaiement,
 } from '../models/facture/facture.model';
 import { environment } from '../../../environments/environment';
+import {
+  MEDICAMENT_STATUT_CONFIG,
+  StatutStock,
+} from '../models/pharmacie/medicament.model';
 
 @Injectable({
   providedIn: 'root',
@@ -135,6 +139,10 @@ export class CommonService {
     if (entite === Entite.CONGE) {
       return CONGE_STATUT_CONFIG[s as StatutConge]?.label ?? '-';
     }
+
+    if (entite === Entite.MEDICAMENT) {
+      return MEDICAMENT_STATUT_CONFIG[s as StatutStock]?.label ?? '-';
+    }
     return '-';
   }
 
@@ -160,6 +168,11 @@ export class CommonService {
     }
     if (entite === Entite.CONGE) {
       return CONGE_STATUT_CONFIG[s as StatutConge]?.severity ?? 'secondary';
+    }
+    if (entite === Entite.MEDICAMENT) {
+      return (
+        MEDICAMENT_STATUT_CONFIG[s as StatutStock]?.severity ?? 'secondary'
+      );
     }
     return 'secondary';
   }

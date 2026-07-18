@@ -129,9 +129,7 @@
           <div class="parametre-row" [formGroupName]="$index">
             <!-- Libellé -->
             <div class="form-field param-libelle-field">
-              <label class="form-label required">
-                Paramètre
-              </label>
+              <label class="form-label required"> Paramètre </label>
               <input
                 pInputText
                 formControlName="libelle"
@@ -142,9 +140,7 @@
 
             <!-- Valeur -->
             <div class="form-field param-val-field">
-              <label class="form-label required">
-                Valeur
-              </label>
+              <label class="form-label required"> Valeur </label>
               <input
                 pInputText
                 formControlName="valeur"
@@ -235,7 +231,7 @@
         <p-button
           [label]="saving() ? 'Enregistrement...' : 'Enregistrer les résultats'"
           [icon]="saving() ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
-          (onClick)="soumettre()"
+          (onClick)="submit()"
           [disabled]="saving()"
         />
       </div>

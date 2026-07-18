@@ -95,7 +95,6 @@
               [routerLink]="['/examens-labo', e.id]"
             />
 
-         
             <p-button
               icon="pi pi-pencil"
               [text]="true"
@@ -334,7 +333,7 @@
     <p-button
       [label]="saving() ? 'Enregistrement...' : 'Enregistrer'"
       [icon]="saving() ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
-      (onClick)="soumettre()"
+      (onClick)="submit()"
       [disabled]="saving()"
     />
   </ng-template>
