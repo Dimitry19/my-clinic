@@ -29,11 +29,13 @@ public class MedicamentController {
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','INFIRMIER','PHARMACIEN')")
     public ResponseEntity<ApiResponse<Page<MedicamentDto.Response>>> search(
-            @RequestParam(required = false)      String  search,
+            @RequestParam(name = "q", defaultValue = "") String q,
             @RequestParam(required = false)      Boolean actif,
             @RequestParam(defaultValue = GenericUtils.PAGE) int page,
             @RequestParam(defaultValue = GenericUtils.SIZE) int size) {
-        return ResponseEntity.ok(ApiResponse.ok(service.search(page, size,search,actif)));
+
+
+        return ResponseEntity.ok(ApiResponse.ok(service.search(page, size,q,actif)));
     }
 
     @GetMapping("/{id}")

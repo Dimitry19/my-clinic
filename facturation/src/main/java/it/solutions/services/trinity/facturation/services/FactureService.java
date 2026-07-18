@@ -95,6 +95,25 @@ public class FactureService {
     @Transactional
     public FactureDto.Response changeStatut(UUID id, FactureDto.StatutRequest req) {
         Facture facture = helper.findOrThrow(id);
+        switch (req.getStatut()) {
+
+            case PAYEE -> {
+                facture.setMontantPaye(facture.getMontantTotal());
+            }
+
+            case PARTIELLEMENT_PAYEE -> {
+                if (facture.getMontantPaye().compareTo(BigDecimal.ZERO) <= 0
+                        || facture.getMontantPaye().compareTo(facture.getMontantTotal()) >= 0) {
+                    throw new IllegalArgumentException(
+                            "Le montant payé doit être supérieur à 0 et inférieur au montant total.");
+                }
+            }
+
+            default -> {
+                // Aucun traitement particulier
+            }
+        }
+
         facture.setStatut(req.getStatut());
         return helper.toResponse(dao.save(facture));
     }
