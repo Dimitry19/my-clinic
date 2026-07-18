@@ -7,6 +7,7 @@ export interface ServiceError {
     | 'NETWORK'
     | 'SERVER'
     | 'FORBIDDEN'
+    | 'STOCK'
     | 'UNKNOWN';
   message: string;
   field?: string;

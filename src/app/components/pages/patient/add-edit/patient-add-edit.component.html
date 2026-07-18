@@ -174,10 +174,10 @@
             />
             @if (nomInvalid) {
               <div class="error-msg">
-                @if (form.get("nom")?.errors?.["required"]) {
+                @if (getControl("nom")?.hasError("required")) {
                   <span>Le nom est obligatoire.</span>
                 }
-                @if (form.get("nom")?.errors?.["minlength"]) {
+                @if (getControl("nom")?.hasError("minlength")) {
                   <span>Minimum 2 caractères.</span>
                 }
               </div>
@@ -196,7 +196,7 @@
 
             @if (prenomInvalid) {
               <div class="error-msg">
-                @if (form.get("prenom")?.errors?.["required"]) {
+                @if (getControl("prenom")?.hasError("required")) {
                   <span>Le prénom est obligatoire.</span>
                 }
               </div>
@@ -215,11 +215,11 @@
             />
             @if (dateInvalid) {
               <div class="error-msg">
-                @if (form.get("dateNaissance")?.errors?.["required"]) {
+                @if (getControl("dateNaissance")?.hasError("required")) {
                   <span>La date est obligatoire.</span>
                 }
 
-                @if (form.get("dateNaissance")?.errors?.["dateInvalide"]) {
+                @if (getControl("dateNaissance")?.errors?.["dateInvalide"]) {
                   <span>Date invalide.</span>
                 }
               </div>
@@ -287,14 +287,23 @@
         <h3 class="step-title">Informations médicales</h3>
 
         <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Groupe sanguin</label>
+          <div class="form-group" [class.has-error]="groupeSanguinInvalid">
+            <label class="form-label required">Groupe sanguin</label>
             <select class="form-control" formControlName="groupeSanguin">
-              <option value="">— Sélectionner —</option>
-              <option *ngFor="let g of groupesSanguins" [value]="g">
-                {{ g }}
-              </option>
+              <option [ngValue]="null">— Sélectionner —</option>
+              @for (g of groupesSanguins; track g) {
+                <option [value]="g">
+                  {{ g }}
+                </option>
+              }
             </select>
+            @if (groupeSanguinInvalid) {
+              <div class="error-msg">
+                @if (getControl("groupeSanguin")?.hasError("required")) {
+                  <span>Le groupe sanguin est obligatoire.</span>
+                }
+              </div>
+            }
           </div>
           <div class="form-group">
             <!-- Champ vide pour aligner la grille -->
@@ -343,7 +352,11 @@
             <label class="form-label">Mutuelle / Assurance</label>
             <select class="form-control" formControlName="mutuelle">
               <option value="">— Sélectionner —</option>
-              <option *ngFor="let m of mutuelles" [value]="m">{{ m }}</option>
+              @for (m of mutuelles; track m) {
+                <option [value]="m">
+                  {{ m }}
+                </option>
+              }
             </select>
           </div>
           <div class="form-group">

@@ -94,7 +94,7 @@ export class PatientAddEditComponent implements OnInit, OnDestroy {
       email: ['', [Validators.email]],
 
       // Etape 2 — Informations médicales
-      groupeSanguin: [''],
+      groupeSanguin: [null, Validators.required],
       allergies: [''],
       antecedents: [''],
 
@@ -178,7 +178,7 @@ export class PatientAddEditComponent implements OnInit, OnDestroy {
       email: [p.email || '', [Validators.email]],
 
       // Etape 2 — Informations médicales
-      groupeSanguin: [p.groupeSanguin || ''],
+      groupeSanguin: [p.groupeSanguin || null, Validators.required],
       allergies: [p.allergies || ''],
       antecedents: [p.antecedents || ''],
 
@@ -231,27 +231,37 @@ export class PatientAddEditComponent implements OnInit, OnDestroy {
 
   // Getters pour les erreurs
   get nomInvalid() {
-    return this.form.get('nom')?.invalid && this.form.get('nom')?.touched;
+    const control = this.getControl('nom');
+    return !!control && control.invalid && control.touched;
   }
   get prenomInvalid() {
-    return this.form.get('prenom')?.invalid && this.form.get('prenom')?.touched;
+    const control = this.getControl('prenom');
+    return !!control && control.invalid && control.touched;
   }
   get dateInvalid() {
-    return (
-      this.form.get('dateNaissance')?.invalid &&
-      this.form.get('dateNaissance')?.touched
-    );
+    const control = this.getControl('dateNaissance');
+    return !!control && control.invalid && control.touched;
   }
   get sexeInvalid() {
-    return this.form.get('sexe')?.invalid && this.form.get('sexe')?.touched;
+    const control = this.getControl('sexe');
+    return !!control && control.invalid && control.touched;
   }
   get telInvalid() {
-    return (
-      this.form.get('telephone')?.invalid && this.form.get('telephone')?.touched
-    );
+    const control = this.getControl('telephone');
+    return !!control && control.invalid && control.touched;
   }
   get emailInvalid() {
-    return this.form.get('email')?.invalid && this.form.get('email')?.touched;
+    const control = this.getControl('email');
+    return !!control && control.invalid && control.touched;
+  }
+
+  get groupeSanguinInvalid() {
+    const control = this.getControl('groupeSanguin');
+    return !!control && control.invalid && control.touched;
+  }
+
+  getControl(controlName: string): AbstractControl | null {
+    return this.form.get(controlName);
   }
 
   submit(): void {

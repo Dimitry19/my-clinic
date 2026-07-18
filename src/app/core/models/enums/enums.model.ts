@@ -54,4 +54,5 @@ export enum Entite {
   ORDONNANCE,
   FACTURATION,
   CONGE,
+  MEDICAMENT,
 }

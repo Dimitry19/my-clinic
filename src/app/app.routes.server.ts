@@ -5,6 +5,7 @@ import { consultationServerRoutes } from './core/routes/patient/consultation.rou
 import { examenLaboServerRoutes } from './core/routes/laboratoire/laboratoire.routes';
 import { ordonnanceServerRoutes } from './core/routes/ordonnance/ordonnance.routes';
 import { factureServerRoutes } from './core/routes/facture/facture.routes';
+import { pharmacieServerRoutes } from './core/routes/pharmacie/pharmacie.routes';
 
 export const serverRoutes: ServerRoute[] = [
   ...patientServerRoutes,
@@ -13,6 +14,7 @@ export const serverRoutes: ServerRoute[] = [
   ...examenLaboServerRoutes,
   ...ordonnanceServerRoutes,
   ...factureServerRoutes,
+  ...pharmacieServerRoutes,
   {
     // Routes avec paramètres dynamiques → client uniquement
     path: 'dashboard',

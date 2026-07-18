@@ -1,4 +1,4 @@
-﻿import { Component, inject, output, signal } from '@angular/core';
+﻿import { Component, computed, inject, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { BadgeModule } from 'primeng/badge';
@@ -50,7 +50,7 @@ import { Router } from '@angular/router';
           >
           <i class="pi pi-chevron-down"></i>
         </div>
-        <p-menu #userMenu [popup]="true" [model]="userMenuItems" />
+        <p-menu #userMenu [popup]="true" [model]="userMenuItems()" />
       </div>
     </header>
   `,
@@ -156,19 +156,43 @@ export class TopbarComponent {
     document.documentElement.classList.toggle('dark-mode', this.darkMode);
   }
 
-  userMenuItems: MenuItem[] = [
-    { label: 'Mon profil', icon: 'pi pi-user', command: () => this.profil() },
-    // { label: 'Paramètres', icon: 'pi pi-cog', command: () => {} },
-    { separator: true },
-    {
-      label: 'Déconnexion',
-      icon: 'pi pi-sign-out',
-      command: () => this.logout(),
-    },
-  ];
+
+readonly userMenuItems = computed<MenuItem[]>(() => {
+  const user = this.auth.currentUser();
+
+  const items: MenuItem[] = [];
+
+  if (user?.employeId) {
+    items.push({
+      label: 'Mon profil',
+      icon: 'pi pi-user',
+      command: () => this.profil()
+    });
+
+    items.push({
+      separator: true
+    });
+  }
+
+  items.push({
+    label: 'Déconnexion',
+    icon: 'pi pi-sign-out',
+    command: () => this.logout()
+  });
+
+  return items;
+});
 
   profil() {
-    this.router.navigate(['/employes', this.auth.currentUser()?.employeId]);
+    const user = this.auth.currentUser();
+    const employeId = user?.employeId;
+
+    if (!employeId) {
+      console.log("Aucun employé associé à l'utilisateur.");
+      return;
+    }
+
+    this.router.navigate(['/employes', employeId]);
   }
 
   logout() {

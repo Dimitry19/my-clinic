@@ -40,6 +40,10 @@ export class ErrorService {
       label404 = 'Ordonnance introuvable.';
     }
 
+    if (entite === Entite.MEDICAMENT) {
+      label404 = 'Médicament introuvable.';
+    }
+
     if (err.status === 0) {
       error = {
         code: 'NETWORK',
@@ -61,6 +65,14 @@ export class ErrorService {
         code: 'CONFLICT',
         message: err.error ?? label409,
         field: field,
+      };
+    } else if (
+      err.status === 400 &&
+      err.error?.message?.includes('insuffisant')
+    ) {
+      error = {
+        code: 'STOCK',
+        message: err.error.message,
       };
     } else if (err.status >= 500) {
       error = {

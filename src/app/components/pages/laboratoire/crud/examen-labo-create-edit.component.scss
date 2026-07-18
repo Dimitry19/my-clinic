@@ -931,31 +931,6 @@ $radius-lg: 12px;
   }
 }
 
-.btn-next {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 20px;
-  background: $primary;
-  color: #fff;
-  border: none;
-  border-radius: $radius;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s;
-  .pi {
-    font-size: 15px;
-  }
-  &:hover:not(:disabled) {
-    background: $primary-dk;
-  }
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
 .btn-submit {
   display: flex;
   align-items: center;
