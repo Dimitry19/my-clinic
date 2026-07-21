@@ -54,6 +54,7 @@ export class ExamenLaboDetailComponent implements OnInit {
   private confirmSvc = inject(AppConfirmationService);
   private auth = inject(AuthService);
   private resultatSvc = inject(ResultatLaboService);
+  private commonService = inject(CommonService);
 
   // ── État ─────────────────────────────────────────────────
   examen = signal<ExamenLabo | null>(null);
@@ -61,6 +62,7 @@ export class ExamenLaboDetailComponent implements OnInit {
   loading = signal(true);
   loadError = signal<string | null>(null);
   saving = signal(false);
+  canEdit = signal(false);
   currentUserId = signal<string>('');
 
   onResultatSaved(r: ResultatLabo): void {
@@ -69,8 +71,8 @@ export class ExamenLaboDetailComponent implements OnInit {
   }
 
   onResultatLoaded(r: ResultatLabo | null): void {
-  this.resultat.set(r);
-}
+    this.resultat.set(r);
+  }
 
   // Options de statut pour le changement rapide
   statutOptions = Object.entries(EXAMEN_STATUT_CONFIG).map(([value, cfg]) => ({
@@ -87,8 +89,8 @@ export class ExamenLaboDetailComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.loadExamen(id);
     this.currentUserId.set(this.auth.currentUser()?.id ?? '');
+    this.canEdit.set(this.commonService.autorizedLaborantins());
   }
-
 
   private loadExamen(id: string): void {
     this.loading.set(true);
@@ -181,8 +183,6 @@ export class ExamenLaboDetailComponent implements OnInit {
     return this.commonSvc.getStatutColorClass(s);
   }
 
- 
-
   formatDate(iso: string | null): string {
     if (!iso) return '—';
     return this.commonSvc.formatDate(iso);
@@ -208,11 +208,11 @@ export class ExamenLaboDetailComponent implements OnInit {
   }
 
   genererPdf(): void {
-  const e = this.examen();
-  const r = this.resultat();
-  console.log('examen:', e);
-  console.log('resultat:', r); // null ici = problème de chargement
-  if (!e) return;
-  this.svc.genererRapportPdf({ ...e, resultat: r });
-}
+    const e = this.examen();
+    const r = this.resultat();
+    console.log('examen:', e);
+    console.log('resultat:', r); // null ici = problème de chargement
+    if (!e) return;
+    this.svc.genererRapportPdf({ ...e, resultat: r });
+  }
 }

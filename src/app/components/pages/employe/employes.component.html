@@ -230,16 +230,18 @@
                   tooltipPosition="top"
                   (onClick)="toggleStatut(emp)"
                 />
-                <p-button
-                  icon="pi pi-trash"
-                  [text]="true"
-                  size="small"
-                  severity="danger"
-                  pTooltip="Supprimer l'employé"
-                  aria-label="Supprimer l'employé"
-                  tooltipPosition="top"
-                  (onClick)="confirmDelete(emp)"
-                />
+                @if (canDelete()) {
+                  <p-button
+                    icon="pi pi-trash"
+                    [text]="true"
+                    size="small"
+                    severity="danger"
+                    pTooltip="Supprimer l'employé"
+                    aria-label="Supprimer l'employé"
+                    tooltipPosition="top"
+                    (onClick)="confirmDelete(emp)"
+                  />
+                }
               </div>
             </td>
           </tr>

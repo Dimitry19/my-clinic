@@ -110,7 +110,7 @@ export interface FicheDePaie {
 
 export interface Conge {
   id: string;
-  type: string;
+  typeConge: string;
   dateDebut: string;
   dateFin: string;
   statut: StatutConge;

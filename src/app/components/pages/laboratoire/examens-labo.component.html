@@ -94,25 +94,29 @@
               tooltipPosition="top"
               [routerLink]="['/examens-labo', e.id]"
             />
+            @if (canEdit()) {
+              <p-button
+                icon="pi pi-pencil"
+                [text]="true"
+                size="small"
+                severity="secondary"
+                pTooltip="Modifier"
+                tooltipPosition="top"
+                [routerLink]="['/examens-labo', e.id, 'edit']"
+              />
+            }
 
-            <p-button
-              icon="pi pi-pencil"
-              [text]="true"
-              size="small"
-              severity="secondary"
-              pTooltip="Modifier"
-              tooltipPosition="top"
-              [routerLink]="['/examens-labo', e.id, 'edit']"
-            />
-            <p-button
-              icon="pi pi-trash"
-              [text]="true"
-              size="small"
-              severity="danger"
-              pTooltip="Supprimer"
-              tooltipPosition="top"
-              (onClick)="confirmDelete(e)"
-            />
+            @if (canDelete()) {
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                size="small"
+                severity="danger"
+                pTooltip="Supprimer"
+                tooltipPosition="top"
+                (onClick)="confirmDelete(e)"
+              />
+            }
           </div>
         </td>
       </tr>

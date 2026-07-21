@@ -38,8 +38,14 @@ export class FactureService {
       );
   }
 
-  findByPatient(patientId: string, page = 0, size = 20) {
-    const params = new HttpParams().set('page', page).set('size', size);
+  findByPatient(
+    patientId: string,
+    page = 0,
+    size = 20,
+    statut?: StatutFacture,
+  ) {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (statut) params = params.set('statut', statut);
     return this.http
       .get<
         ApiResponse<Page<Facture>>

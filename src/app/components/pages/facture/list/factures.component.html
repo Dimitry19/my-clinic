@@ -71,7 +71,7 @@
 
     <!-- Effacer filtres -->
     @if (hasFiltre()) {
-      <button class="btn-clear-filtres" (click)="effacerFiltres()">
+      <button class="btn-clear-filtres" (click)="clearFilters()">
         <i class="pi pi-times" aria-hidden="true"></i>
         Effacer
       </button>
@@ -232,7 +232,7 @@
           <i class="pi pi-receipt"></i>
           <p>Aucune facture trouvée</p>
           @if (hasFiltre()) {
-            <button class="btn-back-step" (click)="effacerFiltres()">
+            <button class="btn-back-step" (click)="clearFilters()">
               <i class="pi pi-times" aria-hidden="true"></i>
               Effacer les filtres
             </button>

@@ -193,7 +193,7 @@ export class FacturesComponent implements OnInit, OnDestroy {
     this.loadFactures();
   }
 
-  effacerFiltres() {
+  clearFilters() {
     this.filtreNumero.set('');
     this.filtrePatient.set('');
     this.filtreDate.set(null);

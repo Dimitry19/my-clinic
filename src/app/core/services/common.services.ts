@@ -55,7 +55,6 @@ export class CommonService {
   constructor(
     public router: Router,
     public httpClient: HttpClient,
-
     public apiService: ApiResponseService,
   ) {}
 
@@ -298,5 +297,37 @@ export class CommonService {
       return false;
     }
     return requiredRoles.some((role) => user.role.includes(role));
+  }
+
+  isPositiveInteger(val: any) {
+    let str = String(val);
+
+    str = str.trim();
+
+    if (!str) {
+      return false;
+    }
+
+    str = str.replace(/^0+/, '') || '0';
+    var n = Math.floor(Number(str));
+
+    return n !== Infinity && String(n) === str && n >= 0;
+  }
+
+  autorizedAdmin() {
+    return this.hasRole(environment.adminRoles);
+  }
+
+  autorizedRHs() {
+    return this.hasRole(environment.ressourcesHumainesRoles);
+  }
+  autorizedMedecins() {
+    return this.hasRole(environment.medecinsRoles);
+  }
+  autorizedLaborantins() {
+    return (
+      this.hasRole(environment.laborantinsRoles) ||
+      this.hasRole(environment.adminRoles)
+    );
   }
 }

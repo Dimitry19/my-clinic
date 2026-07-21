@@ -69,6 +69,7 @@ export class EmployesComponent implements OnInit {
   searchQuery = '';
   filterDept = signal<string>('');
   pageIndex = signal(0);
+  canDelete = signal(false);
   readonly pageSize = Configuration.pageSize;
 
   // Formulaire dialog
@@ -89,6 +90,7 @@ export class EmployesComponent implements OnInit {
   devise = this.commonService.deviseMonnetaire();
   ngOnInit() {
     //this.load();
+    this.canDelete.set(this.commonService.autorizedAdmin());
     this.search$
       .pipe(
         debounceTime(350),

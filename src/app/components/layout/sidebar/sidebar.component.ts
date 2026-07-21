@@ -165,4 +165,8 @@ export class SidebarComponent {
   autorizedAdmin() {
     return this.commonService.hasRole(environment.adminRoles);
   }
+
+  autorizedRHs() {
+    return this.commonService.hasRole(environment.ressourcesHumainesRoles);
+  }
 }

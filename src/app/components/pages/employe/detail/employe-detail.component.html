@@ -36,11 +36,14 @@
   <div class="clnt-detail">
     <!-- ── Breadcrumb ── -->
     <nav class="breadcrumb" aria-label="Navigation">
-      <a routerLink="/employes" class="bc-link">
-        <i class="pi pi-arrow-left" aria-hidden="true"></i>
-        Ressources humaines
-      </a>
-      <span class="bc-sep" aria-hidden="true">/</span>
+      @if (canEdit()) {
+        <a routerLink="/employes" class="bc-link">
+          <i class="pi pi-arrow-left" aria-hidden="true"></i>
+          Ressources humaines
+        </a>
+        <span class="bc-sep" aria-hidden="true">/</span>
+      }
+
       <span class="bc-current"
         >{{ employe()!.prenom }} {{ employe()!.nom }}</span
       >
@@ -102,22 +105,25 @@
           <i class="pi pi-pencil" aria-hidden="true"></i>
           Modifier
         </button>
-        <button
-          class="btn-hero-secondary"
-          [class.btn-toggle-on]="employe()!.statut !== 'ACTIF'"
-          (click)="toggleStatut()"
-          [attr.aria-label]="
-            employe()!.statut === 'ACTIF' ? 'Désactiver' : 'Réactiver'
-          "
-        >
-          <i
-            class="pi"
-            [class.pi-ban]="employe()!.statut === 'ACTIF'"
-            [class.pi-check-circle]="employe()!.statut !== 'ACTIF'"
-            aria-hidden="true"
-          ></i>
-          {{ employe()!.statut === "ACTIF" ? "Désactiver" : "Réactiver" }}
-        </button>
+        @if (canEdit()) {
+          <button
+            class="btn-hero-secondary"
+            [class.btn-toggle-on]="employe()!.statut !== 'ACTIF'"
+            (click)="toggleStatut()"
+            [attr.aria-label]="
+              employe()!.statut === 'ACTIF' ? 'Désactiver' : 'Réactiver'
+            "
+          >
+            <i
+              class="pi"
+              [class.pi-ban]="employe()!.statut === 'ACTIF'"
+              [class.pi-check-circle]="employe()!.statut !== 'ACTIF'"
+              aria-hidden="true"
+            ></i>
+            {{ employe()!.statut === "ACTIF" ? "Désactiver" : "Réactiver" }}
+          </button>
+        }
+
         <button
           class="btn-icon"
           pTooltip="Imprimer"
@@ -475,7 +481,7 @@
               </ng-template>
               <ng-template pTemplate="body" let-c>
                 <tr>
-                  <td>{{ c.type }}</td>
+                  <td>{{ c.typeConge }}</td>
                   <td>{{ c.dateDebut | date: "dd/MM/yyyy" }}</td>
                   <td>{{ c.dateFin | date: "dd/MM/yyyy" }}</td>
                   <td>{{ c.dureeJours }} jour(s)</td>
@@ -553,6 +559,7 @@
     <clnt-employe-form
       [employe]="employe()"
       [editMode]="true"
+      [canEdit]="canEdit()"
       (saved)="onFormSaved($event)"
       (errorOccured)="onFormError($event)"
       (cancelled)="showEditDialog.set(false)"

@@ -1,6 +1,6 @@
 ﻿import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink, Router } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TabsModule } from 'primeng/tabs';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -21,10 +21,7 @@ import { PatientService } from '../../../../core/services/patient/patient.servic
 import { TooltipModule } from 'primeng/tooltip';
 import { CommonService } from '../../../../core/services/common.services';
 import { Patient } from '../../../../core/models/patient/patient.model';
-import {
-  Entite,
-  StatutFacture,
-} from '../../../../core/models/enums/enums.model';
+import { Entite } from '../../../../core/models/enums/enums.model';
 import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { Page, ServiceError } from '../../../../core/models/all/all.model';
 import { ConsultationService } from '../../../../core/services/patient/consultation.service';
@@ -39,14 +36,17 @@ import { ExamenLabo } from '../../../../core/models/laboratoire/laboratoire.mode
 import { ExamenLaboService } from '../../../../core/services/laboratoire/laboratoire.service';
 import { OrdonnanceService } from '../../../../core/services/ordonnance/ordonnance.service';
 import { Ordonnance } from '../../../../core/models/ordonnance/ordonnance.model';
-import {
-  Facture,
-  FACTURE_STATUT_CONFIG,
-  StatutFactureRequest,
-} from '../../../../core/models/facture/facture.model';
+import { Facture } from '../../../../core/models/facture/facture.model';
 import { FactureService } from '../../../../core/services/facture/facture.service';
-import { PaiementAddComponent } from '../../facture/paiement/paiement-add.component';
-import { FactureStatutComponent } from '../../facture/statut/facture-statut.component';
+import { FormsModule } from '@angular/forms';
+import { InputTextModule } from 'primeng/inputtext';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { DatePickerModule } from 'primeng/datepicker';
+import { SelectModule } from 'primeng/select';
+import { PatientFactureComponent } from './facture/patient-facture.component';
+import { PatientDetailCardComponent } from './card/patient-detail-card.component';
+import { SummaryCardComponent } from './card/summary-card.component';
 
 @Component({
   selector: 'clnt-patient-detail',
@@ -61,14 +61,21 @@ import { FactureStatutComponent } from '../../facture/statut/facture-statut.comp
     SkeletonModule,
     TableModule,
     TimelineModule,
+    FormsModule,
+    InputTextModule,
     AvatarModule,
     DividerModule,
     ToastModule,
     TooltipModule,
+    SelectModule,
+    DatePickerModule,
+    IconFieldModule,
+    InputIconModule,
     DialogModule,
     ConfirmDialogModule,
-    PaiementAddComponent,
-    FactureStatutComponent,
+    PatientDetailCardComponent,
+    SummaryCardComponent,
+    PatientFactureComponent,
   ],
   providers: [MessageService, AppConfirmationService],
   templateUrl: './patient-detail.component.html',
@@ -76,7 +83,6 @@ import { FactureStatutComponent } from '../../facture/statut/facture-statut.comp
 })
 export class PatientDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
   private patientSvc = inject(PatientService);
   private consultationSvc = inject(ConsultationService);
   private examenLaboSvc = inject(ExamenLaboService);
@@ -92,6 +98,10 @@ export class PatientDetailComponent implements OnInit {
 
   activeTab = signal(0);
   readonly pageSize = Configuration.pageSize;
+
+  // Factures
+  facturesCount = signal(0);
+  soldeDu = signal(0);
 
   // --Examens
 
@@ -126,33 +136,6 @@ export class PatientDetailComponent implements OnInit {
   private destroyOrd$ = new Subject<void>();
   loadingOrdonnances = signal(true);
   ordonnances = signal<Ordonnance[]>([]);
-
-  // Factures
-  private destroyFact$ = new Subject<void>();
-  loadingFactures = signal(true);
-  pageFact = signal<Page<Facture> | null>(null);
-  pageFactIndex = signal(0);
-  factures = signal<Facture[]>([]);
-
-  addPayment = signal(false);
-  selectedFactureId = signal<string | null>(null);
-
-  totalFactures = computed(() => this.pageFact()?.page.totalElements ?? 0);
-  selectedFacture = computed(() =>
-    this.factures().find((f) => f.id === this.selectedFactureId()),
-  );
-  // ── Dialog Facture ────────────────────────────────────────
-  showDetailFacture = signal(false);
-
-  // ── Dialog détail Facture
-  showDetailFact = signal(false);
-  detailFacture = signal<Facture | null>(null);
-  statutFactOptions = Object.entries(FACTURE_STATUT_CONFIG).map(([v, c]) => ({
-    label: c.label,
-    value: v,
-  }));
-
-  statutFactConfig = FACTURE_STATUT_CONFIG;
 
   selectedRdv = signal<Consultation | null>(null);
   saving = signal(false);
@@ -199,8 +182,6 @@ export class PatientDetailComponent implements OnInit {
     this.destroyExams$.complete();
     this.destroyOrd$.next();
     this.destroyOrd$.complete();
-    this.destroyFact$.next();
-    this.destroyFact$.complete();
   }
 
   private buildTimeline() {
@@ -237,12 +218,6 @@ export class PatientDetailComponent implements OnInit {
     return p ? this.commonService.getInitiales(p.prenom, p.nom) : '??';
   }
 
-  get soldeDu(): number {
-    return this.factures()
-      .filter((f) => f.statut !== StatutFacture.PAYEE)
-      .reduce((acc, f) => acc + (f.montantTotal - f.montantPaye), 0);
-  }
-
   getSexeLabel(s: string) {
     return this.commonService.getSexeLabel(s);
   }
@@ -250,7 +225,9 @@ export class PatientDetailComponent implements OnInit {
   getFactureSeverity(s: string) {
     return this.commonService.getStatutSeverity(s, Entite.FACTURATION);
   }
-
+  getStatutIcon(s: string): string {
+    return this.commonService.getStatutIcon(s, Entite.FACTURATION);
+  }
   getExamenSeverity(s: string) {
     return this.commonService.getStatutSeverity(s, Entite.LABORATOIRE);
   }
@@ -271,143 +248,6 @@ export class PatientDetailComponent implements OnInit {
 
   //------------------FACTURES---------------------------
 
-  changeFactureStatus(req: StatutFactureRequest) {
-    const factId = req.factureId;
-    const statut = req.statut;
-    this.selectedFactureId.set(factId);
-
-    const facture = this.selectedFacture()!;
-
-    if (
-      (facture.statut === StatutFacture.PARTIELLEMENT_PAYEE &&
-        (statut === StatutFacture.IMPAYEE ||
-          statut === StatutFacture.ANNULEE)) ||
-      (facture.resteAPayer === 0 &&
-        (statut === StatutFacture.PARTIELLEMENT_PAYEE ||
-          statut === StatutFacture.ANNULEE))
-    ) {
-      this.msgSvc.add({
-        severity: 'error',
-        summary: 'Action impossible',
-        detail: `Impossible de changer le statut de la facture ${facture.numeroFacture} vers ${FACTURE_STATUT_CONFIG[statut].label}.`,
-      });
-      return;
-    }
-    this.factureSvc.changeStatut(factId, statut).subscribe({
-      next: () => {
-        this.factures.update((list) =>
-          list.map((r) => (r.id === factId ? { ...r, statut } : r)),
-        );
-        if (this.detailFacture()?.id === factId) {
-          this.detailFacture.set({ ...this.selectedFacture()!, statut });
-          this.msgSvc.add({
-            severity: 'success',
-            summary: 'Statut mis à jour',
-            detail: `Facture ${this.selectedFacture()?.numeroFacture} → ${FACTURE_STATUT_CONFIG[statut].label}`,
-          });
-        }
-        this.loadFactures(this.pageFactIndex());
-      },
-      error: (err: ServiceError) => {
-        this.saving.set(false);
-        this.loading.set(false);
-        this.loadError.set(err.message);
-      },
-    });
-  }
-  onLazyLoadFactures(e: any) {
-    this.pageFactIndex.set(e.first / this.pageSize);
-    this.loadFactures(this.pageFactIndex());
-  }
-
-  loadFactures(p = 0) {
-    this.loadingFactures.set(true);
-
-    this.factureSvc
-      .findByPatient(this.patient()!.id, p, this.pageSize)
-      .pipe(takeUntil(this.destroyFact$))
-      .subscribe({
-        next: (page) => {
-          this.successLoadFactures(page);
-        },
-        error: (e: ServiceError) => {
-          this.loadingFactures.set(false);
-        },
-      });
-  }
-
-  successLoadFactures(data: Page<Facture>) {
-    this.pageFact.set(data);
-    this.factures.set(data.content);
-    this.loadingFactures.set(false);
-  }
-
-  editableFacture(fact: Facture): boolean {
-    if (!fact) return false;
-    return (
-      fact.statut != StatutFacture.PAYEE && fact.statut != StatutFacture.ANNULEE
-    );
-  }
-
-  confirmDeleteFacture(fact: Facture) {
-    this.confirmService.action(
-      `Suppression de la facture`,
-      `Supprimer la facture de  ${fact.patientNom} numéro ${fact.numeroFacture}?`,
-      () => {
-        this.factureSvc.delete(fact.id).subscribe(() => {
-          this.msgSvc.add({
-            severity: 'success',
-            summary: 'Supprimée',
-            detail: 'Facture supprimée.',
-          });
-          this.loadFactures(0);
-        });
-      },
-    );
-  }
-
-  retryLoadFactures() {
-    this.loadFactures(this.pageFactIndex());
-  }
-  openFactureDetails(fact: Facture) {
-    this.detailFacture.set(fact);
-    this.showDetailFacture.set(true);
-  }
-
-  ajouterPaiement(fact: Facture) {
-    this.detailFacture.set(fact);
-    this.addPayment.set(true);
-  }
-
-  getFactureStatutSeverity(s: string) {
-    return this.commonService.getStatutSeverity(s, Entite.FACTURATION);
-  }
-
-  submitPaiement(data: any) {
-    console.log('Paiement reçu:', data);
-    if (!data) return;
-
-    this.factureSvc.ajouterPaiement(data).subscribe({
-      next: (updated) => {
-        this.detailFacture.set(updated);
-        this.addPayment.set(false);
-
-        this.msgSvc.add({
-          severity: 'success',
-          summary: 'Paiement enregistré',
-          detail: `${data.montant.toLocaleString('fr-FR')} ${this.commonService.deviseMonnetaire()} encaissés.`,
-        });
-        this.loadFactures();
-      },
-      error: (err: ServiceError) => {
-        this.msgSvc.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: err.message,
-        });
-      },
-    });
-  }
   //------------------ORDONNANCES---------------------------
 
   loadOrdonnances() {

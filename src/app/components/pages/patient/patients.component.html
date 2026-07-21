@@ -121,15 +121,17 @@
                 tooltipPosition="top"
                 [routerLink]="['/patients', patient.id, 'edit']"
               />
-              <p-button
-                icon="pi pi-trash"
-                [text]="true"
-                size="small"
-                severity="danger"
-                pTooltip="Supprimer"
-                tooltipPosition="top"
-                (onClick)="confirmDelete(patient)"
-              />
+              @if (canDelete()) {
+                <p-button
+                  icon="pi pi-trash"
+                  [text]="true"
+                  size="small"
+                  severity="danger"
+                  pTooltip="Supprimer"
+                  tooltipPosition="top"
+                  (onClick)="confirmDelete(patient)"
+                />
+              }
             </div>
           </td>
         </tr>

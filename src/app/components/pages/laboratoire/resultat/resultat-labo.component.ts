@@ -56,6 +56,7 @@ import { ResultatLaboService } from '../../../../core/services/laboratoire/resul
   styleUrls: ['./resultat-labo.component.scss'],
 })
 export class ResultatLaboComponent implements OnInit {
+  private commonService = inject(CommonService);
   // ── Inputs / Outputs ─────────────────────────────────────
   examen = input.required<ExamenLabo>();
   laborantinId = input.required<string>(); // ID de l'utilisateur connecté
@@ -72,6 +73,7 @@ export class ResultatLaboComponent implements OnInit {
   loading = signal(true);
   saving = signal(false);
   editMode = signal(false);
+  canEdit = signal(false);
 
   // ── Formulaire ───────────────────────────────────────────
   form!: FormGroup;
@@ -89,6 +91,7 @@ export class ResultatLaboComponent implements OnInit {
   ngOnInit() {
     this.initForm();
     this.loadResultat();
+    this.canEdit.set(this.commonService.autorizedLaborantins());
   }
 
   private initForm(resultat?: ResultatLabo): void {

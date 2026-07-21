@@ -51,6 +51,7 @@ export class PatientsComponent implements OnInit {
   patients = signal<Patient[]>([]);
   page = signal<Page<Patient> | null>(null);
   loading = signal(true);
+  canDelete = signal(true);
   searchQuery = '';
   readonly pageSize = Configuration.pageSize;
 
@@ -59,6 +60,7 @@ export class PatientsComponent implements OnInit {
   private search$ = new Subject<string>();
 
   ngOnInit() {
+    this.canDelete.set(this.commonService.autorizedAdmin());
     this.load(0);
     this.search$
       .pipe(

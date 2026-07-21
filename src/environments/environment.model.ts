@@ -14,6 +14,8 @@ export interface ClinicTrinityEnvironment {
   pharmacieRoles: string[];
   facturationRoles: string[];
   ressourcesHumainesRoles: string[];
+  medecinsRoles: string[];
+  laborantinsRoles: string[];
 
   deviseMonnetaire: string;
   insertedIconUrl: string;

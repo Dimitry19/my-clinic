@@ -62,3 +62,8 @@ export const FACT_STEPS = [
   { label: 'Prestations', icon: 'pi-list' },
   { label: 'Récapitulatif', icon: 'pi-list-check' },
 ];
+
+export interface Column {
+  field: string;
+  header: string;
+}

@@ -96,6 +96,8 @@ export class ExamensLaboComponent implements OnInit {
   patients = signal<Patient[]>([]);
   medecins = signal<Employe[]>([]);
   loadingMeta = signal(false);
+  canDelete = signal(false);
+  canEdit = signal(false);
 
   readonly pageSize = Configuration.pageSize;
   page = 0;
@@ -139,6 +141,8 @@ export class ExamensLaboComponent implements OnInit {
 
   ngOnInit() {
     // this.loadExamens();
+    this.canDelete.set(this.commonService.autorizedAdmin());
+    this.canEdit.set(this.commonService.autorizedLaborantins());
     this.loadMeta();
   }
 

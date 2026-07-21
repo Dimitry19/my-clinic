@@ -25,7 +25,7 @@
       </div>
     </div>
 
-    @if (!editMode()) {
+    @if (!editMode() && canEdit()) {
       <p-button
         [icon]="hasResultat() ? 'pi pi-pencil' : 'pi pi-plus'"
         [label]="hasResultat() ? 'Modifier' : 'Saisir les résultats'"

@@ -60,12 +60,14 @@ export class EmployeFormComponent implements OnInit {
   // Inputs / Outputs
   employe = input<Employe | null>(null);
   editMode = input(false);
+  canEdit = input(false);
   saved = output<Employe>();
   errorOccured = output<ServiceError>();
   cancelled = output<void>();
 
   // State
   saving = signal(false);
+
   globalError = signal<string | null>(null);
   fieldErrors = signal<Record<string, string>>({});
   activeStep = signal(0);

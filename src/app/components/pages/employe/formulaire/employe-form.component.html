@@ -87,6 +87,7 @@
               formControlName="nom"
               placeholder="Nom de famille"
               autocomplete="family-name"
+              [readonly]="!canEdit()"
               [attr.aria-invalid]="hasError('nom')"
               [attr.aria-describedby]="hasError('nom') ? 'nom-err' : null"
             />
@@ -116,6 +117,7 @@
               formControlName="prenom"
               placeholder="Prénom"
               autocomplete="given-name"
+              [readonly]="!canEdit()"
               [attr.aria-invalid]="hasError('prenom')"
             />
 
@@ -146,6 +148,7 @@
               formControlName="email"
               placeholder="employe@clinique.com"
               autocomplete="email"
+              [readonly]="!canEdit()"
               [attr.aria-invalid]="hasError('email')"
               [attr.aria-describedby]="
                 hasError('email') ? 'Email invalide ou manquant' : null
@@ -226,6 +229,7 @@
               formControlName="poste"
               placeholder="Ex: Médecin généraliste"
               autocomplete="text"
+              [readonly]="!canEdit()"
               [attr.aria-invalid]="hasError('poste')"
             />
             @if (hasError("poste")) {
@@ -258,6 +262,7 @@
               placeholder="Sélectionner..."
               styleClass="w-full"
               appendTo="body"
+              [readonly]="!canEdit()"
               [attr.aria-invalid]="hasError('departement')"
             />
             @if (hasError("departement")) {
@@ -287,11 +292,13 @@
                   [class.contrat-selected]="
                     form.get('typeContrat')?.value === c.value
                   "
+                  [class.disabled]="!canEdit()"
                 >
                   <input
                     type="radio"
                     formControlName="typeContrat"
                     [value]="c.value"
+                    [disabled]="!canEdit()"
                     class="sr-only"
                   />
                   {{ c.label }}
@@ -317,6 +324,7 @@
               optionValue="value"
               styleClass="w-full"
               appendTo="body"
+              [readonly]="!canEdit()"
             />
           </div>
 
@@ -335,6 +343,7 @@
               placeholder="Sélectionner..."
               styleClass="w-full"
               appendTo="body"
+              [readonly]="!canEdit()"
               [attr.aria-invalid]="hasError('role')"
             />
             @if (hasError("role")) {
@@ -359,6 +368,7 @@
               id="dateEmbauche"
               formControlName="dateEmbauche"
               class="form-control"
+              [readonly]="!canEdit()"
               [max]="today"
             />
             @if (hasError("dateEmbauche")) {
@@ -391,6 +401,7 @@
               locale="fr-HT"
               placeholder="Ex: 25000"
               styleClass="w-full"
+              [readonly]="!canEdit()"
               [attr.aria-invalid]="hasError('salaireBase')"
             />
             @if (hasError("salaireBase")) {

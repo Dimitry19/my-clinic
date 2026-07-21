@@ -1,0 +1,15 @@
+﻿<div class="summary-card">
+  <div
+    class="sc-icon"
+    [class.sc-red]="scClass() === 'sc-red'"
+    [class.sc-blue]="scClass() === 'sc-blue'"
+    [class.sc-green]="scClass() === 'sc-green'"
+    [class.sc-amber]="scClass() === 'sc-amber'"
+  >
+    <i [ngClass]="iconClass()"></i>
+  </div>
+  <div class="sc-body">
+    <span class="sc-val">{{ displayValue() }}</span>
+    <span class="sc-label">{{ label() }}</span>
+  </div>
+</div>

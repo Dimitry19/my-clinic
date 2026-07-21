@@ -400,3 +400,9 @@ $radius-lg: 12px;
     transform: translateY(0);
   }
 }
+
+.contrat-option.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+  cursor: not-allowed;
+}

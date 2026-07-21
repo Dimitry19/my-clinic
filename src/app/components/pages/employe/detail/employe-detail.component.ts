@@ -77,6 +77,7 @@ export class EmployeDetailComponent implements OnInit {
 
   employe = signal<Employe | null>(null);
   loading = signal(true);
+  canEdit = signal(false);
   loadError = signal<string | null>(null);
   activeTab = signal(0);
 
@@ -133,6 +134,7 @@ export class EmployeDetailComponent implements OnInit {
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.recuperationsParallesDesDonnees(id);
+    this.canEdit.set(this.commonService.autorizedRHs());
     /*this.svc.findById(id).subscribe({
       next: (e) => {
         this.employe.set(e);
@@ -160,7 +162,7 @@ export class EmployeDetailComponent implements OnInit {
         date: new Date(c.dateDebut),
         icon: 'pi-calendar-times',
         color: '#ba7517',
-        title: c.type,
+        title: c.typeConge,
         subtitle: `${c.dureeJours} jour(s) · ${c.statut}`,
         type: 'conge',
       })),
