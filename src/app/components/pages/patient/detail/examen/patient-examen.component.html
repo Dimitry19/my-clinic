@@ -1,0 +1,67 @@
+﻿<p-tabpanel [value]="index()">
+  <div class="tab-panel-header">
+    <span>{{ examens().length }} examen(s)</span>
+    <p-button
+      label="Prescrire un examen"
+      icon="fa-solid fa-flask"
+      size="small"
+      [routerLink]="['/examens-labo/new', patient()!.id]"
+    />
+  </div>
+  <p-table
+    [value]="examens()"
+    [paginator]="true"
+    [totalRecords]="total()"
+    [rows]="pageSize"
+    [lazy]="true"
+    (onLazyLoad)="onLazyLoad($event)"
+    styleClass="p-datatable-sm"
+    [rowHover]="true"
+    dataKey="id"
+    aria-label="Liste des examens du patient"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Date</th>
+        <th>Type d'examen</th>
+        <th>Résultat</th>
+        <th>Statut</th>
+        <th></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-e>
+      <tr>
+        <td>{{ e.datePrescription | date: "dd/MM/yyyy" }}</td>
+        <td>{{ e.typeExamen }}</td>
+        <td>{{ getStatutLabel(e.statut) }}</td>
+        <td>
+          <p-tag
+            [value]="getStatutLabel(e.statut)"
+            [severity]="getStatutSeverity(e.statut)"
+          />
+        </td>
+        <td>
+          <p-button
+            icon="pi pi-eye"
+            [text]="true"
+            size="small"
+            pTooltip="Voir les details"
+            aria-label="Voir les details"
+            tooltipPosition="top"
+            [routerLink]="['/examens-labo', e.id]"
+          />
+          <p-button
+            icon="pi pi-file-pdf"
+            [text]="true"
+            size="small"
+            severity="danger"
+            pTooltip="Télécharger le rapport PDF"
+            tooltipPosition="top"
+            [disabled]="e.statut !== 'TERMINE'"
+            (onClick)="genererRapportPdf(e)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-tabpanel>

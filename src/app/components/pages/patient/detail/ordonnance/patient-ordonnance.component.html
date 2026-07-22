@@ -1,0 +1,88 @@
+﻿<p-tabpanel [value]="index()">
+  <div class="tab-panel-header">
+    <span>{{ ordonnances().length }} ordonnance(s)</span>
+    <p-button
+      label="Nouvelle ordonnance"
+      size="small"
+      [routerLink]="['/ordonnance/create', patient()!.id]"
+    >
+      <ng-template pTemplate="icon">
+        <i class="fa-solid fa-pills"></i>
+      </ng-template>
+    </p-button>
+  </div>
+  @if (!loading() && ordonnances().length) {
+    <div class="ordonnances-list">
+      <div *ngFor="let o of ordonnances()" class="ordonnance-card">
+        <div class="ord-header">
+          <div class="ord-meta">
+            <i class="fa-solid fa-prescription"></i>
+            <span class="ord-date">{{
+              o.dateEmission | date: "dd/MM/yyyy"
+            }}</span>
+            <span class="ord-medecin">{{ o.medecinNom }}</span>
+          </div>
+          <div class="action-btns">
+            <p-button
+              icon="pi pi-download"
+              [text]="true"
+              size="small"
+              pTooltip="Télécharger PDF"
+              (onClick)="genererOrdonnancePdf(o)"
+            />
+            <p-button
+              icon="pi pi-pencil"
+              [text]="true"
+              size="small"
+              pTooltip="Modifier"
+              tooltipPosition="top"
+              [routerLink]="['/ordonnance', o.id, 'edit']"
+            />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              size="small"
+              severity="danger"
+              pTooltip="Supprimer"
+              tooltipPosition="top"
+              (onClick)="confirmDelete(o)"
+            />
+          </div>
+        </div>
+        <ul class="ord-meds">
+          @for (m of o.medicaments; track m) {
+            <li class="med-item">
+              <i class="fa-solid fa-pills"></i>
+              {{ m.medicamentNom }}
+              @if (m.dosage) {
+                <i class="fa-solid fa-prescription-bottle-medical"></i>
+                {{ m.dosage }}
+              }
+
+              @if (m.frequence) {
+                <i class="fa-solid fa-repeat"></i>
+                {{ m.frequence }}
+              }
+
+              @if (m.duree) {
+                <i class="fa-regular fa-clock"></i>
+                {{ m.duree }}
+              }
+
+              @if (m.instructions) {
+                <i class="fa-solid fa-note-sticky"></i>
+                {{ m.instructions }}
+              }
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+  }
+  @if (!loading() && ordonnances().length === 0) {
+    <div class="not-found">
+      <h3>Aucune ordonnance pour le moment</h3>
+      <p>Ajouter une nouvelle ordonnance au besoin.</p>
+    </div>
+  }
+</p-tabpanel>

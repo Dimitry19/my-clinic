@@ -1,4 +1,4 @@
-﻿<p-tabpanel [value]="4">
+﻿<p-tabpanel [value]="index()">
   <div class="tab-panel-header">
     <span
       >Solde dû :
@@ -12,8 +12,8 @@
         icon="pi pi-refresh"
         size="small"
         styleClass="hero-btn-primary"
-        [loading]="loadingFactures()"
-        (onClick)="retryLoadFactures()"
+        [loading]="loading()"
+        (onClick)="retryLoad()"
       />
       <p-button
         label="Nouvelle facture"
@@ -52,7 +52,7 @@
     <p-select
       [ngModel]="filtreStatut()"
       (ngModelChange)="onFiltreStatut($event)"
-      [options]="statutFactOptions"
+      [options]="statutOptions"
       optionLabel="label"
       optionValue="value"
       placeholder="Tous les statuts"
@@ -71,12 +71,12 @@
   </div>
   <p-table
     [value]="facturesFiltrees()"
-    [loading]="loadingFactures()"
+    [loading]="loading()"
     [paginator]="true"
     [rows]="pageSize"
-    [totalRecords]="totalFactures()"
+    [totalRecords]="total()"
     [lazy]="true"
-    (onLazyLoad)="onLazyLoadFactures($event)"
+    (onLazyLoad)="onLazyLoad($event)"
     styleClass="p-datatable-sm"
     [rowHover]="true"
     dataKey="id"
@@ -121,8 +121,8 @@
         </td>
         <td>
           <p-tag
-            [value]="getFactureStatutLabel(f.statut)"
-            [severity]="getFactureSeverity(f.statut)"
+            [value]="getStatutLabel(f.statut)"
+            [severity]="getSeverity(f.statut)"
           >
             <ng-template pTemplate="icon">
               <i
@@ -149,17 +149,17 @@
               pTooltip="Modifier"
               tooltipPosition="top"
               [routerLink]="['/factures', f.id, 'edit']"
-              [class.invisible]="!editableFacture(f)"
-              [disabled]="!editableFacture(f)"
+              [class.invisible]="!editable(f)"
+              [disabled]="!editable(f)"
             />
             <p-button
               icon="pi pi-arrow-right-arrow-left"
               [text]="true"
               size="small"
               pTooltip="Modifier le statut"
-              (onClick)="openFactureDetails(f); $event.stopPropagation()"
-              [class.invisible]="!editableFacture(f)"
-              [disabled]="!editableFacture(f)"
+              (onClick)="openDetails(f); $event.stopPropagation()"
+              [class.invisible]="!editable(f)"
+              [disabled]="!editable(f)"
             />
 
             <p-button
@@ -176,9 +176,9 @@
               severity="danger"
               pTooltip="Supprimer"
               tooltipPosition="top"
-              (onClick)="confirmDeleteFacture(f)"
-              [class.invisible]="!editableFacture(f)"
-              [disabled]="!editableFacture(f)"
+              (onClick)="confirmDelete(f)"
+              [class.invisible]="!editable(f)"
+              [disabled]="!editable(f)"
             />
           </div>
         </td>
@@ -210,13 +210,13 @@
 
 <clnt-facture-statut-dialog
   [(visible)]="showDetailFacture"
-  [facture]="detailFacture()"
+  [facture]="detail()"
   [patient]="patient()"
-  (save)="changeFactureStatus($event)"
+  (save)="changeStatus($event)"
 />
 <clnt-paiement-dialog
   [(visible)]="addPayment"
-  [facture]="detailFacture()"
+  [facture]="detail()"
   [patient]="patient()"
   (save)="submitPaiement($event)"
 />

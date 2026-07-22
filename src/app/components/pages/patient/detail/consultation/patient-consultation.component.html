@@ -1,0 +1,218 @@
+﻿<p-tabpanel [value]="index()">
+  <div class="tab-panel-header">
+    <span>{{ consultations().length }} consultation(s)</span>
+    <div class="action-btns">
+      <p-button
+        label="Rafraîchir"
+        icon="pi pi-refresh"
+        size="small"
+        styleClass="hero-btn-primary"
+        [loading]="loading()"
+        (onClick)="retryLoad()"
+      />
+      <p-button
+        [disabled]="!patient()"
+        [routerLink]="
+          patient() ? ['/consultation/create', patient()!.id] : null
+        "
+        label="Nouvelle consultation"
+        styleClass="hero-btn-primary"
+        size="small"
+      >
+        <ng-template pTemplate="icon">
+          <i class="fa-solid fa-stethoscope"></i>
+        </ng-template>
+      </p-button>
+    </div>
+  </div>
+  <p-table
+    [value]="consultations()"
+    [loading]="loading()"
+    [paginator]="true"
+    [rows]="pageSize"
+    [totalRecords]="total()"
+    [lazy]="true"
+    (onLazyLoad)="onLazyLoad($event)"
+    styleClass="p-datatable-sm"
+    [rowHover]="true"
+    dataKey="id"
+    aria-label="Liste des consultations du patient"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Date</th>
+        <th>Médecin</th>
+        <th>Motif</th>
+        <th>Diagnostic</th>
+        <th>Statut</th>
+        <th style="width: 120px">Actions</th>
+        <th></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-c>
+      <tr>
+        <td>{{ formatDate(c.dateHeure) }} à {{ formatHeure(c.dateHeure) }}</td>
+        <td>{{ c.medecinNom }}</td>
+        <td>{{ c.motif }}</td>
+        <td>{{ c.diagnostic }}</td>
+        <td>
+          @if (c.statut) {
+            <p-tag
+              [value]="getStatutLabel(c.statut)"
+              [severity]="getStatutSeverity(c.statut)"
+            />
+          }
+        </td>
+        <td>
+          <div class="action-btns">
+            <!--     <p-button
+                    icon="pi pi-eye"
+                    [text]="true"
+                    size="small"
+                    pTooltip="Voir le dossier"
+                    tooltipPosition="top"
+                    [routerLink]="['/consultation', c.id]"
+                  /> -->
+
+            <p-button
+              icon="pi pi-pencil"
+              [text]="true"
+              size="small"
+              severity="secondary"
+              pTooltip="Modifier"
+              tooltipPosition="top"
+              [routerLink]="['/consultation', c.id, 'edit']"
+              [class.invisible]="!editable(c)"
+            />
+            <p-button
+              icon="pi pi-arrow-right-arrow-left"
+              [text]="true"
+              size="small"
+              pTooltip="Modifier le statut"
+              (onClick)="openDetails(c); $event.stopPropagation()"
+            />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              size="small"
+              severity="danger"
+              pTooltip="Supprimer"
+              tooltipPosition="top"
+              (onClick)="confirmDelete(c)"
+            />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="6" class="empty-state">
+          <i class="fa-solid fa-stethoscope"></i>
+          <p>Aucune consultation trouvée</p>
+          <p-button
+            [disabled]="!patient()"
+            [routerLink]="
+              patient() ? ['/consultation/create', patient()!.id] : null
+            "
+            label="Nouvelle consultation"
+            styleClass="hero-btn-primary"
+            size="small"
+          >
+            <ng-template pTemplate="icon">
+              <i class="fa-solid fa-stethoscope"></i>
+            </ng-template>
+          </p-button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-tabpanel>
+
+<p-dialog
+  header="Détail de la consultation"
+  [(visible)]="showDetail"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '460px' }"
+>
+  @if (showDetail() && detail()) {
+    <div class="clnt-dialog-detail">
+      <!-- Patient info -->
+      <div class="clnt-dialog-detail-element">
+        <div class="clnt-dialog-detail-avatar">
+          {{
+            getInitiales(
+              detail()!.patientPrenom,
+              detail()!.patientNom
+            )
+          }}
+        </div>
+        <div>
+          <div class="clnt-dialog-detail-nom">
+            {{ detail()!.patientPrenom }}
+            {{ detail()!.patientNom }}
+          </div>
+          <div class="clnt-dialog-detail-meta">
+            <i class="pi pi-calendar" aria-hidden="true"></i>
+            {{ formatDate(detail()!.dateHeure) }} à
+            {{ formatHeure(detail()!.dateHeure) }} ·
+            {{ detail()!.dureeMinutes }} min
+          </div>
+        </div>
+        <p-tag
+          [value]="statutConsConfig[detail()!.statut].label"
+          [severity]="statutConsConfig[detail()!.statut].severity"
+        />
+      </div>
+
+      <!-- Infos -->
+      <div class="clnt-dialog-clnt-dialog-detail-rows">
+        <div class="clnt-dialog-detail-row">
+          <span class="clnt-dialog-detail-label"
+            ><i class="pi pi-user" aria-hidden="true"></i> Médecin</span
+          >
+          <span class="clnt-dialog-detail-val">{{
+            detail()!.medecinNom
+          }}</span>
+        </div>
+        <div class="clnt-dialog-detail-row">
+          <span class="clnt-dialog-detail-label"
+            ><i class="pi pi-clipboard" aria-hidden="true"></i> Motif</span
+          >
+          <span class="clnt-dialog-detail-val">{{
+            detail()!.motif
+          }}</span>
+        </div>
+        @if (detail()!.notes) {
+          <div class="clnt-dialog-detail-row">
+            <span class="clnt-dialog-detail-label"
+              ><i class="pi pi-pencil" aria-hidden="true"></i> Notes</span
+            >
+            <span class="clnt-dialog-detail-val">{{
+              detail()!.notes
+            }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Changer statut -->
+      <div class="clnt-dialog-detail-statuts">
+        <span class="clnt-dialog-detail-statut-label">Changer le statut :</span>
+        <div class="clnt-dialog-statut-btns">
+          @for (opt of statutConsOptions; track opt.value) {
+            <p-button
+              [label]="opt.label"
+              size="small"
+              [outlined]="detail()!.statut !== opt.value"
+              [severity]="$any(getStatutSeverity(opt.value))"
+              (onClick)="
+                changeStatus(detail()!, $any(opt.value))
+              "
+            />
+          }
+        </div>
+      </div>
+    </div>
+  }
+</p-dialog>

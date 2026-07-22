@@ -1,4 +1,5 @@
-﻿import {
+﻿import { Page } from './../../../../../core/models/all/all.model';
+import {
   Component,
   computed,
   inject,
@@ -32,7 +33,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { DatePickerModule } from 'primeng/datepicker';
 import { SelectModule } from 'primeng/select';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
-import { Page, ServiceError } from '../../../../../core/models/all/all.model';
+import { ServiceError } from '../../../../../core/models/all/all.model';
 import { Configuration } from '../../../../../core/models/configuration/configuration.model';
 import {
   StatutFacture,
@@ -86,31 +87,31 @@ import { FactureStatutComponent } from '../../../facture/statut/facture-statut.c
 export class PatientFactureComponent implements OnInit {
   private commonService = inject(CommonService);
 
-  private confirmService = inject(AppConfirmationService);
   private factureSvc = inject(FactureService);
   private msgService = inject(MessageService);
+  private confirmService = inject(AppConfirmationService);
+  private destroy$ = new Subject<void>();
+  readonly pageSize = Configuration.pageSize;
 
   facturesCount = output<number>();
   soldeChange = output<number>();
 
+  index = input<number>(4);
   patient = input<Patient | null>(null);
   loadError = signal<string | null>(null);
   loading = signal(true);
 
   activeTab = signal(0);
-  readonly pageSize = Configuration.pageSize;
 
-  private destroyFact$ = new Subject<void>();
-  loadingFactures = signal(true);
-  pageFact = signal<Page<Facture> | null>(null);
-  pageFactIndex = signal(0);
+  page = signal<Page<Facture> | null>(null);
+  pageIndex = signal(0);
   factures = signal<Facture[]>([]);
 
   addPayment = signal(false);
   selectedFactureId = signal<string | null>(null);
 
-  totalFactures = computed(() => this.pageFact()?.page.totalElements ?? 0);
-  selectedFacture = computed(() =>
+  total = computed(() => this.page()?.page.totalElements ?? 0);
+  selected = computed(() =>
     this.facturesFiltrees().find((f) => f.id === this.selectedFactureId()),
   );
 
@@ -135,14 +136,6 @@ export class PatientFactureComponent implements OnInit {
     ),
   );
 
-  statutOptions = [
-    { label: 'Tous les statuts', value: null },
-    ...Object.entries(FACTURE_STATUT_CONFIG).map(([value, cfg]) => ({
-      label: cfg.label,
-      value: value as StatutFacture,
-    })),
-  ];
-
   // ── Filtres ───────────────────────────────────────────────
   filtreNumero = signal('');
   filtreDate = signal<Date | null>(null);
@@ -155,16 +148,23 @@ export class PatientFactureComponent implements OnInit {
   showDetailFacture = signal(false);
 
   // ── Dialog détail Facture
-  showDetailFact = signal(false);
-  detailFacture = signal<Facture | null>(null);
-  statutFactOptions = Object.entries(FACTURE_STATUT_CONFIG).map(([v, c]) => ({
+  showDetail = signal(false);
+  detail = signal<Facture | null>(null);
+  statutOptions = Object.entries(FACTURE_STATUT_CONFIG).map(([v, c]) => ({
     label: c.label,
     value: v,
   }));
 
-  statutFactConfig = FACTURE_STATUT_CONFIG;
+  statutOptionss = [
+    { label: 'Tous les statuts', value: null },
+    ...Object.entries(FACTURE_STATUT_CONFIG).map(([value, cfg]) => ({
+      label: cfg.label,
+      value: value as StatutFacture,
+    })),
+  ];
 
-  selectedRdv = signal<Consultation | null>(null);
+  statutConfig = FACTURE_STATUT_CONFIG;
+
   saving = signal(false);
   formError = signal<string | null>(null);
 
@@ -173,23 +173,19 @@ export class PatientFactureComponent implements OnInit {
 
   ngOnInit() {
     this.filtreNumero$
-      .pipe(
-        debounceTime(400),
-        distinctUntilChanged(),
-        takeUntil(this.destroyFact$),
-      )
+      .pipe(debounceTime(400), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((v) => {
         this.filtreNumero.set(v);
-        this.pageFactIndex.set(0);
-        this.loadFactures();
+        this.pageIndex.set(0);
+        this.load();
       });
 
-    this.loadFactures();
+    this.load();
   }
 
   ngOnDestroy() {
-    this.destroyFact$.next();
-    this.destroyFact$.complete();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get soldeDu(): number {
@@ -198,18 +194,11 @@ export class PatientFactureComponent implements OnInit {
       .reduce((acc, f) => acc + (f.montantTotal - f.montantPaye), 0);
   }
 
-  getSexeLabel(s: string) {
-    return this.commonService.getSexeLabel(s);
-  }
-
-  getFactureSeverity(s: string) {
+  getSeverity(s: string) {
     return this.commonService.getStatutSeverity(s, Entite.FACTURATION);
   }
   getStatutIcon(s: string): string {
     return this.commonService.getStatutIcon(s, Entite.FACTURATION);
-  }
-  getExamenSeverity(s: string) {
-    return this.commonService.getStatutSeverity(s, Entite.LABORATOIRE);
   }
 
   copierId() {
@@ -228,12 +217,12 @@ export class PatientFactureComponent implements OnInit {
 
   //------------------FACTURES---------------------------
 
-  changeFactureStatus(req: StatutFactureRequest) {
+  changeStatus(req: StatutFactureRequest) {
     const factId = req.factureId;
     const statut = req.statut;
     this.selectedFactureId.set(factId);
 
-    const facture = this.selectedFacture()!;
+    const facture = this.selected()!;
 
     if (
       (facture.statut === StatutFacture.PARTIELLEMENT_PAYEE &&
@@ -255,15 +244,15 @@ export class PatientFactureComponent implements OnInit {
         this.factures.update((list) =>
           list.map((r) => (r.id === factId ? { ...r, statut } : r)),
         );
-        if (this.detailFacture()?.id === factId) {
-          this.detailFacture.set({ ...this.selectedFacture()!, statut });
+        if (this.detail()?.id === factId) {
+          this.detail.set({ ...this.selected()!, statut });
           this.msgService.add({
             severity: 'success',
             summary: 'Statut mis à jour',
-            detail: `Facture ${this.selectedFacture()?.numeroFacture} → ${FACTURE_STATUT_CONFIG[statut].label}`,
+            detail: `Facture ${this.selected()?.numeroFacture} → ${FACTURE_STATUT_CONFIG[statut].label}`,
           });
         }
-        this.loadFactures(this.pageFactIndex());
+        this.load(this.pageIndex());
       },
       error: (err: ServiceError) => {
         this.saving.set(false);
@@ -272,13 +261,13 @@ export class PatientFactureComponent implements OnInit {
       },
     });
   }
-  onLazyLoadFactures(e: any) {
-    this.pageFactIndex.set(e.first / this.pageSize);
-    this.loadFactures(this.pageFactIndex());
+  onLazyLoad(e: any) {
+    this.pageIndex.set(e.first / this.pageSize);
+    this.load(this.pageIndex());
   }
 
-  loadFactures(p = 0) {
-    this.loadingFactures.set(true);
+  load(p = 0) {
+    this.loading.set(true);
 
     this.factureSvc
       .findByPatient(
@@ -287,33 +276,33 @@ export class PatientFactureComponent implements OnInit {
         this.pageSize,
         this.filtreStatut() ?? undefined,
       )
-      .pipe(takeUntil(this.destroyFact$))
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (page) => {
-          this.successLoadFactures(page);
+          this.successLoad(page);
         },
         error: (e: ServiceError) => {
-          this.loadingFactures.set(false);
+          this.loading.set(false);
         },
       });
   }
 
-  successLoadFactures(data: Page<Facture>) {
-    this.pageFact.set(data);
+  successLoad(data: Page<Facture>) {
+    this.page.set(data);
     this.factures.set(data.content);
-    this.loadingFactures.set(false);
+    this.loading.set(false);
     this.facturesCount.emit(data.content.length);
     this.soldeChange.emit(this.soldeDu);
   }
 
-  editableFacture(fact: Facture): boolean {
+  editable(fact: Facture): boolean {
     if (!fact) return false;
     return (
       fact.statut != StatutFacture.PAYEE && fact.statut != StatutFacture.ANNULEE
     );
   }
 
-  confirmDeleteFacture(fact: Facture) {
+  confirmDelete(fact: Facture) {
     this.confirmService.action(
       `Suppression de la facture`,
       `Supprimer la facture de  ${fact.patientNom} numéro ${fact.numeroFacture}?`,
@@ -324,26 +313,26 @@ export class PatientFactureComponent implements OnInit {
             summary: 'Supprimée',
             detail: 'Facture supprimée.',
           });
-          this.loadFactures(0);
+          this.load(0);
         });
       },
     );
   }
 
-  retryLoadFactures() {
-    this.loadFactures(this.pageFactIndex());
+  retryLoad() {
+    this.load(this.pageIndex());
   }
-  openFactureDetails(fact: Facture) {
-    this.detailFacture.set(fact);
-    this.showDetailFacture.set(true);
+  openDetails(fact: Facture) {
+    this.detail.set(fact);
+    this.showDetail.set(true);
   }
 
   ajouterPaiement(fact: Facture) {
-    this.detailFacture.set(fact);
+    this.detail.set(fact);
     this.addPayment.set(true);
   }
 
-  getFactureStatutSeverity(s: string) {
+  getStatutSeverity(s: string) {
     return this.commonService.getStatutSeverity(s, Entite.FACTURATION);
   }
 
@@ -357,22 +346,22 @@ export class PatientFactureComponent implements OnInit {
   }
   onFiltreStatut(v: StatutFacture | null) {
     this.filtreStatut.set(v);
-    this.pageFactIndex.set(0);
-    this.loadFactures();
+    this.pageIndex.set(0);
+    this.load();
   }
 
   onFiltreDate(v: Date | null) {
     this.filtreDate.set(v);
-    this.pageFactIndex.set(0);
-    this.loadFactures();
+    this.pageIndex.set(0);
+    this.load();
   }
 
   clearFilters() {
     this.filtreNumero.set('');
     this.filtreDate.set(null);
     this.filtreStatut.set(null);
-    this.pageFactIndex.set(0);
-    this.loadFactures();
+    this.pageIndex.set(0);
+    this.load();
   }
 
   // ── Factures filtrées côté client (numero, patient, date) ─
@@ -403,26 +392,15 @@ export class PatientFactureComponent implements OnInit {
 
   debounceFiltreNumero() {
     this.filtreNumero$
-      .pipe(
-        debounceTime(400),
-        distinctUntilChanged(),
-        takeUntil(this.destroyFact$),
-      )
+      .pipe(debounceTime(400), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((v) => {
         this.filtreNumero.set(v);
-        this.pageFactIndex.set(0);
-        this.loadFactures();
+        this.pageIndex.set(0);
+        this.load();
       });
   }
 
-  formatDate(iso: string) {
-    return this.commonService.formatDate(iso);
-  }
-  formatHeure(iso: string) {
-    return this.commonService.formatHeure(iso);
-  }
-
-  getFactureStatutLabel(s: string) {
+  getStatutLabel(s: string) {
     return this.commonService.getStatutLabel(s, Entite.FACTURATION);
   }
 
@@ -444,7 +422,7 @@ export class PatientFactureComponent implements OnInit {
 
     this.factureSvc.ajouterPaiement(data).subscribe({
       next: (updated) => {
-        this.detailFacture.set(updated);
+        this.detail.set(updated);
         this.addPayment.set(false);
 
         this.msgService.add({
@@ -452,7 +430,7 @@ export class PatientFactureComponent implements OnInit {
           summary: 'Paiement enregistré',
           detail: `${data.montant.toLocaleString('fr-FR')} ${this.commonService.deviseMonnetaire()} encaissés.`,
         });
-        this.loadFactures();
+        this.load();
       },
       error: (err: ServiceError) => {
         this.msgService.add({
