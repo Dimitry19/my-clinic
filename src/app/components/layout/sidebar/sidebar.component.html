@@ -16,7 +16,9 @@
   <!-- Navigation principale -->
   <nav class="sidebar-nav">
     @if (!collapsed()) {
-      <div class="nav-section-label">CLINIQUE</div>
+      <div class="nav-section-label">
+        {{ "nav.clinic" | translate | uppercase }}
+      </div>
     }
 
     @for (item of visibleNavItems(); track item.route) {
@@ -24,12 +26,12 @@
         [routerLink]="item.route"
         routerLinkActive="active"
         class="nav-item"
-        [pTooltip]="collapsed() ? item.label : ''"
+        [pTooltip]="collapsed() ? (item.label | translate) : ''"
         tooltipPosition="right"
       >
         <i class="pi" [ngClass]="item.icon"></i>
         @if (!collapsed()) {
-          <span>{{ item.label }}</span>
+          <span>{{ item.label | translate }}</span>
         }
       </a>
     }
@@ -37,7 +39,9 @@
     @if (autorizedAdmin()) {
       <div class="nav-divider"></div>
       @if (!collapsed()) {
-        <div class="nav-section-label">ADMINISTRATION</div>
+        <div class="nav-section-label">
+          {{ "nav.administration" | translate | uppercase }}
+        </div>
       }
     }
     @for (item of visibleAdminNavItems(); track item.route) {
@@ -45,12 +49,12 @@
         [routerLink]="item.route"
         routerLinkActive="active"
         class="nav-item"
-        [pTooltip]="collapsed() ? item.label : ''"
+        [pTooltip]="collapsed() ? (item.label | translate) : ''"
         tooltipPosition="right"
       >
         <i class="pi" [ngClass]="item.icon"></i>
         @if (!collapsed()) {
-          <span>{{ item.label }}</span>
+          <span>{{ item.label | translate }}</span>
         }
       </a>
     }
@@ -74,12 +78,12 @@
     <button
       class="logout-btn"
       (click)="logout()"
-      [pTooltip]="collapsed() ? 'Déconnexion' : ''"
+      [pTooltip]="collapsed() ? ('nav.logout' | translate) : ''"
       tooltipPosition="right"
     >
       <i class="pi pi-sign-out"></i>
       @if (!collapsed()) {
-        <span *ngIf="!collapsed()">Déconnexion</span>
+        <span *ngIf="!collapsed()">{{ "nav.logout" | translate }}</span>
       }
     </button>
   </div>

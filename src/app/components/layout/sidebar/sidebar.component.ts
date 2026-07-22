@@ -15,6 +15,7 @@ import { AuthService } from '../../../core/services/auth/auth.service';
 import { ApiResponse } from '../../../core/models/response/api-response.model';
 import { ErrorType } from '../../../core/models/all/all.model';
 import { environment } from '../../../../environments/environment.prod';
+import { TranslatePipe } from '../../../core/pipe/i18n.pipe';
 
 interface NavItem {
   label: string;
@@ -32,6 +33,7 @@ interface NavItem {
     RouterLinkActive,
     ButtonModule,
     TooltipModule,
+    TranslatePipe,
   ],
 
   templateUrl: './sidebar.component.html',
@@ -75,31 +77,31 @@ export class SidebarComponent {
 
   navItems: NavItem[] = [
     {
-      label: 'Dashboard',
+      label: 'nav.dashboard',
       icon: 'pi pi-home',
       route: '/dashboard',
       roles: environment.dashboardRoles,
     },
     {
-      label: 'Patients',
+      label: 'nav.patients',
       icon: 'pi pi-users',
       route: '/patients',
       roles: environment.patientsRoles,
     },
     {
-      label: 'Agenda',
+      label: 'nav.agenda',
       icon: 'pi pi-calendar',
       route: '/agenda',
       roles: environment.agendaRoles,
     },
     {
-      label: 'Laboratoire',
+      label: 'nav.laboratory',
       icon: 'pi pi-filter-fill',
       route: '/examens-labo',
       roles: environment.laboratoireRoles,
     },
     {
-      label: 'Pharmacie',
+      label: 'nav.pharmacy',
       icon: 'pi pi-building',
       route: '/pharmacie',
       roles: environment.pharmacieRoles,
@@ -108,19 +110,19 @@ export class SidebarComponent {
 
   adminItems: NavItem[] = [
     {
-      label: 'Facturation',
+      label: 'nav.billing',
       icon: 'pi pi-receipt',
       route: '/factures',
       roles: environment.facturationRoles,
     },
     {
-      label: 'RH',
+      label: 'nav.rh',
       icon: 'pi pi-users',
       route: '/employes',
       roles: environment.ressourcesHumainesRoles,
     },
     {
-      label: 'Paramètres',
+      label: 'nav.settings',
       icon: 'pi pi-cog',
       route: '/settings',
       roles: environment.adminRoles,

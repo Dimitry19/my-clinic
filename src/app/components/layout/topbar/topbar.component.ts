@@ -9,11 +9,19 @@ import { TooltipModule } from 'primeng/tooltip';
 import { CommonService } from '../../../core/services/common.services';
 import { ApiResponse } from '../../../core/models/response/api-response.model';
 import { Router } from '@angular/router';
+import { LangSwitcherComponent } from '../lang-switcher/lang-switcher.component';
 
 @Component({
   selector: 'clnt-topbar',
   standalone: true,
-  imports: [CommonModule, ButtonModule, BadgeModule, MenuModule, TooltipModule],
+  imports: [
+    CommonModule,
+    ButtonModule,
+    BadgeModule,
+    MenuModule,
+    TooltipModule,
+    LangSwitcherComponent,
+  ],
   template: `
     <header class="topbar">
       <div class="topbar-left">
@@ -28,6 +36,7 @@ import { Router } from '@angular/router';
         </div>
       </div>
       <div class="topbar-right">
+        <clnt-lang-switcher></clnt-lang-switcher>
         <!-- Thème clair/sombre -->
         <p-button
           [icon]="darkMode ? 'pi pi-sun' : 'pi pi-moon'"
@@ -37,6 +46,7 @@ import { Router } from '@angular/router';
           pTooltip="Changer le thème"
           tooltipPosition="bottom"
         />
+
         <!-- Notifications -->
         <div class="notif-wrap">
           <p-button icon="pi pi-bell" [text]="true" severity="secondary" />
@@ -156,32 +166,31 @@ export class TopbarComponent {
     document.documentElement.classList.toggle('dark-mode', this.darkMode);
   }
 
+  readonly userMenuItems = computed<MenuItem[]>(() => {
+    const user = this.auth.currentUser();
 
-readonly userMenuItems = computed<MenuItem[]>(() => {
-  const user = this.auth.currentUser();
+    const items: MenuItem[] = [];
 
-  const items: MenuItem[] = [];
+    if (user?.employeId) {
+      items.push({
+        label: 'Mon profil',
+        icon: 'pi pi-user',
+        command: () => this.profil(),
+      });
 
-  if (user?.employeId) {
+      items.push({
+        separator: true,
+      });
+    }
+
     items.push({
-      label: 'Mon profil',
-      icon: 'pi pi-user',
-      command: () => this.profil()
+      label: 'Déconnexion',
+      icon: 'pi pi-sign-out',
+      command: () => this.logout(),
     });
 
-    items.push({
-      separator: true
-    });
-  }
-
-  items.push({
-    label: 'Déconnexion',
-    icon: 'pi pi-sign-out',
-    command: () => this.logout()
+    return items;
   });
-
-  return items;
-});
 
   profil() {
     const user = this.auth.currentUser();

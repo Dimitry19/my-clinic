@@ -1,4 +1,11 @@
-﻿import { Component, inject, OnInit, signal } from '@angular/core';
+﻿import {
+  Component,
+  computed,
+  effect,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CardModule } from 'primeng/card';
@@ -15,6 +22,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { RendezVous } from '../../../core/models/agenda/agenda.model';
 import { Entite } from '../../../core/models/enums/enums.model';
 import { CommonService } from '../../../core/services/common.services';
+import { TranslatePipe } from '../../../core/pipe/i18n.pipe';
+import { I18nService } from '../../../core/services/i18n.service';
 
 @Component({
   selector: 'clnt-dashboard',
@@ -30,6 +39,7 @@ import { CommonService } from '../../../core/services/common.services';
     ChartModule,
     AvatarModule,
     TooltipModule,
+    TranslatePipe,
   ],
   template: `
     <div class="dashboard">
@@ -37,15 +47,17 @@ import { CommonService } from '../../../core/services/common.services';
       <div class="page-header">
         <div>
           <h2>
-            Bonjour, {{ auth.userLabel() }} {{ auth.currentUser()?.prenom }} 👋
+            {{ 'common.hello' | translate }}, {{ auth.userLabel() }}
+            {{ auth.currentUser()?.prenom }} 👋
           </h2>
           <p>
-            {{ today | date: 'EEEE d MMMM yyyy' : '' : 'fr' }} · Voici votre
-            tableau de bord
+            {{ today | date: 'EEEE d MMMM yyyy' : '' : lang() }}
+            ·
+            {{ 'dashboard.dashboard' | translate }}
           </p>
         </div>
         <p-button
-          label="Nouveau patient"
+          [label]="'patient.new' | translate"
           icon="pi pi-plus"
           routerLink="/patients/add"
         />
@@ -58,7 +70,7 @@ import { CommonService } from '../../../core/services/common.services';
             <i class="pi" [ngClass]="s.icon" [style.color]="s.color"></i>
           </div>
           <div class="stat-body">
-            <span class="stat-label">{{ s.label }}</span>
+            <span class="stat-label">{{ s.label | translate }}</span>
             <span class="stat-value">{{ s.value }}</span>
             <span class="stat-delta" [style.color]="s.deltaColor">{{
               s.delta
@@ -79,12 +91,17 @@ import { CommonService } from '../../../core/services/common.services';
       <!-- Contenu principal -->
       <div class="main-grid">
         <!-- File d'attente -->
-        <p-card header="File d'attente du jour" styleClass="queue-card">
+        <p-card
+          [header]="'dashboard.todayQueue' | translate"
+          styleClass="queue-card"
+        >
           <ng-template pTemplate="header">
             <div class="card-header-row">
-              <span class="card-title">File d'attente</span>
+              <span class="card-title">{{
+                'dashboard.queue' | translate
+              }}</span>
               <p-button
-                label="Voir tout"
+                [label]="'common.seeAll' | translate"
                 [text]="true"
                 size="small"
                 routerLink="/agenda"
@@ -126,7 +143,7 @@ import { CommonService } from '../../../core/services/common.services';
                     icon="pi pi-eye"
                     [text]="true"
                     size="small"
-                    pTooltip="Voir le dossier"
+                    [pTooltip]="'common.seeFolder' | translate"
                     tooltipPosition="top"
                     [routerLink]="['/patients', rdv.patientId]"
                   />
@@ -136,7 +153,7 @@ import { CommonService } from '../../../core/services/common.services';
             <ng-template pTemplate="emptymessage">
               <tr>
                 <td colspan="4" class="empty-msg">
-                  Aucun rendez-vous pour aujourd'hui
+                  {{ 'dashboard.noRdv' | translate }}
                 </td>
               </tr>
             </ng-template>
@@ -147,7 +164,9 @@ import { CommonService } from '../../../core/services/common.services';
         <p-card styleClass="chart-card">
           <ng-template pTemplate="header">
             <div class="card-header-row">
-              <span class="card-title">Activité — 7 derniers jours</span>
+              <span class="card-title">{{
+                'dashboard.sevenDays' | translate
+              }}</span>
             </div>
           </ng-template>
           <p-chart
@@ -269,6 +288,9 @@ import { CommonService } from '../../../core/services/common.services';
 export class DashboardComponent implements OnInit {
   private dashService = inject(DashboardService);
   private commonService = inject(CommonService);
+  private i18n = inject(I18nService);
+
+  readonly lang = computed(() => this.i18n.currentLang());
 
   auth = inject(AuthService);
 
@@ -283,6 +305,13 @@ export class DashboardComponent implements OnInit {
     scales: { y: { beginAtZero: true, ticks: { stepSize: 5 } } },
   };
   chartData: any;
+  private weeklyData: number[] = [];
+  constructor() {
+    effect(() => {
+      this.i18n.currentLang(); // déclenche quand la langue change
+      this.updateChart();
+    });
+  }
 
   ngOnInit() {
     this.allStats();
@@ -297,17 +326,8 @@ export class DashboardComponent implements OnInit {
 
   allCharts() {
     this.dashService.getWeeklyConsultations().subscribe((data: number[]) => {
-      this.chartData = {
-        labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
-        datasets: [
-          {
-            label: 'Consultations',
-            data: data,
-            backgroundColor: '#185FA5',
-            borderRadius: 6,
-          },
-        ],
-      };
+      this.weeklyData = data;
+      this.updateChart();
     });
   }
 
@@ -316,7 +336,7 @@ export class DashboardComponent implements OnInit {
       this.stats.set(s);
       this.statCards.set([
         {
-          label: "Patients aujourd'hui",
+          label: 'dashboard.cards.patients',
           value: s.patientsAujourdhui,
           icon: 'pi-users',
           bg: '#E6F1FB',
@@ -325,7 +345,7 @@ export class DashboardComponent implements OnInit {
           deltaColor: '#0F6E56',
         },
         {
-          label: 'En attente',
+          label: 'dashboard.cards.wait',
           value: s.enAttente,
           icon: 'pi-clock',
           bg: '#FAEEDA',
@@ -334,7 +354,7 @@ export class DashboardComponent implements OnInit {
           deltaColor: '#BA7517',
         },
         {
-          label: 'Rendez-vous restants',
+          label: 'dashboard.cards.remainRdv',
           value: s.rdvRestants,
           icon: 'pi-calendar',
           bg: '#E1F5EE',
@@ -343,7 +363,7 @@ export class DashboardComponent implements OnInit {
           deltaColor: '#0F6E56',
         },
         {
-          label: 'Consultations terminées',
+          label: 'dashboard.cards.consultations',
           value: s.consultationsTerminees,
           icon: 'pi-check',
           bg: '#EEEDFE',
@@ -361,5 +381,31 @@ export class DashboardComponent implements OnInit {
 
   getStatutSeverity(s: string) {
     return this.commonService.getStatutSeverity(s, Entite.AGENDA);
+  }
+
+  updateChart() {
+    this.chartData = {
+      labels: this.getWeekDays(),
+      datasets: [
+        {
+          label: 'dashboard.consultations',
+          data: this.weeklyData,
+          backgroundColor: '#185FA5',
+          borderRadius: 6,
+        },
+      ],
+    };
+  }
+
+  getWeekDays(): string[] {
+    return [
+      this.i18n.translate('dashboard.days.monday'),
+      this.i18n.translate('dashboard.days.tuesday'),
+      this.i18n.translate('dashboard.days.wednesday'),
+      this.i18n.translate('dashboard.days.thursday'),
+      this.i18n.translate('dashboard.days.friday'),
+      this.i18n.translate('dashboard.days.saturday'),
+      this.i18n.translate('dashboard.days.sunday'),
+    ];
   }
 }
