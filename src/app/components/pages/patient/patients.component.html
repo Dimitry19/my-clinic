@@ -5,11 +5,14 @@
   <!-- En-tête -->
   <div class="page-header">
     <div>
-      <h2>Patients</h2>
-      <p>{{ page()?.page?.totalElements ?? 0 }} patients enregistrés</p>
+      <h2>{{ "patient.title" | translate }}</h2>
+      <p>
+        {{ page()?.page?.totalElements ?? 0 }}
+        {{ "patient.registered" | translate }}
+      </p>
     </div>
     <p-button
-      label="Nouveau patient"
+      [label]="'patient.new' | translate"
       icon="pi pi-plus"
       routerLink="/patients/add"
     />
@@ -22,7 +25,7 @@
       pInputText
       [(ngModel)]="searchQuery"
       (ngModelChange)="onSearch($event)"
-      placeholder="Rechercher par nom, prénom ou téléphone..."
+      [attr.placeholder]="'patient.placeholder' | translate"
       class="search-input"
     />
     <p-button
@@ -41,22 +44,22 @@
       [loading]="loading()"
       [paginator]="true"
       [rows]="pageSize"
-      [totalRecords]="totalPatients()"
+      [totalRecords]="total()"
       [lazy]="true"
       (onLazyLoad)="onLazyLoad($event)"
       styleClass="p-datatable-sm"
       [rowHover]="true"
       dataKey="id"
-      aria-label="Liste des patients"
+      [attr.aria-label]="'patient.ariaLabel' | translate"
     >
       <ng-template pTemplate="header">
         <tr>
-          <th>Patient</th>
-          <th>Date naissance</th>
-          <th>Téléphone</th>
-          <th>Groupe sanguin</th>
-          <th>Statut</th>
-          <th style="width: 120px">Actions</th>
+          <th>{{ "patient.single" | translate }}</th>
+          <th>{{ "patient.birthdate" | translate }}</th>
+          <th>{{ "patient.phone" | translate }}</th>
+          <th>{{ "patient.bloodGroup" | translate }}</th>
+          <th>{{ "common.status" | translate }}</th>
+          <th style="width: 120px">{{ "common.actions" | translate }}</th>
         </tr>
       </ng-template>
 
@@ -108,7 +111,7 @@
                 icon="pi pi-eye"
                 [text]="true"
                 size="small"
-                pTooltip="Voir le dossier"
+                [pTooltip]="'patient.detail' | translate"
                 tooltipPosition="top"
                 [routerLink]="['/patients', patient.id]"
               />
@@ -117,7 +120,7 @@
                 [text]="true"
                 size="small"
                 severity="secondary"
-                pTooltip="Modifier"
+                [pTooltip]="'common.edit' | translate"
                 tooltipPosition="top"
                 [routerLink]="['/patients', patient.id, 'edit']"
               />
@@ -127,7 +130,7 @@
                   [text]="true"
                   size="small"
                   severity="danger"
-                  pTooltip="Supprimer"
+                  [pTooltip]="'common.delete' | translate"
                   tooltipPosition="top"
                   (onClick)="confirmDelete(patient)"
                 />
@@ -141,9 +144,9 @@
         <tr>
           <td colspan="6" class="empty-state">
             <i class="pi pi-users-off"></i>
-            <p>Aucun patient trouvé</p>
+            <p>{{ "common.noData" }}</p>
             <p-button
-              label="Créer un patient"
+              [label]="'patient.new' | translate"
               icon="pi pi-plus"
               routerLink="/patients/nouveau"
               size="small"

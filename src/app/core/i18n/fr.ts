@@ -76,6 +76,7 @@
   // ── Patients ───────────────────────────────────────────
   patient: {
     title: 'Patients',
+    single: 'Patient',
     new: 'Nouveau patient',
     edit: 'Modifier le patient',
     detail: 'Dossier patient',
@@ -97,6 +98,8 @@
     notes: 'Notes générales',
     registered: 'patient(s) enregistré(s)',
     deleteConfirm: 'Supprimer ce patient ?',
+    ariaLabel: 'Liste des patients',
+    placeholder: 'Rechercher par nom, prénom ou téléphone...',
     tabs: {
       record: 'Dossier',
       consultations: 'Consultations',

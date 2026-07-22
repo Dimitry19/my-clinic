@@ -74,6 +74,7 @@
   // ── Patients ───────────────────────────────────────────
   patient: {
     title: 'Patients',
+    single: 'Patient',
     new: 'New patient',
     edit: 'Edit patient',
     detail: 'Patient record',
@@ -95,6 +96,8 @@
     notes: 'General notes',
     registered: 'registered patient(s)',
     deleteConfirm: 'Delete this patient?',
+    ariaLabel: 'Patient list',
+    placeholder: 'Search by last name, first name, or phone number...',
     tabs: {
       record: 'Record',
       consultations: 'Consultations',

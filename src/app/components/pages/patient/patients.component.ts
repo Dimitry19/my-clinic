@@ -20,6 +20,7 @@ import { Configuration } from '../../../core/models/configuration/configuration.
 import { Patient } from '../../../core/models/patient/patient.model';
 import { AppConfirmationService } from '../../../core/services/global/app.confirmation.service';
 import { CommonService } from '../../../core/services/common.services';
+import { TranslatePipe } from '../../../core/pipe/i18n.pipe';
 
 @Component({
   selector: 'clnt-patients',
@@ -37,6 +38,7 @@ import { CommonService } from '../../../core/services/common.services';
     SkeletonModule,
     AvatarModule,
     TooltipModule,
+    TranslatePipe,
   ],
   providers: [AppConfirmationService, MessageService],
   templateUrl: './patients.component.html',
@@ -55,7 +57,7 @@ export class PatientsComponent implements OnInit {
   searchQuery = '';
   readonly pageSize = Configuration.pageSize;
 
-  totalPatients = computed(() => this.page()?.page.totalElements ?? 0);
+  total = computed(() => this.page()?.page.totalElements ?? 0);
 
   private search$ = new Subject<string>();
 
