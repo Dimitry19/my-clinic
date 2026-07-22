@@ -27,6 +27,9 @@ public interface FactureDao extends JpaRepository<Facture, UUID> {
     @Query("SELECT f.id FROM Facture f JOIN f.patient p WHERE p.id = :patientId ORDER BY f.dateEmission DESC")
     Page<UUID> findIdsByPatientId(@Param("patientId") UUID patientId, Pageable pageable);
 
+    @Query("SELECT f.id FROM Facture f JOIN f.patient p WHERE p.id = :patientId and f.statut = :statut ORDER BY f.dateEmission DESC")
+    Page<UUID> findIdsByPatientIdAndStatut(@Param("patientId") UUID patientId,@Param("statut") StatutFacture statut, Pageable pageable);
+
     // ── Chargement en deux passes ─────────────────────────
 
     @Query("SELECT DISTINCT f FROM Facture f " +

@@ -79,7 +79,7 @@ public class CongeService {
                 .typeConge(e.getTypeConge())
                 .dateDebut(e.getDateDebut())
                 .dateFin(e.getDateFin())
-                .duree(duree)
+                .dureeJours(duree)
                 .motif(e.getMotif())
                 .statut(e.getStatut().name())
                 .approuvePar(e.getUser().getNom() + " " + e.getUser().getPrenom() )

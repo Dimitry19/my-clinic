@@ -57,10 +57,11 @@ public class FactureService {
     }
 
     @Transactional(readOnly = true)
-    public Page<FactureDto.Response> findByPatient(UUID patientId, int page, int size) {
+    public Page<FactureDto.Response> findByPatient(UUID patientId, int page, int size,StatutFacture statut) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<UUID> idsPage = dao.findIdsByPatientId(patientId, pageable);
+        Page<UUID> idsPage = statut!=null? dao.findIdsByPatientIdAndStatut(patientId,statut, pageable) :dao.findIdsByPatientId(patientId, pageable);
         List<UUID> ids = idsPage.getContent();
+
 
         if (ids.isEmpty()) return Page.empty(pageable);
 

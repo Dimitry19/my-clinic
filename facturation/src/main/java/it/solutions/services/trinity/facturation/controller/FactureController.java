@@ -40,9 +40,11 @@ public class FactureController {
     @GetMapping("/patient/{patientId}")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','MEDECIN','RECEPTIONNISTE','PHARMACIEN','COMPTABLE')")
     public ResponseEntity<ApiResponse<Page<FactureDto.Response>>> findByPatient(
-            @PathVariable UUID patientId, @RequestParam(defaultValue = GenericUtils.PAGE) int page,
+            @PathVariable UUID patientId, @RequestParam(required = false) StatutFacture statut,
+            @RequestParam(defaultValue = GenericUtils.PAGE) int page,
             @RequestParam(defaultValue = GenericUtils.SIZE) int size) {
-        return ResponseEntity.ok(ApiResponse.ok(service.findByPatient(patientId,page,size)));
+
+        return ResponseEntity.ok(ApiResponse.ok(service.findByPatient(patientId,page,size,statut)));
     }
 
     @GetMapping("/{id}")

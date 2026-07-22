@@ -21,7 +21,7 @@ public class CongeDto {
         private String typeConge;
         private LocalDate dateDebut;
         private LocalDate dateFin;
-        private long duree;
+        private long dureeJours;
         private String motif;
         private String statut;
         private String primes;

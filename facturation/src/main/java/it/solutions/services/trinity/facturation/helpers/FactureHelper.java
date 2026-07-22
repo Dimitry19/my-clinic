@@ -109,7 +109,7 @@ public class FactureHelper extends CoreHelper{
         ConsultationLight cons=req.getConsultationId()!=null?consultationLookupPort.findConsultationLight(req.getConsultationId()):null;
         if (facture.getStatut() == StatutFacture.PAYEE ||
                 facture.getStatut() == StatutFacture.ANNULEE) {
-            throw new IllegalStateException(
+            throw new ValidationException(
                     "Impossible de modifier une facture " + facture.getStatut().name());
         }
 

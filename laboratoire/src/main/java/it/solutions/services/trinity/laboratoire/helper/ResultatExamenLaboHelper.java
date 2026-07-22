@@ -85,6 +85,7 @@ public class ResultatExamenLaboHelper extends CoreHelper {
 
     }
     public ResultatExamenLaboDto.Response toResponse(ResultatExamenLabo r) {
+        if(r==null) return null;
         UserLight laborantin = r.getLaborantin();
         return ResultatExamenLaboDto.Response.builder()
                 .id(r.getId())
