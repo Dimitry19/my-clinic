@@ -60,6 +60,11 @@
             <scope>runtime</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
+        </dependency>
+
         <!-- ─── JPA ──────────────────────────────────────────── -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -174,20 +179,56 @@
     <profiles>
         <profile>
             <id>dev</id>
-            <activation><activeByDefault>true</activeByDefault></activation>
-            <properties><env>development</env></properties>
+            <activation>
+                <activeByDefault>true</activeByDefault> <!-- 🛠️ Fixe l'erreur de valeur null par défaut -->
+            </activation>
+            <properties>
+                <env>development</env>
+                <packaging.artifact.id>core</packaging.artifact.id>
+                <packaging.name>core-dev</packaging.name>
+            </properties>
+        </profile>
+        <profile>
+            <id>docker</id>
+            <properties>
+                <env>docker</env>
+                <packaging.artifact.id>core</packaging.artifact.id>
+                <packaging.name>core-docker</packaging.name>
+            </properties>
         </profile>
         <profile>
             <id>demo</id>
-            <properties><env>demo</env></properties>
+            <properties>
+                <env>demo</env>
+                <packaging.artifact.id>core</packaging.artifact.id>
+                <packaging.name>core-demo</packaging.name>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>io.sentry</groupId>
+                    <artifactId>sentry-spring-boot-starter</artifactId>
+                    <version>8.22.0</version>
+                </dependency>
+                <dependency>
+                    <groupId>io.sentry</groupId>
+                    <artifactId>sentry-logback</artifactId>
+                    <version>8.22.0</version>
+                </dependency>
+            </dependencies>
         </profile>
         <profile>
             <id>prod</id>
-            <properties><env>production</env></properties>
+            <properties>
+                <env>production</env>
+                <packaging.artifact.id>core</packaging.artifact.id>
+                <packaging.name>core</packaging.name>
+            </properties>
         </profile>
     </profiles>
 
     <build>
+        <finalName>${packaging.artifact.id}</finalName>
+
         <plugins>
             <!-- maven-compiler-plugin hérité du parent avec Lombok déjà configuré -->
         </plugins>

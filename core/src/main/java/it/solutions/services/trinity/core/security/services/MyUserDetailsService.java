@@ -25,13 +25,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class MyUserDetailsService implements UserDetailsService {
 
-
     private final UserDao dao;
-
-
     private static final String utilisateurIntrouvable="Aucun utilisateur trouvé  [{0}]";
-
-
 
 
     public void exists(String email) throws ValidationException {

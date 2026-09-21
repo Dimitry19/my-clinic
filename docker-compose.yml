@@ -1,0 +1,97 @@
+#docker compose -p trinity up -d --build
+
+name: trinity
+
+services:
+
+  # ── Keycloak ───────────────────────────────────────────
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.0
+    container_name: trinity-keycloak
+    restart: unless-stopped
+    command: start-dev
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # ← résout vers ta machine hôte
+    environment:
+      KC_DB:                        postgres
+      # ← pointe vers ta base locale via host.docker.internal
+      KC_DB_URL:                    jdbc:postgresql://host.docker.internal:5432/trinity_db
+      KC_DB_SCHEMA:                 keycloak
+      KC_DB_USERNAME:               ${DB_USER}
+      KC_DB_PASSWORD:               ${DB_PASSWORD}
+      KEYCLOAK_ADMIN:               ${KC_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD:      ${KC_ADMIN_PASSWORD}
+      KC_HTTP_PORT:                 8180
+      KC_HOSTNAME:                  localhost
+      KC_HOSTNAME_PORT:             8180
+      KC_HEALTH_ENABLED:            "true"
+      KC_LOG_LEVEL:                 INFO
+    ports:
+      - "8180:8180"
+      - "9000:9000"
+    volumes:
+      - ./keycloak/providers:/opt/keycloak/providers
+      - ./keycloak/realms:/opt/keycloak/data/import
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'cat < /dev/null > /dev/tcp/localhost/9000' || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 90s   # ← laisser le temps à Keycloak de démarrer
+  # ── Redis ────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: trinity-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+
+  # ── Spring Boot App ────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - MAVEN_PROFILE=docker
+    image: trinity:latest
+    container_name: trinity_app_latest
+    hostname: trinity
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # ← idem pour l'app
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      JAVA_OPTS:              -Xms128m -Xmx400m -XX:MaxMetaspaceSize=128m -XX:+UseG1GC
+      DB_PASSWORD: ${DB_PASSWORD}   # ← lue depuis .env et passée au conteneur
+      DB_USER: ${DB_USER}       # ← idem
+    ports:
+      - "8080:8080"
+    depends_on:
+      keycloak:
+        condition: service_started   # ← au lieu de service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file:  "2"
+
+networks:
+  default:
+    name: trinity-network
+volumes:
+  redis_data: # Permet de ne pas perdre les données Redis au redémarrage

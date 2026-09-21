@@ -40,8 +40,59 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault> <!-- 🛠️ Fixe l'erreur de valeur null par défaut -->
+            </activation>
+            <properties>
+                <env>development</env>
+                <packaging.artifact.id>agenda</packaging.artifact.id>
+                <packaging.name>agenda-dev</packaging.name>
+            </properties>
+        </profile>
+        <profile>
+            <id>docker</id>
+            <properties>
+                <env>docker</env>
+                <packaging.artifact.id>agenda</packaging.artifact.id>
+                <packaging.name>agenda-docker</packaging.name>
+            </properties>
+        </profile>
+        <profile>
+            <id>demo</id>
+            <properties>
+                <env>demo</env>
+                <packaging.artifact.id>agenda</packaging.artifact.id>
+                <packaging.name>agenda-demo</packaging.name>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>io.sentry</groupId>
+                    <artifactId>sentry-spring-boot-starter</artifactId>
+                    <version>8.22.0</version>
+                </dependency>
+                <dependency>
+                    <groupId>io.sentry</groupId>
+                    <artifactId>sentry-logback</artifactId>
+                    <version>8.22.0</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <env>production</env>
+                <packaging.artifact.id>agenda</packaging.artifact.id>
+                <packaging.name>agenda</packaging.name>
+            </properties>
+        </profile>
+    </profiles>
 
     <build>
+        <finalName>${packaging.artifact.id}</finalName>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

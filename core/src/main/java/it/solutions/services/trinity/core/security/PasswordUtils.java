@@ -17,20 +17,6 @@ public class PasswordUtils {
         logger.info("Utility class");
     }
 
-
-    private static  final String ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    private static final Random rnd = new Random(System.currentTimeMillis());
-    private static  final int LENGHT = 6;
-
-
-    public static String generatePasswordPlainText(){
-        StringBuilder sb = new StringBuilder(LENGHT);
-        for (int i = 0; i < LENGHT; i++) {
-            sb.append(ALPHABET.charAt(rnd.nextInt(ALPHABET.length())));
-        }
-        return sb.toString();
-    }
-
     public static String generatePasswordEmploye(String nom, String prenom){
         String random = "";
         String part=   "";

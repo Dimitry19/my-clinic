@@ -15,7 +15,7 @@
     <artifactId>clinique-trinite</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Gestion clinique</name>
+    <name>Gestion Clinique</name>
     <description>Système de gestion de la clinique médicale Trinité</description>
 
     <modules>
@@ -46,6 +46,9 @@
         <spring-ai.version>2.0.0-M8</spring-ai.version>
         <springdoc.version>3.0.2</springdoc.version>
         <jasypt.version>3.0.3</jasypt.version>
+        <spring.boot.version>4.0.6</spring.boot.version>
+        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
+
     </properties>
 
     <dependencyManagement>
@@ -55,6 +58,13 @@
                 <groupId>io.sentry</groupId>
                 <artifactId>sentry-bom</artifactId>
                 <version>${sentry.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

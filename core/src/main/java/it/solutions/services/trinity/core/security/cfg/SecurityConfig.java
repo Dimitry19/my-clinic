@@ -1,27 +1,29 @@
 package it.solutions.services.trinity.core.security.cfg;
 
 import it.solutions.services.trinity.core.security.filters.JwtAuthFilter;
+import it.solutions.services.trinity.core.shared.enums.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.*;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 
 @Configuration
@@ -39,9 +41,6 @@ public class SecurityConfig {
     private List<String> permitPublicEndpoints;
 
 
-
-    private final JwtAuthFilter jwtAuthFilter;
-    private final UserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -71,31 +70,34 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                     if (publicPaths.length > 0)
                         auth.requestMatchers(publicPaths).permitAll();
+                    auth.requestMatchers("/actuator/health/**").permitAll();
                     auth.anyRequest().authenticated();
                 })
+                .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(jwtConverter())))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
 
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider p = new DaoAuthenticationProvider(userDetailsService);
-        p.setPasswordEncoder(passwordEncoder());
-        return p;
+    public JwtAuthenticationConverter jwtConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(this::extractRoles);
+        return converter;
     }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    @SuppressWarnings("unchecked")
+    private Collection<GrantedAuthority> extractRoles(Jwt jwt) {
+        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+
+        if (realmAccess == null || realmAccess.get("roles") == null) return List.of();
+        return ((Collection<String>) realmAccess.get("roles")).stream()
+                .filter(r -> List.of( Role.values()).contains(r))
+                .map(r -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_" + r))
+                .toList();
     }
 
 
