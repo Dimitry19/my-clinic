@@ -1,12 +1,9 @@
 package it.solutions.services.trinity.core.security.cfg;
 
-import it.solutions.services.trinity.core.security.filters.JwtAuthFilter;
 import it.solutions.services.trinity.core.shared.enums.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.*;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.*;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -14,16 +11,16 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Configuration
@@ -39,6 +36,10 @@ public class SecurityConfig {
     private List<String> permitStaticResourcesPaths;
     @Value("${permit.public.endpoint}")
     private List<String> permitPublicEndpoints;
+
+
+    private static final Set<String> ROLE_NAMES =
+            Arrays.stream(Role.values()).map(Enum::name).collect(Collectors.toSet());
 
 
 
@@ -80,6 +81,11 @@ public class SecurityConfig {
 
 
 
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
 
 
     @Bean
@@ -92,10 +98,10 @@ public class SecurityConfig {
     @SuppressWarnings("unchecked")
     private Collection<GrantedAuthority> extractRoles(Jwt jwt) {
         Map<String, Object> realmAccess = jwt.getClaim("realm_access");
-
         if (realmAccess == null || realmAccess.get("roles") == null) return List.of();
+
         return ((Collection<String>) realmAccess.get("roles")).stream()
-                .filter(r -> List.of( Role.values()).contains(r))
+                .filter(ROLE_NAMES::contains)
                 .map(r -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_" + r))
                 .toList();
     }

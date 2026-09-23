@@ -44,11 +44,6 @@ public class UserService{
         return user;
     }
 
-
-    public @NonNull UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return detailsService.loadUserByUsername(email);
-    }
-
     public   User findById(UUID id) throws UsernameNotFoundException {
         return detailsService.findById(id);
     }

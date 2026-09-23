@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-import static it.solutions.services.trinity.core.shared.Constants.COOKIE_ACCESS_TOKEN;
 
 @RestController
 @RequestMapping("/api/agenda")
@@ -22,7 +21,7 @@ import static it.solutions.services.trinity.core.shared.Constants.COOKIE_ACCESS_
 public class AgendaController {
 
     private final AgendaService service;
-    private final JwtService jwtService;
+
 
 
     @GetMapping
@@ -30,9 +29,9 @@ public class AgendaController {
     public ResponseEntity<ApiResponse<List<AgendaDto.Response>>> findAgendaByPeriode(
                                                                                      @RequestParam  int annee,
                                                                                      @RequestParam int mois,
-                                                                                     @CookieValue(name = COOKIE_ACCESS_TOKEN) String accessToken) {
+                                                                                     @RequestParam String email) {
 
-        return ResponseEntity.ok(ApiResponse.ok(service.findAgendaByPeriode(jwtService.extraireEmail(accessToken),annee, mois)));
+        return ResponseEntity.ok(ApiResponse.ok(service.findAgendaByPeriode(email,annee, mois)));
     }
 
 

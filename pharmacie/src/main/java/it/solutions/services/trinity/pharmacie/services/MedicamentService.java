@@ -1,18 +1,10 @@
 package it.solutions.services.trinity.pharmacie.services;
 
 
-import it.solutions.services.trinity.contracts.dto.EmployeDto;
 import it.solutions.services.trinity.contracts.dto.MedicamentDto;
-import it.solutions.services.trinity.core.security.filters.JwtAuthFilter;
-import it.solutions.services.trinity.core.shared.entities.User;
-import it.solutions.services.trinity.core.shared.enums.Role;
-import it.solutions.services.trinity.core.shared.enums.StatutConsultation;
-import it.solutions.services.trinity.contracts.dto.ConsultationDto;
-import it.solutions.services.trinity.core.shared.enums.StatutStock;
 import it.solutions.services.trinity.pharmacie.dao.MedicamentDao;
 import it.solutions.services.trinity.pharmacie.entities.Medicament;
 import it.solutions.services.trinity.pharmacie.helpers.MedicamentHelper;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -14,6 +14,7 @@ import it.solutions.services.trinity.contracts.entities.PatientLight;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,7 @@ public class AgendaService {
 
     public List<AgendaDto.Response> findAgendaByPeriode(String email, int annee, int mois) {
         LocalDateTime debut = LocalDate.of(annee, mois, 1).atStartOfDay().plusMonths(1);
+        if(StringUtils.isEmpty(email))  return List.of(AgendaDto.Response.builder().build());
         return findAgendaByPlage(
                 helper.findUserByEmail(email),
                 debut,

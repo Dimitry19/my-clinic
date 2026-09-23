@@ -23,7 +23,7 @@ import java.util.UUID;
 @Service
 @Transactional
 @AllArgsConstructor
-public class MyUserDetailsService implements UserDetailsService {
+public class MyUserDetailsService {
 
     private final UserDao dao;
     private static final String utilisateurIntrouvable="Aucun utilisateur trouvé  [{0}]";
@@ -43,10 +43,10 @@ public class MyUserDetailsService implements UserDetailsService {
         return dao.findById(id).orElseThrow(() -> new UsernameNotFoundException(MessageFormat.format(utilisateurIntrouvable,id)));
     }
 
-    @Override
-    public @NonNull UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return dao.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(MessageFormat.format(utilisateurIntrouvable,email)));
-    }
+//    @Override
+//    public @NonNull UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+//        return dao.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(MessageFormat.format(utilisateurIntrouvable,email)));
+//    }
 
     public void save(User user) {
         dao.save(user);
