@@ -10,7 +10,7 @@ export class TranslatePipe implements PipeTransform {
   private i18n = inject(I18nService);
 
   transform(key: string, params?: Record<string, string | number>): string {
-    console.log('Key et Value', key, this.i18n.translate(key, params));
+    // console.log('Key et Value', key, this.i18n.translate(key, params));
     return this.i18n.translate(key, params);
   }
 }

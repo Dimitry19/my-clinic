@@ -5,7 +5,11 @@ export const environment: ClinicTrinityEnvironment = {
   apiUrl: 'http://localhost:8080/trinity/api',
   authUrl: 'http://localhost:8080/trinity/api/auth',
   hostUrl: 'https://parcel-demo.travelpostservices.eu',
+  frontendUrl: 'http://localhost:4000',
   mobileFeatureUrl: 'https://mobiles-apps-features.vercel.app/admin/file',
+  keycloakUrl: 'http://localhost:8180', // ← Keycloak Docker
+  keycloakRealm: 'Trinity',
+  keycloakClient: 'trinity-frontend',
   context: '/trinity',
   fakePatientId: '12020d5sd00ds-sds1d5158dsd-1d1sd85d12sd-1s1dsdsd',
   adminRoles: ['ADMIN', 'SUPER_ADMIN'],

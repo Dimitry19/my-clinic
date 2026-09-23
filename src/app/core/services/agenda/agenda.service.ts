@@ -19,10 +19,10 @@ export class AgendaService {
   findAgendaByPeriode(
     annee: number,
     mois: number,
-    medecinId?: string,
+    email?: string,
   ): Observable<RendezVous[]> {
     let params = new HttpParams().set('annee', annee).set('mois', mois);
-    if (medecinId) params = params.set('medecinId', medecinId);
+    if (email) params = params.set('email', email);
     return this.http
       .get<ApiResponse<RendezVous[]>>(`${this.API}`, { params })
       .pipe(

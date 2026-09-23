@@ -43,6 +43,9 @@ import { Patient } from '../../../core/models/patient/patient.model';
 import { Employe } from '../../../core/models/employe/employe.model';
 import { EmployeService } from '../../../core/services/employe/employe.service';
 import { AppConfirmationService } from '../../../core/services/global/app.confirmation.service';
+import Keycloak from 'keycloak-js';
+import { AuthUser, ROLES_METIER } from '../../../core/models/auth/auth.model';
+import { AuthService } from '../../../core/services/auth/auth.service';
 
 const JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MOIS = [
@@ -92,6 +95,9 @@ export class AgendaComponent implements OnInit {
   private confirm = inject(AppConfirmationService);
   private commonService = inject(CommonService);
   private fb = inject(FormBuilder);
+
+  private readonly authService = inject(AuthService);
+  private keycloak = inject(Keycloak);
 
   patientSearchQuery = '';
   medecinSearchQuery = '';
@@ -234,17 +240,35 @@ export class AgendaComponent implements OnInit {
     notes: [''],
   });
 
+  currentUser = computed<AuthUser | null>(() => {
+    // this._tokenVersion();
+    //if (!this._authenticated()) return null;
+
+    const p = this.keycloak?.tokenParsed;
+    if (!p) return null;
+
+    const realmRoles = (p['realm_access']?.roles ?? []) as string[];
+    return {
+      id: p['userId'],
+      prenom: p['given_name'] ?? '',
+      nom: p['name'] ?? '',
+      email: p['preferred_username'] ?? '',
+      roles: realmRoles?.filter((r: string) => ROLES_METIER.includes(r)),
+      employeId: p['employeId'] ?? null,
+    };
+  });
   ngOnInit() {
     this.load();
+    this.authService.setCurrentUser(this.currentUser());
   }
 
-  recuperationsParallesDesDonnees(
+  recuperationsParallelesDesDonnees(
     annee: number,
     mois: number,
-    medecinId: string,
+    email: string,
   ) {
     forkJoin({
-      rendezVous: this.svc.findAgendaByPeriode(annee, mois, medecinId),
+      rendezVous: this.svc.findAgendaByPeriode(annee, mois, email),
     }).subscribe({
       next: ({ rendezVous }) => {
         this.loading.set(false);
@@ -258,10 +282,15 @@ export class AgendaComponent implements OnInit {
   }
 
   load() {
+    console.log('CURRENT USER', this.currentUser()?.email);
     this.loading.set(true);
     this.loadError.set(null);
     this.svc
-      .findAgendaByPeriode(this.getCurrentYear(), this.getCurrentMonth(), '')
+      .findAgendaByPeriode(
+        this.getCurrentYear(),
+        this.getCurrentMonth(),
+        this.currentUser()?.email ?? '',
+      )
       .subscribe({
         next: (rendezVous: RendezVous[]) => {
           this.rdvs.set(rendezVous);

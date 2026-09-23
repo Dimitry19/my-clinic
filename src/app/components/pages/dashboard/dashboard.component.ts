@@ -293,6 +293,7 @@ export class DashboardComponent implements OnInit {
   readonly lang = computed(() => this.i18n.currentLang());
 
   auth = inject(AuthService);
+  private readonly email = this.auth.currentUser()?.email ?? '';
 
   stats = signal<StatDashboard | null>(null);
   rendezVous = signal<RendezVous[]>([]);
@@ -320,7 +321,7 @@ export class DashboardComponent implements OnInit {
   }
   allRendezVous() {
     this.dashService
-      .getRendezVousDuJour()
+      .getRendezVousDuJour(this.email)
       .subscribe((r) => this.rendezVous.set(r));
   }
 
@@ -332,7 +333,7 @@ export class DashboardComponent implements OnInit {
   }
 
   allStats() {
-    this.dashService.getStats().subscribe((s) => {
+    this.dashService.getStats(this.email).subscribe((s) => {
       this.stats.set(s);
       this.statCards.set([
         {

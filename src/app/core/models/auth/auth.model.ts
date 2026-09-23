@@ -23,3 +23,25 @@ export interface Authenticate {
   email: string;
   password: string;
 }
+
+export interface AuthUser {
+  id: UUID;
+  prenom: string;
+  nom: string;
+  email: string;
+  employeId: UUID | null;
+  roles: string[];
+}
+
+export const ROLES_METIER = [
+  'SUPER_ADMIN',
+  'ADMIN',
+  'MEDECIN',
+  'RECEPTIONNISTE',
+  'INFIRMIER',
+  'LABORANTIN',
+  'COMPTABLE',
+  'PATIENT',
+  'PHARMACIEN',
+  'URGENTISTE',
+];

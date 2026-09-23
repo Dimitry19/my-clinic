@@ -1,0 +1,57 @@
+name: trinity-frontend
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: trinity_fe:latest
+    container_name: trinity_fe_latest
+    hostname: trinity_fe
+
+    environment:
+      # Pour un   Node.js, pas besoin de JAVA_OPTS
+      - NODE_ENV=production
+      - NODE_OPTIONS=--max-old-space-size=400
+
+    ports:
+      - "4000:4000"
+
+    restart: unless-stopped
+
+    networks:
+      - trinity-fe-network
+
+    # Limites mémoire (au même niveau que 'networks', 'ports', etc.)
+    mem_limit: 512m
+    memswap_limit: 512m
+    mem_reservation: 256m
+
+    # Limites CPU
+    cpus: "0.5"
+    cpu_shares: 512
+
+    # Limites processus
+    pids_limit: 100
+
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+    # Sécurité
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  trinity-fe-network:
+    driver: bridge

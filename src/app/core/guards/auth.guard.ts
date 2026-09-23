@@ -1,27 +1,60 @@
-﻿import { inject, PLATFORM_ID } from '@angular/core';
+﻿import { AuthService } from '../services/auth/auth.service';
 import {
-  Router,
-  CanActivateFn,
   ActivatedRouteSnapshot,
+  CanActivateFn,
+  Router,
   RouterStateSnapshot,
+  UrlTree,
 } from '@angular/router';
-import { AuthService } from '../services/auth/auth.service';
+import { inject, PLATFORM_ID } from '@angular/core';
+import { AuthGuardData, createAuthGuard } from 'keycloak-angular';
+import { DOCUMENT, isPlatformServer } from '@angular/common';
 
-export const authGuard: CanActivateFn = (
+/* const isAccessAllowed = async (
   route: ActivatedRouteSnapshot,
-  state: RouterStateSnapshot,
-) => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
+  _: RouterStateSnapshot,
+  authData: AuthGuardData,
+): Promise<boolean | UrlTree> => {
+  const { authenticated, grantedRoles } = authData;
 
-  if (!authService.isAuth()) {
-    return router.createUrlTree(['/login']);
+  const requiredRole = route.data['roles'] as string | undefined;
+  if (!requiredRole) {
+    return false;
   }
-  const requiredRoles = route.data['roles'] as string[] | undefined;
 
-  /* if (requiredRoles?.length && !authService.hasRole(requiredRoles)) {
-    return router.createUrlTree(['/login']);
-  }*/
+  const hasRequiredRole = (role: string): boolean =>
+    Object.values(grantedRoles.resourceRoles).some((roles) =>
+      roles.includes(role),
+    );
 
+  if (authenticated && hasRequiredRole(requiredRole)) {
+    return true;
+  }
+
+  const router = inject(Router);
+  return router.parseUrl('/login');
+};
+
+export const authGuardOld = createAuthGuard<CanActivateFn>(isAccessAllowed); */
+
+export const authGuard: CanActivateFn = (route, state) => {
+  if (isPlatformServer(inject(PLATFORM_ID))) return true;
+
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  const document = inject(DOCUMENT);
+  //await auth.whenReady();
+  console.log('[guard] ready, authenticated =', auth.isAuthenticated());
+
+  if (!auth.isAuthenticated()) {
+    //auth.loginKeycloak(document.location.origin + state.url);
+    //return false;
+  }
+
+  const required = route.data['roles'] as string[] | undefined;
+  console.log('[guard] required =', required);
+  if (required?.length && !auth.hasRole(required)) {
+    // return router.createUrlTree(['/not-found']);
+  }
   return true;
 };

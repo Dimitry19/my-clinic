@@ -5,91 +5,122 @@
   PLATFORM_ID,
   signal,
 } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-import { environment } from '../../../../environments/environment';
+import { firstValueFrom } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { HeaderService } from '../headers.service';
-import { Authenticate, User } from '../../models/auth/auth.model';
-import { isPlatformBrowser } from '@angular/common';
-import { ApiResponse } from '../../models/response/api-response.model';
-import { ErrorService } from '../error.service';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { KEYCLOAK_EVENT_SIGNAL } from 'keycloak-angular';
+
+import Keycloak from 'keycloak-js';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { AuthUser } from '../../models/auth/auth.model';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService extends HeaderService {
   private platformId = inject(PLATFORM_ID);
-  private errorService = inject(ErrorService);
-  private http = inject(HttpClient);
-  private readonly authUrl = environment.authUrl;
 
-  private readonly _currentUser = signal<User | null>(null);
+  private readonly document = inject(DOCUMENT);
+  private readonly keycloakSignal = inject(KEYCLOAK_EVENT_SIGNAL, {
+    optional: true,
+  });
+  private readonly keycloak = inject(Keycloak, { optional: true });
+  private readonly _authenticated = signal(false);
+  private readonly _tokenVersion = signal(0);
+  readonly isAuthenticated = this._authenticated.asReadonly();
+
+  keycloakStatus: string | undefined;
+
+  private readonly _currentUser = signal<AuthUser | null>(null);
   readonly currentUser = this._currentUser.asReadonly();
-  readonly isAuth = computed(() => !!this.currentUser());
+
+  private readonly _ready = signal(false);
 
   constructor() {
     super();
-    // Hydratation depuis localStorage uniquement côté browser
-    this.loadUserFromStorage();
-  }
 
-  login(credentials: Authenticate): Observable<ApiResponse<User>> {
-    return this.http
-      .post<ApiResponse<User>>(`${this.authUrl}/authenticate`, credentials)
-      .pipe(catchError(this.errorService.globalStatusErrorHandler));
-  }
+    /*  if (!this.keycloak) this._ready.set(true);
 
-  logout(): Observable<ApiResponse> {
-    return this.http
-      .get<ApiResponse>(`${this.authUrl}/logout`, {
-        headers: this.headersTextPlain,
-      })
-      .pipe(catchError(this.errorService.globalStatusErrorHandler));
-  }
+    effect(() => {
+      const ev = this.keycloakSignal?.();
+      if (!ev) return;
 
-  refreshToken() {
-    return this.http
-      .post<ApiResponse<void>>(`${this.authUrl}/refresh`, {})
-      .pipe(
-        map((r) => r.data),
-        catchError((e) => this.errorService.globalStatusErrorHandler(e)),
-      );
-  }
+      switch (ev.type) {
+        case KeycloakEventType.Ready:
+          this._authenticated.set(typeEventArgs<ReadyArgs>(ev.args));
+          this._tokenVersion.update((v) => v + 1);
+          break;
 
-  setCurrentUser(user: User | null): void {
-    this._currentUser.set(user);
+        case KeycloakEventType.AuthSuccess:
+        case KeycloakEventType.AuthRefreshSuccess:
+          this._authenticated.set(true);
+          this._tokenVersion.update((v) => v + 1);
+          break;
 
-    if (!this.isBrowser()) return;
+        case KeycloakEventType.AuthLogout:
+        case KeycloakEventType.AuthRefreshError:
+          this._authenticated.set(false);
+          this._tokenVersion.update((v) => v + 1);
+          break;
 
-    if (user) {
-      localStorage.setItem('currentUser', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('currentUser');
-    }
-  }
-
-  clearUser(): void {
-    this.setCurrentUser(null);
-  }
-
-  userLabel(): string {
-    return this.currentUser()?.role === 'MEDECIN' ? 'Dr.' : 'M.';
-  }
-
-  loadUserFromStorage(): void {
-    if (!this.isBrowser()) return;
-
-    const stored = localStorage.getItem('currentUser');
-    if (stored) {
-      try {
-        this.setCurrentUser(JSON.parse(stored));
-      } catch {
-        localStorage.removeItem('currentUser');
+        case KeycloakEventType.AuthError:
+          // Débloque le guard même si l'init échoue (ex. l'erreur CORS d'avant)
+          this._ready.set(true);
+          break;
       }
-    }
+    }); */
   }
+
+  loginKeycloak(redirectUri?: string): Promise<void> {
+    console.log('LOGIN KEYCLOAK', {
+      redirectUri: redirectUri ?? this.document.location.origin,
+    });
+    if (!this.keycloak) return Promise.resolve();
+
+    return this.keycloak.login({
+      redirectUri: redirectUri ?? this.document.location.origin,
+    });
+  }
+  logout() {
+    if (!this.keycloak) return;
+
+    this.keycloak.logout({
+      redirectUri: `${environment.frontendUrl}/login`,
+    });
+  }
+
+  hasRole(required: string[]): boolean {
+    const roles = this.currentUser()?.roles ?? [];
+    return required.some((r) => roles.includes(r));
+  }
+
+  async whenReady(): Promise<void> {
+    if (this._ready()) return;
+    await firstValueFrom(toObservable(this._ready).pipe(filter((r) => r)));
+  }
+
+  readonly userLabel = computed(() =>
+    this.currentUser()?.roles.includes('MEDECIN') ? 'Dr.' : 'M.',
+  );
+
   private isBrowser(): boolean {
     return isPlatformBrowser(this.platformId);
+  }
+
+  setAuthenticatedValue(newValue: boolean) {
+    this._authenticated.set(newValue);
+  }
+
+  setCurrentUser(newValue: AuthUser | null) {
+    this._currentUser.set(newValue);
+  }
+  setReadyValue(newValue: boolean) {
+    this._ready.set(newValue);
+  }
+
+  updateTokenVersionValue() {
+    this._tokenVersion.update((newValue) => newValue + 1);
   }
 }

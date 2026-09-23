@@ -50,24 +50,24 @@ export class SidebarComponent {
   errorMsg = signal('');
 
   visibleNavItems = computed(() => {
-    const role = this.auth.currentUser()?.role;
-    if (!role) return [];
+    const roles = this.auth.currentUser()?.roles;
+    if (!roles) return [];
 
     return this.navItems.filter(
-      (item) => !item.roles || item.roles.includes(role),
+      (item) => !item.roles || this.hasRole(item.roles, roles),
     );
   });
 
   visibleAdminNavItems = computed(() => {
-    const role = this.auth.currentUser()?.role;
+    const roles = this.auth.currentUser()?.roles;
 
-    if (!role) return [];
+    if (!roles) return [];
 
-    const roles = this.adminItems.filter(
-      (item) => !item.roles || item.roles.includes(role),
+    const adminRoles = this.adminItems.filter(
+      (item) => !item.roles || this.hasRole(item.roles, roles)
     );
 
-    return roles;
+    return adminRoles;
   });
 
   get initiales() {
@@ -130,38 +130,7 @@ export class SidebarComponent {
   ];
 
   logout() {
-    this.auth.logout().subscribe({
-      next: (response: ApiResponse<boolean>) => {
-        if (this.commonService.isSuccessResponse(response)) {
-          setTimeout(() => this.router.navigate(['/login']), 800);
-        } else {
-          this.errorType.set('network');
-          this.errorMsg.set(
-            response.message ??
-              'Une erreur est survenue. Réessayez dans quelques instants.',
-          );
-        }
-      },
-      error: (err) => {
-        const status = err?.status;
-        if (status === 0 || status === 503) {
-          this.errorType.set('network');
-          this.errorMsg.set(
-            'Impossible de contacter le serveur. Vérifiez votre connexion internet.',
-          );
-        } else if (status >= 500) {
-          this.errorType.set('server');
-          this.errorMsg.set(
-            'Une erreur serveur est survenue. Réessayez dans quelques instants.',
-          );
-        } else {
-          this.errorType.set('server');
-          this.errorMsg.set(
-            err?.error?.message ?? 'Une erreur inattendue est survenue.',
-          );
-        }
-      },
-    });
+    this.auth.logout();
   }
 
   autorizedAdmin() {
@@ -171,4 +140,9 @@ export class SidebarComponent {
   autorizedRHs() {
     return this.commonService.hasRole(environment.ressourcesHumainesRoles);
   }
+
+    hasRole(required: string[], roles:string[]): boolean {
+    return required.some((r) => roles.includes(r));
+
+   }
 }

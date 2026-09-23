@@ -3,7 +3,11 @@ export interface ClinicTrinityEnvironment {
   apiUrl: string;
   authUrl: string;
   hostUrl: string;
+  frontendUrl: string;
   mobileFeatureUrl: string;
+  keycloakUrl: string;
+  keycloakRealm: string;
+  keycloakClient: string;
   context: string;
   fakePatientId: string;
   dashboardRoles: string[];

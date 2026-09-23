@@ -37,6 +37,7 @@ import {
   MEDICAMENT_STATUT_CONFIG,
   StatutStock,
 } from '../models/pharmacie/medicament.model';
+import { AuthUser } from '../models/auth/auth.model';
 
 @Injectable({
   providedIn: 'root',
@@ -293,10 +294,10 @@ export class CommonService {
 
   hasRole(requiredRoles: string[]): boolean {
     const user = this.authService.currentUser();
-    if (!user || !user.role) {
+    if (!user || !user.roles) {
       return false;
     }
-    return requiredRoles.some((role) => user.role.includes(role));
+    return requiredRoles.some((role) => user.roles.includes(role));
   }
 
   isPositiveInteger(val: any) {
@@ -314,6 +315,9 @@ export class CommonService {
     return n !== Infinity && String(n) === str && n >= 0;
   }
 
+  currentUser(): AuthUser | null {
+    return this.authService.currentUser();
+  }
   autorizedAdmin() {
     return this.hasRole(environment.adminRoles);
   }

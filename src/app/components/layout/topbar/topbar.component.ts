@@ -10,6 +10,7 @@ import { CommonService } from '../../../core/services/common.services';
 import { ApiResponse } from '../../../core/models/response/api-response.model';
 import { Router } from '@angular/router';
 import { LangSwitcherComponent } from '../lang-switcher/lang-switcher.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'clnt-topbar',
@@ -56,7 +57,7 @@ import { LangSwitcherComponent } from '../lang-switcher/lang-switcher.component'
         <div class="user-chip" (click)="userMenu.toggle($event)">
           <div class="avatar">{{ initiales }}</div>
           <span class="user-name"
-            >{{ label }} {{ auth.currentUser()?.nom }}</span
+            >{{ label() }} {{ auth.currentUser()?.nom }}</span
           >
           <i class="pi pi-chevron-down"></i>
         </div>
@@ -151,8 +152,9 @@ export class TopbarComponent {
   commonService = inject(CommonService);
 
   router = inject(Router);
-
-  label = this.auth.currentUser()?.role === 'MEDECIN' ? 'Dr.' : '';
+  readonly label = computed(() =>
+    this.auth.currentUser()?.roles.includes('MEDECIN') ? 'Dr.' : 'M.',
+  );
 
   darkMode = false;
 
@@ -167,11 +169,9 @@ export class TopbarComponent {
   }
 
   readonly userMenuItems = computed<MenuItem[]>(() => {
-    const user = this.auth.currentUser();
-
     const items: MenuItem[] = [];
 
-    if (user?.employeId) {
+    if (!this.commonService.hasRole(environment.adminRoles)) {
       items.push({
         label: 'Mon profil',
         icon: 'pi pi-user',
@@ -205,13 +205,6 @@ export class TopbarComponent {
   }
 
   logout() {
-    this.auth.logout().subscribe({
-      next: (response: ApiResponse<boolean>) => {
-        if (this.commonService.isSuccessResponse(response)) {
-          setTimeout(() => this.router.navigate(['/login']), 800);
-        }
-      },
-      error: (err) => {},
-    });
+    this.auth.logout();
   }
 }

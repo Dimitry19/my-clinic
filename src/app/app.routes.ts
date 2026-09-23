@@ -11,7 +11,7 @@ import { pharmacieRoutes } from './core/routes/pharmacie/pharmacie.routes';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'login',
+    redirectTo: '/starter',
     pathMatch: 'full',
   },
   {
@@ -31,6 +31,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       {
+        path: 'agenda',
+        loadComponent: () =>
+          import('./components/pages/agenda/agenda.component').then(
+            (m) => m.AgendaComponent,
+          ),
+        title: 'Agenda — Centre  Médical la Trinité',
+      },
+      {
         path: 'dashboard',
         loadComponent: () =>
           import('./components/pages/dashboard/dashboard.component').then(
@@ -46,14 +54,6 @@ export const routes: Routes = [
       ...ordonnanceRoutes,
       ...factureRoutes,
       ...pharmacieRoutes,
-      {
-        path: 'agenda',
-        loadComponent: () =>
-          import('./components/pages/agenda/agenda.component').then(
-            (m) => m.AgendaComponent,
-          ),
-        title: 'Agenda — Centre  Médical la Trinité',
-      },
     ],
   },
   {
