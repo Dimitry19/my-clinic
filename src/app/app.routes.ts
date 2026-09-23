@@ -11,7 +11,7 @@ import { pharmacieRoutes } from './core/routes/pharmacie/pharmacie.routes';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/starter',
+    redirectTo: '/login',
     pathMatch: 'full',
   },
   {

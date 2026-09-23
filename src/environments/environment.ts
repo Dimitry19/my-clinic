@@ -7,7 +7,7 @@ export const environment: ClinicTrinityEnvironment = {
   hostUrl: 'https://parcel-demo.travelpostservices.eu',
   frontendUrl: 'http://localhost:4000',
   mobileFeatureUrl: 'https://mobiles-apps-features.vercel.app/admin/file',
-  keycloakUrl: 'http://localhost:8180', // ← Keycloak Docker
+  keycloakUrl: 'http://localhost:8180',
   keycloakRealm: 'Trinity',
   keycloakClient: 'trinity-frontend',
   context: '/trinity',

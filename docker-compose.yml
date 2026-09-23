@@ -18,9 +18,6 @@ services:
 
     restart: unless-stopped
 
-    networks:
-      - trinity-fe-network
-
     # Limites mémoire (au même niveau que 'networks', 'ports', etc.)
     mem_limit: 512m
     memswap_limit: 512m
@@ -53,5 +50,6 @@ services:
       - no-new-privileges:true
 
 networks:
-  trinity-fe-network:
-    driver: bridge
+  default:
+    external: true
+    name: trinity-network
